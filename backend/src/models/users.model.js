@@ -1,22 +1,16 @@
-import mongoose from "mongoose";
-import bcrypt from "bcrypt";
-import { Counter } from "./counter.model.js";
+// user.models.js
+import mongoose, { Schema } from "mongoose";
+import bcrypt from "bcryptjs";
 
-const userSchema = new mongoose.Schema(
-{
-   utkarshId: {
-      type: String,
-      unique: true,
-      index: true
-   },
-
-   username: {
+const userSchema = new Schema(
+  {
+    name: {
       type: String,
       required: true,
-      trim: true
-   },
-    
-   email: {
+      trim: true,
+    },
+
+    email: {
       type: String,
       required: true,
       unique: true,
@@ -66,65 +60,96 @@ const userSchema = new mongoose.Schema(
 
    course: {
       type: String,
+      required: [true, "Password is required"],
+      select: false,
+      minlength: 6,
+    },
+
+    role: {
+      type: String,
+      enum: ["user", "admin"],
+      default: "user",
+      index: true,
+    },
+
+    mobile_no: {
+      type: String,
       required: true,
-      trim: true
-   },
+      trim: true,
+    },
 
-   isBlocked: {
-      type: Boolean,
-      default: false
-   },
+    city: {
+      type: String,
+      required: true,
+      trim: true,
+    },
 
-   isDeleted: {
+    gender: {
+      type: String,
+      enum: ["male", "female", "other"],
+      required: true,
+    },
+
+    college: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
+    course: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
+    isBlocked: {
       type: Boolean,
       default: false,
-      index: true
-   },
+    },
 
-   refreshToken: {
+    isDeleted: {
+      type: Boolean,
+      default: false,
+      index: true,
+    },
+
+    userId: {
       type: String,
-      select: false
-   }
+      unique: true,
+      index: true,
+    },
+
+    refreshToken: {
+      type: String,
+      select: false,
+    },
+    resetPasswordCode: {
+  type: String,
+  select: false,
 },
-{
-   timestamps: true,
-   toJSON: {
-      transform(doc, ret){
-         delete ret.password;
-         delete ret.refreshToken;
-         delete ret.__v;
-         return ret;
-      }
-   }
+resetPasswordExpire: {
+  type: Date,
+  select: false,
+},
+
+  },
+  
+  {
+    timestamps: true,
+  }
+);
+
+// PRE SAVE HOOK                                      
+userSchema.pre("save", async function () {
+
+  if (this.email) {
+    this.email = this.email.toLowerCase();
+  }
+
+  if (!this.isModified("password")) return;
+
+  this.password = await bcrypt.hash(this.password, 10);
 });
 
-
-// ⭐ Generate Utkarsh ID automatically
-userSchema.pre("save", async function(next){
-
-   if(!this.utkarshId){
-      const counter = await Counter.findOneAndUpdate(
-         { _id: "utkarshUserId" },
-         { $inc: { seq: 1 } },
-         { new: true, upsert: true }
-      );
-
-      const year = new Date().getFullYear().toString().slice(-2);
-
-      this.utkarshId = `UTK${year}-${counter.seq
-         .toString()
-         .padStart(4, "0")}`;
-   }
-
-   if(!this.isModified("password")) return next();
-
-   this.password = await bcrypt.hash(this.password, 10);
-   next();
-});
-
-
-userSchema.methods.comparePassword = async function(password){
-   return await bcrypt.compare(password, this.password);
-};
 
 export const User = mongoose.model("User", userSchema);
