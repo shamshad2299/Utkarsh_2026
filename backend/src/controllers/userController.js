@@ -4,11 +4,6 @@ import { User } from "../models/users.model.js";
 import { Counter } from "../models/counter.model.js";
 import jwt from "jsonwebtoken";
 
-/**
- * @desc    Register new user
- * @route   POST /api/v1/auth/register
- * @access  Public
- */
 export const registerUser = async (req, res) => {
   const session = await mongoose.startSession();
   session.startTransaction();
@@ -62,7 +57,6 @@ export const registerUser = async (req, res) => {
       });
     }
 
-    // 🔥 COUNTER INCREMENT (transaction ke andar)
     const counter = await Counter.findOneAndUpdate(
       { name: "userId" },
       { $inc: { seq: 1 } },
@@ -72,16 +66,13 @@ export const registerUser = async (req, res) => {
     const paddedSeq = counter.seq.toString().padStart(3, "0");
     const userId = `VSVT26${paddedSeq}`;
 
-    // hash password
-    const hashedPassword = await bcrypt.hash(password, 10);
-
     // create user
     const user = await User.create(
       [
         {
           name,
           email,
-          password: hashedPassword,
+          password,
           role,
           mobile_no,
           city,
@@ -94,7 +85,7 @@ export const registerUser = async (req, res) => {
       { session },
     );
 
-    // ✅ commit only if EVERYTHING passed
+    //  commit only if EVERYTHING passed
     await session.commitTransaction();
     session.endSession();
 
@@ -102,13 +93,15 @@ export const registerUser = async (req, res) => {
       "-password -refreshToken -__v",
     );
 
+    // email send with the user => functionality will added at the end
+
     return res.status(201).json({
       success: true,
       message: "User registered successfully",
       data: safeUser,
     });
   } catch (error) {
-    // ❌ any error ⇒ rollback counter
+
     await session.abortTransaction();
     session.endSession();
 
@@ -161,12 +154,7 @@ const generateRefreshToken = (user) => {
   );
 };
 
-/**
- * @desc    Login user (email / mobile / userId + password)
- * @route   POST /api/v1/auth/login
- * @access  Public
- *
- */
+//login
 export const loginUser = async (req, res) => {
   try {
     const { identifier, password } = req.body || {};
@@ -179,7 +167,7 @@ export const loginUser = async (req, res) => {
       });
     }
 
-    // 🔍 find user by email / mobile / userId
+    //  find user by email / mobile / userId
     const user = await User.findOne({
       $or: [
         { email: identifier.toLowerCase() },
@@ -188,8 +176,6 @@ export const loginUser = async (req, res) => {
       ],
       isDeleted: false,
     }).select("+password");
-
-    console.log("user" ,user)
 
     if (!user) {
       return res.status(401).json({
@@ -206,7 +192,8 @@ export const loginUser = async (req, res) => {
       });
     }
 
-    // 🔐 password match
+    // password match
+
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return res.status(401).json({
@@ -216,9 +203,9 @@ export const loginUser = async (req, res) => {
     }
 
     // hide sensitive fields
-    user.password = undefined;
-    user.refreshToken = undefined;
-    user.__v = undefined;
+    // user.password = undefined;
+    // user.refreshToken = undefined;
+    // user.__v = undefined;
 
     //generate token
     const accessToken = generateAccessToken(user);

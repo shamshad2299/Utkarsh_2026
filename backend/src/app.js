@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import authRoutes from "../src/routes/userRoutes.js"
+import adminRoutes from "../src/routes/adminRoutes.js"
 
 const app = express();
 
@@ -23,6 +24,7 @@ app.use(express.urlencoded({
 app.use(cookieParser()); //  MUST
 
 app.use("/api/v1/auth" , authRoutes);
+app.use("/api/admin/auth", adminRoutes);
 
 
 export { app };

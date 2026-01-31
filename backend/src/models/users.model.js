@@ -24,12 +24,12 @@ const userSchema = new Schema(
       type: String,
       required: [true, "Password is required"],
       select: false,
-      minlength: 8,
+      minlength: 6,
     },
 
     role: {
       type: String,
-      enum: ["user", "eventAdmin", "superAdmin"],
+      enum: ["user", "admin"],
       default: "user",
       index: true,
     },
@@ -85,18 +85,33 @@ const userSchema = new Schema(
       type: String,
       select: false,
     },
+    resetPasswordCode: {
+  type: String,
+  select: false,
+},
+resetPasswordExpire: {
+  type: Date,
+  select: false,
+},
+
   },
+  
   {
     timestamps: true,
   }
 );
 
-/* PRE SAVE HOOK                                      */
+// PRE SAVE HOOK                                      
 userSchema.pre("save", async function () {
-  // normalize email
+
   if (this.email) {
     this.email = this.email.toLowerCase();
   }
+
+  if (!this.isModified("password")) return;
+
+  this.password = await bcrypt.hash(this.password, 10);
 });
+
 
 export const User = mongoose.model("User", userSchema);
