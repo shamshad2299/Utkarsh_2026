@@ -25,7 +25,6 @@ const Navbar = () => {
           />
         </div>
 
-        {/* BBD Logo */}
         <div className="bg-white px-2 py-1 rounded-sm flex items-center gap-2">
           <img
             src={bbdLogo}
@@ -41,7 +40,6 @@ const Navbar = () => {
         </div>
       </div>
 
-      {/* Right side */}
       <div className="ml-auto flex items-center gap-8">
         <div className="hidden lg:flex items-center gap-8">
           {navItems.map((item) => (
