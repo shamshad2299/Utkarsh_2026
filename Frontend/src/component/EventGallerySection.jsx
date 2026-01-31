@@ -13,7 +13,7 @@ const EventGallerySection = () => {
         backgroundPosition: "center",
       }}
     >
-      {/* OPTIONAL DARK OVERLAY (readability ke liye) */}
+    
       <div className="absolute inset-0 bg-black/40 z-0" />
 
       {/* CONTENT */}
