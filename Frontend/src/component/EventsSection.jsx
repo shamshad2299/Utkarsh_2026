@@ -8,7 +8,6 @@ const EventsSection = () => {
   return (
     <section className="relative bg-[#050214] text-white px-6 md:px-16 py-28 overflow-hidden">
       
-      {/* Grid Background */}
       <div
         className="absolute inset-0 opacity-10 pointer-events-none"
         style={{
@@ -18,7 +17,6 @@ const EventsSection = () => {
         }}
       />
 
-      {/* Decorative Connecting Line */}
       <div className="absolute top-40 left-0 w-full h-full pointer-events-none z-0">
         <svg width="100%" height="100%" viewBox="0 0 1200 800" preserveAspectRatio="none">
           <path
@@ -61,7 +59,6 @@ const EventsSection = () => {
           </button>
         </div>
 
-        {/* 🔧 CHANGE 2: gap thoda kam */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
           {events.map((_, index) => (
             <div
