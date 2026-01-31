@@ -17,10 +17,48 @@ const userSchema = new Schema(
       lowercase: true,
       trim: true,
       match: [/^\S+@\S+\.\S+$/, "Please use a valid email"],
-      index: true,
-    },
+      index: true
+   },
 
-    password: {
+   password: {
+      type: String,
+      required: true,
+      minlength: 8,
+      select: false
+   },
+
+   role: {
+      type: String,
+      enum: ["user", "eventAdmin", "superAdmin"],
+      default: "user",
+      index: true
+   },
+
+   mobile_no: {
+      type: String,
+      required: true,
+      trim: true
+   },
+
+   city: {
+      type: String,
+      required: true,
+      trim: true
+   },
+
+   gender: {
+      type: String,
+      enum: ["male", "female", "other"],
+      required: true
+   },
+
+   college: {
+      type: String,
+      required: true,
+      trim: true
+   },
+
+   course: {
       type: String,
       required: [true, "Password is required"],
       select: false,
