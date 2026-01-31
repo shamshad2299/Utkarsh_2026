@@ -1,28 +1,32 @@
-import mongoose, { Schema } from "mongoose";
+import mongoose from "mongoose";
 
-const resultSchema = new Schema(
-  {
-    eventId: {
-      type: Schema.Types.ObjectId,
+const resultSchema = new mongoose.Schema(
+{
+   eventId: {
+      type: mongoose.Schema.Types.ObjectId,
       ref: "Event",
       required: true,
-    },
+      index: true
+   },
 
-    registrationId: {
-      type: Schema.Types.ObjectId,
+   registrationId: {
+      type: mongoose.Schema.Types.ObjectId,
       ref: "Registration",
-      required: true,
-    },
+      required: true
+   },
 
-    position: {
+   position: {
       type: Number,
-      required: true,
-      min: 1,
-    },
-  },
-  {
-    timestamps: true,
-  }
+      required: true
+   }
+},
+{ timestamps: true }
+);
+
+// Prevent duplicate ranks
+resultSchema.index(
+   { eventId: 1, position: 1 },
+   { unique: true }
 );
 
 export const Result = mongoose.model("Result", resultSchema);
