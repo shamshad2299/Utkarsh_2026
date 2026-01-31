@@ -60,7 +60,6 @@ const GalleryGrid = () => {
           className="h-80 rounded-tl-[40px]"
         />
 
-        {/* 🔥 YAHAN image ki jagah badge */}
         <FloatingBadge />
       </div>
 
