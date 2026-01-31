@@ -21,11 +21,11 @@ const Home = () => {
 
      
 
-      {/* EVENTS LIST SECTION */}
+   
       <EventsSection />
 
       {/* EVENT GALLERY */}
-      <EventGallerySection />
+     
 
     </div>
   );
