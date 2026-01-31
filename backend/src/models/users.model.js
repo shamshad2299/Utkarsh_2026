@@ -1,94 +1,119 @@
-//user.models.js
-import mongoose, { Schema } from "mongoose";
+import mongoose from "mongoose";
 import bcrypt from "bcrypt";
+import { Counter } from "./counter.model.js";
 
-const userSchema = new Schema(
-  {
-    username: {
+const userSchema = new mongoose.Schema(
+{
+   utkarshId: {
+      type: String,
+      unique: true,
+      index: true
+   },
+
+   username: {
       type: String,
       required: true,
       trim: true
-    },
+   },
     
-    email: {
+   email: {
       type: String,
       required: true,
       unique: true,
       lowercase: true,
       trim: true,
       match: [/^\S+@\S+\.\S+$/, "Please use a valid email"],
-      index: true,
-    },
+      index: true
+   },
 
-    password: {
+   password: {
       type: String,
-      required: [true, "Password is required"],
-      select: false,
-      minlength: 8
-    },
+      required: true,
+      minlength: 8,
+      select: false
+   },
 
-    role: {
-    type: String,
-    enum: ["user", "eventAdmin", "superAdmin"],
-    default: "user",
-    index: true
-    },
+   role: {
+      type: String,
+      enum: ["user", "eventAdmin", "superAdmin"],
+      default: "user",
+      index: true
+   },
 
-    mobile_no: {
-        type: String,
-        required: true,
-        trim: true
-    },
+   mobile_no: {
+      type: String,
+      required: true,
+      trim: true
+   },
 
-    city: {
-        type: String,
-        required: true,
-        trim: true
-    },
+   city: {
+      type: String,
+      required: true,
+      trim: true
+   },
 
-    gender: {
-        type: String,
-        enum: ["male", "female", "other"],
-        required: true
-    },
+   gender: {
+      type: String,
+      enum: ["male", "female", "other"],
+      required: true
+   },
 
-    college: {
-        type: String,
-        required: true,
-        trim: true
-    },
+   college: {
+      type: String,
+      required: true,
+      trim: true
+   },
 
-    course: {
-        type: String,
-        required: true,
-        trim: true
-    },    
+   course: {
+      type: String,
+      required: true,
+      trim: true
+   },
 
-    isBlocked: {
-    type: Boolean,
-    default: false
-    },
+   isBlocked: {
+      type: Boolean,
+      default: false
+   },
 
-    isDeleted: {
-        type: Boolean,
-        default: false,
-        index: true
-    },
+   isDeleted: {
+      type: Boolean,
+      default: false,
+      index: true
+   },
 
-    refreshToken: {
-        type: String,
-        select: false
-    }
-  },
-  {
-    timestamps: true,
-  }
-);
+   refreshToken: {
+      type: String,
+      select: false
+   }
+},
+{
+   timestamps: true,
+   toJSON: {
+      transform(doc, ret){
+         delete ret.password;
+         delete ret.refreshToken;
+         delete ret.__v;
+         return ret;
+      }
+   }
+});
 
+
+// ⭐ Generate Utkarsh ID automatically
 userSchema.pre("save", async function(next){
 
-   if(this.email){
-      this.email = this.email.toLowerCase();
+   if(!this.utkarshId){
+      const counter = await Counter.findOneAndUpdate(
+         { _id: "utkarshUserId" },
+         { $inc: { seq: 1 } },
+         { new: true, upsert: true }
+      );
+
+      const year = new Date().getFullYear().toString().slice(-2);
+
+      this.utkarshId = `UTK${year}-${counter.seq
+         .toString()
+         .padStart(4, "0")}`;
    }
 
    if(!this.isModified("password")) return next();

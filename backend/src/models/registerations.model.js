@@ -1,52 +1,78 @@
-//registerations.models.js
-import mongoose, { Schema } from "mongoose";
+import mongoose from "mongoose";
 
 const registrationSchema = new mongoose.Schema(
-  {
-    userId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      default: null, // solo registration
-    },
-
-    teamId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Team",
-      default: null, // team registration
-    },
-
-    eventId: {
+{
+   eventId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Event",
       required: true,
-    },
+      index: true
+   },
 
-    formData: {
-      type: mongoose.Schema.Types.Mixed,
-      default: {},
-    },
+   userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      index: true
+   },
 
-    // You can remove this later if not needed
-    status: {
+   teamId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Team",
+      index: true
+   },
+
+   registeredBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true
+   },
+
+   formData: mongoose.Schema.Types.Mixed,
+
+   status: {
       type: String,
-      enum: ["pending", "confirmed"],
+      enum: [
+         "pending",
+         "confirmed",
+         "rejected",
+         "waitlisted",
+         "cancelled"
+      ],
       default: "confirmed",
-    },
+      index: true
+   },
 
-    paymentStatus: {
+   paymentStatus: {
       type: String,
-      enum: ["pending", "done"],
-      default: "done", // since no payment system
-    },
+      enum: ["pending", "paid"],
+      default: "pending",
+      index: true
+   },
 
-    isDeleted: {
+   checkedIn: {
+      type: Boolean,
+      default: false
+   },
+
+   isDeleted: {
       type: Boolean,
       default: false,
-    },
-  },
-  {
-    timestamps: true,
-  }
+      index: true
+   }
+},
+{ timestamps: true }
+);
+
+
+// ⭐ Prevent duplicate registrations
+registrationSchema.index(
+   { eventId: 1, userId: 1 },
+   { unique: true, partialFilterExpression: { userId: { $exists: true } } }
+);
+
+registrationSchema.index(
+   { eventId: 1, teamId: 1 },
+   { unique: true, partialFilterExpression: { teamId: { $exists: true } } }
 );
 
 export const Registration = mongoose.model("Registration", registrationSchema);

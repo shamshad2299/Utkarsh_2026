@@ -1,39 +1,38 @@
-//team.models.js
-import mongoose, { Schema } from "mongoose";
+import mongoose from "mongoose";
 
 const teamSchema = new mongoose.Schema(
-  {
-    teamName: {
+{
+   teamName: {
       type: String,
       required: true,
-      trim: true,
-    },
+      trim: true
+   },
 
-    teamLeader: {
+   teamLeader: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
-    },
+      index: true
+   },
 
-    teamMembers: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
-      },
-    ],
-
-    eventId: {
+   teamMembers: [{
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Event",
-      required: true,
-    },
+      ref: "User"
+   }],
 
-    isDeleted: {
+   createdBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true
+   },
+
+   isDeleted: {
       type: Boolean,
       default: false,
-    },
-  },
-  { timestamps: true }
+      index: true
+   }
+},
+{ timestamps: true }
 );
 
 export const Team = mongoose.model("Team", teamSchema);
