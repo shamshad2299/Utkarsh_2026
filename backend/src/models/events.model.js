@@ -1,100 +1,102 @@
-//events.models.js
-import mongoose, { Schema } from "mongoose";
-const eventSchema = new mongoose.Schema(
-  {
-    // Admin who created the event
-    eventAdmin: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
-    },
+import mongoose from "mongoose";
 
-    // Basic info
-    title: {
+const eventSchema = new mongoose.Schema(
+{
+   title: {
       type: String,
       required: true,
       trim: true,
-    },
+      index: true
+   },
 
-    category: {
+   category: {
       type: String,
       enum: [
-        "cultural",
-        "sports",
-        "technical",
-        "fine_arts",
-        "literary",
-        "hotel_management",
-        "others",
+         "cultural",
+         "sports",
+         "technical",
+         "fine_arts",
+         "literary",
+         "hotel_management",
+         "others"
       ],
       required: true,
-    },
+      index: true
+   },
 
-    eventTitle: {
+   description: {
       type: String,
-      required: true,
-      trim: true,
-    },
+      required: true
+   },
 
-    description: {
+   createdBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true
+   },
+
+   eventAdmins: [{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      index: true
+   }],
+
+   venueName: {
       type: String,
-      required: true,
-    },
+      required: true
+   },
 
-    venueName: {
-      type: String,
-      required: true,
-    },
-
-    // Date & Time
-    date: {
+   date: {
       type: Date,
       required: true,
-    },
+      index: true
+   },
 
-    startTime: {
-      type: String, // e.g. "10:00 AM"
-      required: true,
-    },
-
-    endTime: {
-      type: String, // e.g. "1:00 PM"
-      required: true,
-    },
-
-    registrationDeadline: {
+   startTime: {
       type: Date,
-      required: true,
-    },
+      required: true
+   },
 
-    // Registration details
-    capacity: {
+   endTime: {
+      type: Date,
+      required: true
+   },
+
+   registrationDeadline: {
+      type: Date,
+      required: true
+   },
+
+   capacity: {
       type: Number,
       required: true,
-      min: 1,
-    },
+      min: 1
+   },
 
-    fee: {
+   fee: {
       type: Number,
       default: 0,
-      min: 0,
-    },
+      min: 0
+   },
 
-    eventType: {
+   eventType: {
       type: String,
       enum: ["solo", "duo", "team"],
-      required: true,
-    },
+      required: true
+   },
 
-    // Soft delete
-    isDeleted: {
+   resultsLocked: {
+      type: Boolean,
+      default: false
+   },
+
+   isDeleted: {
       type: Boolean,
       default: false,
-    },
-  },
-  {
-    timestamps: true, // automatically adds createdAt & updatedAt
-  }
+      index: true
+   }
+},
+{ timestamps: true }
 );
 
 export const Event = mongoose.model("Event", eventSchema);

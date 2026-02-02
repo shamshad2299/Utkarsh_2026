@@ -25,7 +25,7 @@ const RegisterButton = ({ onClick }) => {
         Register Now
       </span>
 
-      {/* Arrow Circle */}
+    
       <div className="bg-[#5a2d82] text-white p-4 rounded-full">
         <ArrowUpRight size={28} strokeWidth={2.5} />
       </div>

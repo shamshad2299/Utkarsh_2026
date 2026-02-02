@@ -1,15 +1,15 @@
-//user.models.js
+// user.models.js
 import mongoose, { Schema } from "mongoose";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 
 const userSchema = new Schema(
   {
-    username: {
+    name: {
       type: String,
       required: true,
-      trim: true
+      trim: true,
     },
-    
+
     email: {
       type: String,
       required: true,
@@ -17,89 +17,139 @@ const userSchema = new Schema(
       lowercase: true,
       trim: true,
       match: [/^\S+@\S+\.\S+$/, "Please use a valid email"],
-      index: true,
-    },
+      index: true
+   },
 
-    password: {
+   password: {
+      type: String,
+      required: true,
+      minlength: 8,
+      select: false
+   },
+
+   role: {
+      type: String,
+      enum: ["user", "eventAdmin", "superAdmin"],
+      default: "user",
+      index: true
+   },
+
+   mobile_no: {
+      type: String,
+      required: true,
+      trim: true
+   },
+
+   city: {
+      type: String,
+      required: true,
+      trim: true
+   },
+
+   gender: {
+      type: String,
+      enum: ["male", "female", "other"],
+      required: true
+   },
+
+   college: {
+      type: String,
+      required: true,
+      trim: true
+   },
+
+   course: {
       type: String,
       required: [true, "Password is required"],
       select: false,
-      minlength: 8
+      minlength: 6,
     },
 
     role: {
-    type: String,
-    enum: ["user", "eventAdmin", "superAdmin"],
-    default: "user",
-    index: true
+      type: String,
+      enum: ["user", "admin"],
+      default: "user",
+      index: true,
     },
 
     mobile_no: {
-        type: String,
-        required: true,
-        trim: true
+      type: String,
+      required: true,
+      trim: true,
     },
 
     city: {
-        type: String,
-        required: true,
-        trim: true
+      type: String,
+      required: true,
+      trim: true,
     },
 
     gender: {
-        type: String,
-        enum: ["male", "female", "other"],
-        required: true
+      type: String,
+      enum: ["male", "female", "other"],
+      required: true,
     },
 
     college: {
-        type: String,
-        required: true,
-        trim: true
+      type: String,
+      required: true,
+      trim: true,
     },
 
     course: {
-        type: String,
-        required: true,
-        trim: true
-    },    
+      type: String,
+      required: true,
+      trim: true,
+    },
 
     isBlocked: {
-    type: Boolean,
-    default: false
+      type: Boolean,
+      default: false,
     },
 
     isDeleted: {
-        type: Boolean,
-        default: false,
-        index: true
+      type: Boolean,
+      default: false,
+      index: true,
+    },
+
+    userId: {
+      type: String,
+      unique: true,
+      index: true,
     },
 
     refreshToken: {
-        type: String,
-        select: false
-    }
+      type: String,
+      select: false,
+    },
+    resetPasswordCode: {
+  type: String,
+  select: false,
+},
+resetPasswordExpire: {
+  type: Date,
+  select: false,
+},
+
   },
+  
   {
     timestamps: true,
   }
 );
 
-userSchema.pre("save", async function(next){
+// PRE SAVE HOOK                                      
+userSchema.pre("save", async function () {
 
-   if(this.email){
-      this.email = this.email.toLowerCase();
-   }
+  if (this.email) {
+    this.email = this.email.toLowerCase();
+  }
 
-   if(!this.isModified("password")) return next();
+  if (!this.isModified("password")) return;
 
-   this.password = await bcrypt.hash(this.password, 10);
-   next();
+  this.password = await bcrypt.hash(this.password, 10);
 });
 
-
-userSchema.methods.comparePassword = async function(password){
-   return await bcrypt.compare(password, this.password);
-};
 
 export const User = mongoose.model("User", userSchema);

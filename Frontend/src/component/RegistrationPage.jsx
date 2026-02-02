@@ -35,7 +35,7 @@ const RegistrationPage = ({
       flex-col
       md:flex-row
       bg-linear-to-br
-      from-[#010103]
+      from-[#4a4a71]
       via-[#39363f]
       to-[#0b0618]
     ">

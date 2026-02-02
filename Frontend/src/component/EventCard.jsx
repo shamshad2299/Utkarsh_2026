@@ -27,7 +27,7 @@ const EventCard = ({ title = "TECHNICAL EVENT", year = "2026" }) => {
         </p>
       </div>
 
-      {/* Hover Glow */}
+    
       <div className="absolute inset-0 bg-linear-to-br from-purple-600/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
     </div>
   );
