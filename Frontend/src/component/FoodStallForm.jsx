@@ -50,7 +50,7 @@ const FoodStallForm = () => {
           `}
         >
           {/* VIOLET GLOW */}
-          <div className="absolute -inset-1 rounded-3xl bg-gradient-to-br from-[#4a4a71] to-purple-700/40 blur-2xl -z-10" />
+          <div className="absolute -inset-1 rounded-3xl bg-linear-to-br from-[#4a4a71] to-purple-700/40 blur-2xl -z-10" />
 
           {/* HEADER */}
           <div className="text-center mb-10">
