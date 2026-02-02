@@ -6,12 +6,8 @@ const LoginPage = () => {
   const [step, setStep] = useState("login");
 
   const [data, setData] = useState({
-    utkarshId: "",
-    email: "",
+    identifier: "",
     password: "",
-    otp: "",
-    newPassword: "",
-    confirmPassword: ""
   });
 
   const handleChange = (e) => {
@@ -19,6 +15,7 @@ const LoginPage = () => {
     setData((prev) => ({ ...prev, [name]: value }));
   };
 
+ 
   return (
     <div className="min-h-screen relative flex items-center justify-center bg-linear-to-br from-[#010103] via-[#39363f] to-[#0b0618] text-white overflow-hidden">
 
@@ -47,7 +44,7 @@ const LoginPage = () => {
               </p>
 
               <input
-                name="utkarshId"
+                name="identifier"
                 placeholder="Enter you email or Utkarsh ID"
                 onChange={handleChange}
                 className="w-full mb-4 bg-black/60 border border-gray-700 p-3 rounded-md"
