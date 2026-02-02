@@ -24,6 +24,7 @@ export default function AdminDashboard() {
   const { admin } = useAdmin();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [activeSection, setActiveSection] = useState("dashboard");
+  const [isMobile, setIsMobile] = useState(false);
   
   // Users state with pagination
   const [users, setUsers] = useState([]);
@@ -39,6 +40,23 @@ export default function AdminDashboard() {
     city: "",
     search: ""
   });
+
+  // Check screen size on mount and resize
+  useEffect(() => {
+    const checkScreenSize = () => {
+      setIsMobile(window.innerWidth < 768); // Mobile breakpoint at 768px
+      if (window.innerWidth < 768) {
+        setSidebarOpen(false); // Auto-close sidebar on mobile
+      } else {
+        setSidebarOpen(true); // Auto-open sidebar on desktop
+      }
+    };
+
+    checkScreenSize();
+    window.addEventListener("resize", checkScreenSize);
+    
+    return () => window.removeEventListener("resize", checkScreenSize);
+  }, []);
 
   // Sample data
   const statsData = [
@@ -184,27 +202,47 @@ export default function AdminDashboard() {
     }
   };
 
+  // Handle sidebar toggle
+  const toggleSidebar = () => {
+    setSidebarOpen(!sidebarOpen);
+  };
+
+  // Handle menu item click (close sidebar on mobile)
+  const handleMenuItemClick = (itemId) => {
+    setActiveSection(itemId);
+    if (isMobile) {
+      setSidebarOpen(false);
+    }
+  };
+
+  // Close sidebar when clicking on overlay (mobile only)
+  const handleOverlayClick = () => {
+    if (isMobile) {
+      setSidebarOpen(false);
+    }
+  };
+
   const renderContent = () => {
     switch (activeSection) {
       case "dashboard":
         return (
           <>
             {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-6 md:mb-8">
               {statsData.map((stat, index) => (
                 <StatsCard key={index} {...stat} />
               ))}
             </div>
 
             {/* Charts and Tables */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-              <div className="lg:col-span-2 bg-white rounded-lg shadow p-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6 mb-6 md:mb-8">
+              <div className="lg:col-span-2 bg-white rounded-lg shadow p-4 md:p-6">
                 <h3 className="text-lg font-semibold text-gray-800 mb-4">Registration Trends</h3>
-                <div className="h-64 flex items-center justify-center border-2 border-dashed border-gray-200 rounded-lg">
+                <div className="h-48 md:h-64 flex items-center justify-center border-2 border-dashed border-gray-200 rounded-lg">
                   <p className="text-gray-500">Chart will be displayed here</p>
                 </div>
               </div>
-              <div className="bg-white rounded-lg shadow p-6">
+              <div className="bg-white rounded-lg shadow p-4 md:p-6">
                 <h3 className="text-lg font-semibold text-gray-800 mb-4">Quick Stats</h3>
                 <div className="space-y-4">
                   <div className="flex justify-between items-center">
@@ -224,7 +262,7 @@ export default function AdminDashboard() {
             </div>
 
             {/* Recent Actions and Quick Actions */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
               <div className="lg:col-span-2">
                 <RecentActions />
               </div>
@@ -237,10 +275,10 @@ export default function AdminDashboard() {
       
       case "users":
         return (
-          <div className="space-y-6">
+          <div className="space-y-4 md:space-y-6">
             {/* Filters */}
             <div className="bg-white p-4 rounded-lg shadow">
-              <div className="flex flex-wrap gap-4 items-center">
+              <div className="flex flex-col sm:flex-row flex-wrap gap-3 md:gap-4 items-start sm:items-center">
                 <div className="flex-1 min-w-[200px]">
                   <label className="block text-sm font-medium text-gray-700 mb-1">Search</label>
                   <input
@@ -248,16 +286,16 @@ export default function AdminDashboard() {
                     placeholder="Search users..."
                     value={filters.search}
                     onChange={(e) => handleFilterChange("search", e.target.value)}
-                    className="w-full px-3 py-2 border rounded-lg"
+                    className="w-full px-3 border-2 border-gray-200  py-2 text-gray-700  rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
                 
-                <div>
+                <div className="w-full sm:w-auto">
                   <label className="block text-sm font-medium text-gray-700 mb-1">Role</label>
                   <select
                     value={filters.role}
                     onChange={(e) => handleFilterChange("role", e.target.value)}
-                    className="px-3 py-2 border rounded-lg"
+                    className="w-full sm:w-auto px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-400"
                   >
                     <option value="">All Roles</option>
                     <option value="user">User</option>
@@ -266,31 +304,30 @@ export default function AdminDashboard() {
                   </select>
                 </div>
                 
-                <div>
+                <div className="w-full sm:w-auto">
                   <label className="block text-sm font-medium text-gray-700 mb-1">City</label>
                   <select
                     value={filters.city}
                     onChange={(e) => handleFilterChange("city", e.target.value)}
-                    className="px-3 py-2 border rounded-lg"
+                    className="w-full sm:w-auto px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-400"
                   >
                     <option value="">All Cities</option>
                     <option value="Lucknow">Lucknow</option>
                     <option value="Delhi">Delhi</option>
                     <option value="Mumbai">Mumbai</option>
-                    {/* Add more cities as needed */}
                   </select>
                 </div>
                 
-                <div className="flex gap-2 items-end">
+                <div className="flex gap-2 items-end ">
                   <button
                     onClick={applyFilters}
-                    className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+                    className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
                   >
                     Apply
                   </button>
                   <button
                     onClick={clearFilters}
-                    className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
+                    className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
                   >
                     Clear
                   </button>
@@ -313,16 +350,16 @@ export default function AdminDashboard() {
             {/* Server-side Pagination Controls */}
             {users.length > 0 && (
               <div className="bg-white p-4 rounded-lg shadow">
-                <div className="flex justify-between items-center">
+                <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
                   <div className="text-sm text-gray-600">
                     Showing {(pagination.page - 1) * pagination.limit + 1} to {Math.min(pagination.page * pagination.limit, pagination.total)} of {pagination.total} users
                   </div>
                   
-                  <div className="flex gap-2">
+                  <div className="flex flex-wrap gap-2 justify-center">
                     <button
                       onClick={() => handlePageChange(pagination.page - 1)}
                       disabled={pagination.page === 1}
-                      className="px-3 py-1 border rounded disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="px-3 py-1 border rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     >
                       Previous
                     </button>
@@ -343,7 +380,7 @@ export default function AdminDashboard() {
                         <button
                           key={pageNum}
                           onClick={() => handlePageChange(pageNum)}
-                          className={`px-3 py-1 rounded ${pagination.page === pageNum ? 'bg-blue-500 text-white' : 'border'}`}
+                          className={`px-3 py-1 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${pagination.page === pageNum ? 'bg-blue-500 text-white' : 'border hover:bg-gray-50'}`}
                         >
                           {pageNum}
                         </button>
@@ -353,7 +390,7 @@ export default function AdminDashboard() {
                     <button
                       onClick={() => handlePageChange(pagination.page + 1)}
                       disabled={pagination.page === pagination.totalPages}
-                      className="px-3 py-1 border rounded disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="px-3 py-1 border rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     >
                       Next
                     </button>
@@ -369,8 +406,8 @@ export default function AdminDashboard() {
       
       default:
         return (
-          <div className="bg-white rounded-lg shadow p-8">
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">
+          <div className="bg-white rounded-lg shadow p-6 md:p-8">
+            <h2 className="text-xl md:text-2xl font-bold text-gray-800 mb-4">
               {activeSection.charAt(0).toUpperCase() + activeSection.slice(1).replace(/_/g, ' ')}
             </h2>
             <p className="text-gray-600">Content for {activeSection.replace(/_/g, ' ')} section will be displayed here.</p>
@@ -380,32 +417,48 @@ export default function AdminDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 hide-scroll ">
+      
       {/* Top Navbar */}
       <Navbar admin={admin} />
+      
 
-      <div className="flex">
+{/* sidebar and maincontent */}
+      <div className="flex  hide-scroll">
+        {/* Mobile Overlay */}
+        {sidebarOpen && isMobile && (
+          <div 
+            className="fixed inset-0 bg-black bg-opacity-50 z-30 transition-opacity duration-300 hide-scroll"
+            onClick={handleOverlayClick}
+          ></div>
+        )}
+
         {/* Sidebar */}
-        <aside className={`${sidebarOpen ? 'w-64' : 'w-20'} bg-white shadow-lg transition-all duration-300 fixed h-[calc(100vh-64px)] z-40`}>
+        <aside className={`
+          ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} 
+          ${isMobile ? 'fixed inset-y-0 left-0 w-64 ' : 'relative'} 
+          bg-white  shadow-lg transition-all duration-300 h-[calc(100vh-64px)] hide-scroll z-40
+          ${!isMobile ? (sidebarOpen ? 'w-64  ' : 'w-20') : ''}
+        `}>
           <div className="p-4 border-b">
             <div className="flex items-center justify-between">
               {sidebarOpen && <h2 className="text-xl font-bold text-gray-800">UTKARSH 2025</h2>}
               <button
-                onClick={() => setSidebarOpen(!sidebarOpen)}
-                className="p-2 rounded-lg hover:bg-gray-100"
+                onClick={toggleSidebar}
+                className="p-2 rounded-lg hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 {sidebarOpen ? <X size={20} /> : <Menu size={20} />}
               </button>
             </div>
           </div>
           
-          <nav className="p-4">
+          <nav className="p-4 overflow-y-auto h-[calc(100%-160px)]">
             <ul className="space-y-2">
               {menuItems.map((item) => (
                 <li key={item.id}>
                   <button
-                    onClick={() => setActiveSection(item.id)}
-                    className={`w-full flex items-center ${sidebarOpen ? 'justify-start' : 'justify-center'} gap-3 px-4 py-3 rounded-lg transition-colors ${activeSection === item.id ? 'bg-blue-50 text-blue-600' : 'text-gray-600 hover:bg-gray-100'}`}
+                    onClick={() => handleMenuItemClick(item.id)}
+                    className={`w-full flex items-center ${sidebarOpen ? 'justify-start' : 'justify-center'} gap-3 px-4 py-3 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 ${activeSection === item.id ? 'bg-blue-50 text-blue-600' : 'text-gray-600 hover:bg-gray-100'}`}
                   >
                     {item.icon}
                     {sidebarOpen && <span>{item.label}</span>}
@@ -416,7 +469,7 @@ export default function AdminDashboard() {
           </nav>
 
           {sidebarOpen && (
-            <div className="absolute bottom-0 w-full p-4 border-t">
+            <div className="absolute bottom-0 w-full p-4 border-t bg-white">
               <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
                 <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white">
                   {admin?.name?.charAt(0) || "A"}
@@ -432,31 +485,45 @@ export default function AdminDashboard() {
         </aside>
 
         {/* Main Content */}
-        <main className={`flex-1 ${sidebarOpen ? 'ml-64' : 'ml-20'} transition-all duration-300 p-6`}>
-          {/* Top Bar */}
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-800 capitalize">
-                {activeSection === "dashboard" ? "Dashboard Overview" : activeSection.replace(/_/g, ' ')}
-              </h1>
-              <p className="text-gray-600 mt-1">
-                {activeSection === "dashboard" 
-                  ? "Welcome back! Here's what's happening with UTKARSH 2025." 
-                  : `Manage all ${activeSection.replace(/_/g, ' ')} related activities`
-                }
-              </p>
+        <main className={`
+          flex-1 transition-all duration-300 p-4 
+          ${!isMobile ? (sidebarOpen ? 'ml-0' : 'ml-20') : ''}
+        `}>
+          
+          {/* Top Bar with Burger Menu for Mobile */}
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 md:mb-8 gap-4">
+            <div className="flex items-center gap-3">
+              {isMobile && (
+                <button
+                  onClick={toggleSidebar}
+                  className="p-2  text-black rounded-lg hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <Menu size={24} />
+                </button>
+              )}
+              <div>
+                <h1 className="text-xl md:text-2xl font-bold text-gray-800 capitalize">
+                  {activeSection === "dashboard" ? "Dashboard Overview" : activeSection.replace(/_/g, ' ')}
+                </h1>
+                <p className="text-gray-600 text-sm md:text-base mt-1">
+                  {activeSection === "dashboard" 
+                    ? "Welcome back! Here's what's happening with UTKARSH 2025." 
+                    : `Manage all ${activeSection.replace(/_/g, ' ')} related activities`
+                  }
+                </p>
+              </div>
             </div>
             
-            <div className="flex items-center gap-4">
-              <div className="relative">
+            <div className="flex items-center gap-3 w-full md:w-auto">
+              <div className="relative flex-1 md:flex-none">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
                 <input
                   type="text"
                   placeholder="Search..."
-                  className="pl-10 pr-4 py-2 border rounded-lg w-full md:w-64 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="pl-10 pr-4 py-2 border text-black rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
-              <button className="p-2 rounded-lg hover:bg-gray-100 relative">
+              <button className="p-2 rounded-lg hover:bg-gray-100 relative focus:outline-none focus:ring-2 focus:ring-blue-500">
                 <Bell size={20} className="text-gray-600" />
                 <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
               </button>
