@@ -2,6 +2,7 @@ import React from "react";
 import utkarshLogo from "../assets/utkarsh-logo.png";
 import bbdLogo from "../assets/bbd-logo.png";
 import rulebookPdf from "../assets/rulebook.pdf";
+import { Link } from "react-router-dom";
 
 const Navbar = ({ onLogin, onFoodStall, onSponsership }) => {
   const navItems = [
@@ -25,16 +26,10 @@ const Navbar = ({ onLogin, onFoodStall, onSponsership }) => {
         </div>
 
         <div className="bg-white px-2 py-1 rounded-sm flex items-center gap-2">
-          <img
-            src={bbdLogo}
-            alt="BBD Logo"
-            className="h-8 object-contain"
-          />
+          <img src={bbdLogo} alt="BBD Logo" className="h-8 object-contain" />
           <div className="text-[#050214] leading-none">
             <div className="font-black text-lg">BBD</div>
-            <div className="text-[10px] font-bold tracking-tighter">
-              GROUP
-            </div>
+            <div className="text-[10px] font-bold tracking-tighter">GROUP</div>
           </div>
         </div>
       </div>
@@ -57,12 +52,11 @@ const Navbar = ({ onLogin, onFoodStall, onSponsership }) => {
           ))}
         </div>
 
-        <button
-          onClick={onLogin}
-          className="bg-white text-[#050214] px-8 py-2 rounded-full font-bold text-sm hover:bg-gray-200 transition-colors"
-        >
-          Login
-        </button>
+        <Link to="/login"
+           className="bg-white  text-[#050214] px-8 py-2 rounded-full font-bold text-md hover:bg-gray-200 transition-colors">
+            Login
+          
+        </Link>
       </div>
     </nav>
   );

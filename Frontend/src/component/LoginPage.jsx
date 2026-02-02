@@ -48,7 +48,7 @@ const LoginPage = () => {
 
               <input
                 name="utkarshId"
-                placeholder="Utkarsh ID"
+                placeholder="Enter you email or Utkarsh ID"
                 onChange={handleChange}
                 className="w-full mb-4 bg-black/60 border border-gray-700 p-3 rounded-md"
               />

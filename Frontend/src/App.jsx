@@ -4,22 +4,26 @@ import RegistrationPage from "./component/RegistrationPage";
 import LoginPage from "./component/LoginPage";
 import FoodStallForm from "./component/FoodStallForm";
 import SponsorshipForm from "./component/SponsorshipForm";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 function App() {
   const [page, setPage] = useState("home");
 
-  if (page === "login") return <LoginPage />;
-  if (page === "register") return <RegistrationPage />;
-  if (page === "foodstall") return <FoodStallForm />;
-  if (page === "sponsorship") return <SponsorshipForm />;
+  // if (page === "login") return <LoginPage />;
+  // if (page === "register") return <RegistrationPage />;
+  // if (page === "foodstall") return <FoodStallForm />;
+  // if (page === "sponsorship") return <SponsorshipForm />;
 
   return (
-    <Home
-      onRegister={() => setPage("register")}
-      onLogin={() => setPage("login")}
-      onFoodStall={() => setPage("foodstall")}
-      onSponsership={() => setPage("sponsorship")}
-    />
+    <>
+      <BrowserRouter>
+        <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegistrationPage />} />
+        </Routes>
+      </BrowserRouter>
+    </>
   );
 }
 
