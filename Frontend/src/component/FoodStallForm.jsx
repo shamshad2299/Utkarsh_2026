@@ -7,13 +7,16 @@ import {
   Phone,
   MapPin,
   Layers,
+  Home,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import foodBg from "../assets/food.png";
 
 const FoodStallForm = () => {
   const [show, setShow] = useState(false);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     setTimeout(() => setShow(true), 120);
@@ -29,6 +32,10 @@ const FoodStallForm = () => {
     }, 1800);
   };
 
+  const handleBackToHome = () => {
+    navigate("/");
+  };
+
   return (
     <>
       {/* BACKGROUND */}
@@ -38,6 +45,15 @@ const FoodStallForm = () => {
           backgroundImage: `linear-gradient(rgba(0,0,0,0.65), rgba(0,0,0,0.65)), url(${foodBg})`,
         }}
       >
+        {/* HOME BUTTON */}
+        <div 
+          className="absolute top-6 left-6 flex items-center gap-2 cursor-pointer z-20 hover:text-yellow-400 transition-colors"
+          onClick={handleBackToHome}
+        >
+          <Home size={20} />
+          <span className="tracking-widest font-semibold">Home</span>
+        </div>
+
         {/* MAIN CARD (VIOLET GLASS + VIOLET GLOW) */}
         <div
           className={`
@@ -121,7 +137,7 @@ const FoodStallForm = () => {
             <div className="text-center pt-4">
               <button
                 disabled={loading}
-                className="px-14 py-4 rounded-full bg-gradient-to-r from-yellow-400 to-yellow-300
+                className="px-14 py-4 rounded-full bg-linear-to-r from-yellow-400 to-yellow-300
                 text-black font-bold tracking-wide text-lg flex items-center justify-center gap-3 mx-auto
                 hover:scale-105 transition disabled:opacity-70
                 shadow-[0_10px_35px_rgba(255,193,7,0.6)]"

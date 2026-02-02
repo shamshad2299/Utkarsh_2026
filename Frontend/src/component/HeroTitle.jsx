@@ -6,7 +6,7 @@ const HeroTitle = () => {
         Virasat se vikas tak
       </p>
 
-      <h1 className="text-[100px] md:text-[140px] font-black uppercase leading-[0.85] tracking-tighter mb-6">
+      <h1 className="text-[80px] md:text-[100px] lg:text-[140px] font-black uppercase leading-[0.85] tracking-tighter mb-6">
         UTKARSH <br />
         <span className="lowercase">fest'26</span>
       </h1>
