@@ -21,3 +21,31 @@ body {
   font-weight: normal;
   font-style: normal;
 }
+.bg-utkarsh {
+  background:
+    radial-gradient(circle at 20% 30%, rgba(138, 43, 226, 0.25), transparent 40%),
+    radial-gradient(circle at 80% 70%, rgba(75, 0, 130, 0.25), transparent 40%),
+    linear-gradient(135deg, #14002e, #1b0045, #0e0125);
+  position: relative;
+  overflow: hidden;
+}
+
+.bg-utkarsh::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(rgba(255,255,255,0.15) 1px, transparent 1px);
+  background-size: 40px 40px;
+  animation: floatDots 25s linear infinite;
+  opacity: 0.35;
+}
+
+@keyframes floatDots {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-200px);
+  }
+}

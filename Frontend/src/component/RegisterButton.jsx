@@ -1,8 +1,9 @@
 import { ArrowUpRight } from "lucide-react";
 
-const RegisterButton = () => {
+const RegisterButton = ({ onClick }) => {
   return (
     <button
+      onClick={onClick}
       className="
         flex items-center justify-between
         bg-white
@@ -13,6 +14,7 @@ const RegisterButton = () => {
         shadow-xl
         hover:scale-105
         transition-transform
+        active:scale-95
       "
     >
       {/* Text */}
