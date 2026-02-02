@@ -1,8 +1,9 @@
 import React from "react";
 import utkarshLogo from "../assets/utkarsh-logo.png";
 import bbdLogo from "../assets/bbd-logo.png";
+import rulebookPdf from "../assets/rulebook.pdf";
 
-const Navbar = () => {
+const Navbar = ({ onLogin, onFoodStall, onSponsership }) => {
   const navItems = [
     "Events",
     "About",
@@ -14,9 +15,7 @@ const Navbar = () => {
 
   return (
     <nav className="flex items-center px-8 py-6 z-20">
-      {/* Left logos */}
       <div className="flex items-center gap-4">
-        {/* Utkarsh Logo */}
         <div className="bg-white p-1 rounded-sm">
           <img
             src={utkarshLogo}
@@ -43,19 +42,25 @@ const Navbar = () => {
       <div className="ml-auto flex items-center gap-8">
         <div className="hidden lg:flex items-center gap-8">
           {navItems.map((item) => (
-           <a
-  key={item}
-  href="#"
-  className="text-sm italic hover:text-purple-400 transition-colors"
-  style={{ fontFamily: "Milonga" }}
->
-  {item}
-</a>
-
+            <span
+              key={item}
+              onClick={() => {
+                if (item === "Food stall form") onFoodStall();
+                if (item === "Sponsorship form") onSponsership();
+                if (item === "Rulebook") window.open(rulebookPdf, "_blank");
+              }}
+              className="text-sm italic hover:text-purple-400 transition-colors cursor-pointer"
+              style={{ fontFamily: "Milonga" }}
+            >
+              {item}
+            </span>
           ))}
         </div>
 
-        <button className="bg-white text-[#050214] px-8 py-2 rounded-full font-bold text-sm hover:bg-gray-200 transition-colors">
+        <button
+          onClick={onLogin}
+          className="bg-white text-[#050214] px-8 py-2 rounded-full font-bold text-sm hover:bg-gray-200 transition-colors"
+        >
           Login
         </button>
       </div>

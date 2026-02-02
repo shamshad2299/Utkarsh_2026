@@ -5,28 +5,22 @@ import BackgroundGlow from "../component/BackgroundGlow";
 import EventsSection from "../component/EventsSection";
 import EventGallerySection from "../component/EventGallerySection";
 
-
-
-const Home = () => {
+const Home = ({ onRegister, onLogin, onFoodStall, onSponsership }) => {
   return (
     <div className="bg-[#050214] text-white relative overflow-x-hidden">
-      
-      {/* HERO AREA */}
       <div className="relative min-h-screen flex flex-col">
-        <Navbar />
-        <HeroSection />
+        <Navbar
+          onLogin={onLogin}
+          onFoodStall={onFoodStall}
+          onSponsership={onSponsership}
+        />
+        <HeroSection onRegister={onRegister} />
         <MonumentBottom />
         <BackgroundGlow />
       </div>
 
-     
-
-   
       <EventsSection />
-
-      {/* EVENT GALLERY */}
-     
-
+      <EventGallerySection />
     </div>
   );
 };

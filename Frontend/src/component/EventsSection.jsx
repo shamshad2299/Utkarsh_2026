@@ -17,6 +17,7 @@ const EventsSection = () => {
         }}
       />
 
+     
       <div className="absolute top-40 left-0 w-full h-full pointer-events-none z-0">
         <svg width="100%" height="100%" viewBox="0 0 1200 800" preserveAspectRatio="none">
           <path
@@ -32,8 +33,7 @@ const EventsSection = () => {
         
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6">
-          
-          
+      
           <div className="max-w-2xl md:-ml-6">
             <h2
               className="
