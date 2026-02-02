@@ -9,7 +9,7 @@ import EventGallerySection from "../component/EventGallerySection";
 
 const Home = () => {
   return (
-    <div className="bg-[#050214] text-white relative overflow-x-hidden">
+    <div className="text-white text-shadow-2xs relative overflow-x-hidden">
       
       {/* HERO AREA */}
       <div className="relative min-h-screen flex flex-col">
@@ -20,7 +20,6 @@ const Home = () => {
       </div>
 
      
-
    
       <EventsSection />
 

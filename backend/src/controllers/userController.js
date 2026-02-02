@@ -258,5 +258,223 @@ export const logoutUser = async (req, res) => {
     message: "Logged out"
   });
 };
+export const getAllUsers = async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+
+    // optional filters
+    const filter = {};
+    if (req.query.role) filter.role = req.query.role;
+    if (req.query.city) filter.city = req.query.city;
+
+    const [users, total] = await Promise.all([
+      User.find(filter)
+        .select("-password -refreshToken -__v")
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit),
+
+      User.countDocuments(filter),
+    ]);
+
+    return res.status(200).json({
+      success: true,
+      message: "Users fetched successfully",
+      data: users,
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
+    });
+  } catch (error) {
+    console.error("Get All Users Error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
+  }
+};
+
+
+export const getUserById = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    let user;
+
+    // check if Mongo ObjectId
+    if (mongoose.Types.ObjectId.isValid(id)) {
+      user = await User.findById(id).select(
+        "-password -refreshToken -__v",
+      );
+    } else {
+      // fallback to custom userId
+      user = await User.findOne({ userId: id }).select(
+        "-password -refreshToken -__v",
+      );
+    }
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "User fetched successfully",
+      data: user,
+    });
+  } catch (error) {
+    console.error("Get User By ID Error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
+  }
+};
+export const updateUser = async (req, res) => {
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
+  try {
+    const { id } = req.params;
+    const {
+      name,
+      email,
+      password,
+      role,
+      mobile_no,
+      city,
+      gender,
+      college,
+      course,
+    } = req.body;
+
+    // check user exists
+    const user = await User.findById(id).session(session);
+    if (!user) {
+      await session.abortTransaction();
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    // email duplicate check (if changed)
+    if (email && email !== user.email) {
+      const emailExists = await User.findOne({ email }).session(session);
+      if (emailExists) {
+        await session.abortTransaction();
+        return res.status(409).json({
+          success: false,
+          message: "Email already in use",
+        });
+      }
+    }
+
+    // update only provided fields
+    if (name) user.name = name;
+    if (email) user.email = email;
+    if (role) user.role = role;
+    if (mobile_no) user.mobile_no = mobile_no;
+    if (city) user.city = city;
+    if (gender) user.gender = gender;
+    if (college) user.college = college;
+    if (course) user.course = course;
+
+    // password update (optional)
+    if (password) {
+      if (password.length < 8) {
+        await session.abortTransaction();
+        return res.status(400).json({
+          success: false,
+          message: "Password must be at least 8 characters long",
+        });
+      }
+      user.password = password;
+    }
+
+    await user.save({ session });
+
+    await session.commitTransaction();
+    session.endSession();
+
+    const safeUser = await User.findById(user._id).select(
+      "-password -refreshToken -__v",
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: "User updated successfully",
+      data: safeUser,
+    });
+  } catch (error) {
+    await session.abortTransaction();
+    session.endSession();
+
+    console.error("Update User Error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
+  }
+};
+export const deleteUser = async (req, res) => {
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
+  try {
+    const { id } = req.params;
+
+    const user = await User.findById(id).session(session);
+    if (!user) {
+      await session.abortTransaction();
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    if (user.isDeleted) {
+      await session.abortTransaction();
+      return res.status(400).json({
+        success: false,
+        message: "User already deleted",
+      });
+    }
+
+    user.isDeleted = true;
+
+    await user.save({ session });
+
+    await session.commitTransaction();
+    session.endSession();
+
+    return res.status(200).json({
+      success: true,
+      message: "User deleted successfully",
+    });
+  } catch (error) {
+    await session.abortTransaction();
+    session.endSession();
+
+    console.error("Delete User Error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
+  }
+};
+
+
+
 
 

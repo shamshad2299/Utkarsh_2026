@@ -1,102 +1,94 @@
 import mongoose from "mongoose";
 
 const eventSchema = new mongoose.Schema(
-{
-   title: {
+  {
+    title: {
       type: String,
       required: true,
       trim: true,
-      index: true
-   },
+      index: true,
+    },
 
-   category: {
-      type: String,
-      enum: [
-         "cultural",
-         "sports",
-         "technical",
-         "fine_arts",
-         "literary",
-         "hotel_management",
-         "others"
-      ],
+    category: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Category",
       required: true,
-      index: true
-   },
+      index: true,
+    },
 
-   description: {
-      type: String,
-      required: true
-   },
-
-   createdBy: {
+    subCategory: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      required: true
-   },
+      ref: "SubCategory",
+      required: true,
+      index: true,
+    },
 
-   eventAdmins: [{
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      index: true
-   }],
-
-   venueName: {
+    description: {
       type: String,
-      required: true
-   },
+      required: true,
+    },
 
-   date: {
+    createdBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Admin",
+      required: true,
+    },
+    venueName: {
+      type: String,
+      required: true,
+    },
+
+    date: {
       type: Date,
       required: true,
-      index: true
-   },
+      index: true,
+    },
 
-   startTime: {
+    startTime: {
       type: Date,
-      required: true
-   },
+      required: true,
+    },
 
-   endTime: {
+    endTime: {
       type: Date,
-      required: true
-   },
+      required: true,
+    },
 
-   registrationDeadline: {
+    registrationDeadline: {
       type: Date,
-      required: true
-   },
+      required: true,
+    },
 
-   capacity: {
+    capacity: {
       type: Number,
       required: true,
-      min: 1
-   },
+      min: 1,
+    },
 
-   fee: {
+    fee: {
       type: Number,
       default: 0,
-      min: 0
-   },
+      min: 0,
+    },
 
-   eventType: {
+    eventType: {
       type: String,
       enum: ["solo", "duo", "team"],
-      required: true
-   },
+      required: true,
+    },
 
-   resultsLocked: {
-      type: Boolean,
-      default: false
-   },
-
-   isDeleted: {
+    resultsLocked: {
       type: Boolean,
       default: false,
-      index: true
-   }
-},
-{ timestamps: true }
+    },
+
+    isDeleted: {
+      type: Boolean,
+      default: false,
+      index: true,
+    },
+  },
+  { timestamps: true },
 );
 
 export const Event = mongoose.model("Event", eventSchema);

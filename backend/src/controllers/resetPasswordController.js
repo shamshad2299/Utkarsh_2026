@@ -4,7 +4,6 @@ import { User } from "../models/users.model.js";
 export const requestPasswordReset = async (req, res) => {
   try {
     const { identifier } = req.body || {};
-    console.log(identifier);
 
     if (!identifier) {
       return res.status(400).json({
@@ -49,6 +48,7 @@ export const requestPasswordReset = async (req, res) => {
     return res.status(200).json({
       success: true,
       message: "Verification code sent to email",
+      resetCode
     });
   } catch (error) {
     console.error("Reset Request Error:", error);
