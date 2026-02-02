@@ -23,7 +23,7 @@ export const requestPasswordReset = async (req, res) => {
 
     if (!user) {
       //  security: don't reveal user existence
-      return res.status(200).json({
+      return res.status(400).json({
         success: true,
         message: "If user exists, verification code sent",
       });
@@ -47,6 +47,7 @@ export const requestPasswordReset = async (req, res) => {
     console.log(`Password reset code for ${user.email}: ${resetCode}`);
 
     return res.status(200).json({
+      resetCode,
       success: true,
       message: "Verification code sent to email",
     });
