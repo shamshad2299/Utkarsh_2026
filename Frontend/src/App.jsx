@@ -13,8 +13,10 @@ function App() {
     <>
       <BrowserRouter>
         <Routes>
+
           {/* User Routes */}
           <Route path="/" element={<Home />} />
+
 
           {/* Admin Login */}
           <Route path="/admin" element={<AdminLogin />} />
@@ -29,7 +31,10 @@ function App() {
               </AdminRoute>
             }
           />
+         
         </Routes>
+         <Login/>
+          <Register/>
         {/* <Register /> */}
       </BrowserRouter>
     </>
