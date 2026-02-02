@@ -1,5 +1,4 @@
 import { useState } from "react";
-import axios from "axios";
 import { useAdmin } from "../../store/AdminContext";
 
 const AdminRegister = () => {
