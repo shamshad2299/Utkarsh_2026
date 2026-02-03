@@ -64,7 +64,7 @@ const registrationSchema = new mongoose.Schema(
 );
 
 
-// ⭐ Prevent duplicate registrations
+// Prevent duplicate registrations
 registrationSchema.index(
    { eventId: 1, userId: 1 },
    { unique: true, partialFilterExpression: { userId: { $exists: true } } }
