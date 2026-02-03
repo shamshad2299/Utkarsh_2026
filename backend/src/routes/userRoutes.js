@@ -1,12 +1,15 @@
 import express from "express";
-import { deleteUser, getAllUsers, getUserById, loginUser, registerUser, updateUser } from "../controllers/userController.js";
+import { deleteUser, getAllUsers, getUserById, loginUser, logoutUser, registerUser, updateUser } from "../controllers/userController.js";
 import { refreshAccessToken } from "../controllers/refreshTokenController.js";
 import { requestPasswordReset, resetPassword } from "../controllers/resetPasswordController.js";
 import adminAuth from "../middleWares/adminAuth.js";
+import { verifyJWT } from "../middleWares/authMiddleWare.js";
 const router = express.Router();
 
 router.post("/register" , registerUser);
 router.post("/login" , loginUser);
+router.post("/logout", verifyJWT, logoutUser);
+
 //verify refresh token 
 router.post("/refresh-token" , refreshAccessToken);
 
