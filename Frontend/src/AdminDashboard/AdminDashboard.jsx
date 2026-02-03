@@ -81,38 +81,61 @@ export default function AdminDashboard() {
   ];
 
   // Fetch users with pagination
-  const getAllUsers = async (page = 1, limit = 10, role = "", city = "") => {
-    try {
-      setLoading(true);
-      const token = localStorage.getItem("adminToken");
-      
-      const params = new URLSearchParams();
+const getAllUsers = async (
+  page = 1,
+  limit = 10,
+  role = "",
+  city = "",
+  getAll = false
+) => {
+  try {
+    setLoading(true);
+    const token = localStorage.getItem("adminToken");
+
+    const params = new URLSearchParams();
+
+    // 🔥 if Get ALL Users button clicked
+    if (getAll) {
+      params.append("all", "true");
+    } else {
       params.append("page", page);
       params.append("limit", limit);
-      if (role) params.append("role", role);
-      if (city) params.append("city", city);
+    }
 
-      const res = await axios.get(`http://localhost:7000/api/v1/auth/users?${params}`, {
+    if (role) params.append("role", role);
+    if (city) params.append("city", city);
+
+    const res = await axios.get(
+      `http://localhost:7000/api/v1/auth/users?${params.toString()}`,
+      {
         headers: {
-          Authorization: `Bearer ${token}`
-        }
-      });
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
 
-      if (res.data.success) {
-        setUsers(res.data.data);
+    if (res.data.success) {
+      setUsers(res.data.data);
+
+      // 🔥 pagination sirf tab set karo jab ALL users nahi ho
+      if (!getAll && res.data.meta) {
         setPagination({
           page: res.data.meta.page,
           limit: res.data.meta.limit,
           total: res.data.meta.total,
-          totalPages: res.data.meta.totalPages
+          totalPages: res.data.meta.totalPages,
         });
+      } else {
+        // optional: reset pagination
+        setPagination(null);
       }
-    } catch (error) {
-      console.error("Error fetching users:", error);
-    } finally {
-      setLoading(false);
     }
-  };
+  } catch (error) {
+    console.error("Error fetching users:", error);
+  } finally {
+    setLoading(false);
+  }
+};
 
   // Initial fetch
   useEffect(() => {
