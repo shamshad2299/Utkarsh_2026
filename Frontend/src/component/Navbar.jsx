@@ -1,28 +1,60 @@
 import React, { useState } from "react";
 import utkarshLogo from "../assets/utkarsh_logo_new.png";
 import bbdLogo from "../assets/bbd-logo.png";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const Navigate = useNavigate();
+
+  const location = useLocation();
+
+  const handleNavClick = (item) => {
+    // routes wale pages
+    if (item === "Sponsorship_form") {
+      Navigate("/sponsorship_form");
+      return;
+    }
+    if (item === "Food_stall_form") {
+      Navigate("/food_stall_form");
+      return;
+    }
+
+    // scroll wale sections
+    const sectionId = item.toLowerCase();
+
+    if (location.pathname === "/") {
+      document
+        .getElementById(sectionId)
+        ?.scrollIntoView({ behavior: "smooth" });
+    } else {
+      Navigate("/", { state: { scrollTo: sectionId } });
+    }
+
+    setIsMenuOpen(false);
+  };
 
   const navItems = [
     "Events",
     "About",
     "Schedule",
     "Rulebook",
-    "Sponsorship form",
-    "Food stall form",
+    "Sponsorship_form",
+    "Food_stall_form",
   ];
 
   return (
     <>
-      <nav className="sticky top-0 w-full  px-4 sm:px-6 lg:px-8 py-6 z-50">
+      <nav className="fixed top-0 w-full inset-x-0 px-4 sm:px-6 lg:px-8 py-6 z-50 bg-[#050214]">
         <div className=" mx-auto">
           <div className="flex items-center justify-between">
             {/* Left logos container */}
             <div className="flex items-center gap-4 sm:gap-6 md:gap-10">
               {/* Utkarsh Logo */}
-              <div className="bg-white p-1 rounded-sm shrink-0">
+              <div
+                className="bg-white p-1 rounded-sm shrink-0 cursor-pointer"
+                onClick={() => Navigate("/")}
+              >
                 <img
                   src={utkarshLogo}
                   alt="Utkarsh Logo"
@@ -45,23 +77,26 @@ const Navbar = () => {
             {/* Desktop Navigation Items */}
             <div className="hidden lg:flex ml-20 xl:w-4xl  items-center gap-8 xl:gap-12 absolute  xl:justify-between left-1/2 transform -translate-x-1/2">
               {navItems.map((item) => (
-                <a
+                <button
                   key={item}
-                  href="#"
-                  className="text-base xl:text-lg italic hover:text-purple-400 transition-colors duration-200 whitespace-nowrap"
+                  onClick={() => handleNavClick(item)}
+                  className="text-base xl:text-lg italic cursor-pointer hover:text-purple-400 transition-colors duration-200 whitespace-nowrap"
                   style={{ fontFamily: "Milonga" }}
                 >
                   {item}
-                </a>
+                </button>
               ))}
             </div>
 
             {/* Right section - Login and Mobile Menu */}
             <div className="flex items-center gap-4">
               {/* Desktop Login Button */}
-              <button className="hidden sm:block bg-white text-[#050214] px-6 sm:px-8 py-2 rounded-full font-bold text-sm hover:bg-gray-200 transition-colors duration-200 whitespace-nowrap">
+              <Link
+                to={"/login"}
+                className="hidden sm:block bg-white text-[#050214] px-6 sm:px-8 py-2 rounded-full font-bold text-sm hover:bg-gray-200 transition-colors duration-200 whitespace-nowrap"
+              >
                 Login
-              </button>
+              </Link>
 
               {/* Mobile Menu Toggle */}
               <button
@@ -69,9 +104,15 @@ const Navbar = () => {
                 className="lg:hidden flex flex-col items-center justify-center w-10 h-10"
                 aria-label="Toggle menu"
               >
-                <span className={`block w-6 h-0.5 bg-white transition-all duration-300 ${isMenuOpen ? 'rotate-45 translate-y-1.5' : ''}`}></span>
-                <span className={`block w-6 h-0.5 bg-white my-1.5 transition-all duration-300 ${isMenuOpen ? 'opacity-0' : 'opacity-100'}`}></span>
-                <span className={`block w-6 h-0.5 bg-white transition-all duration-300 ${isMenuOpen ? '-rotate-45 -translate-y-1.5' : ''}`}></span>
+                <span
+                  className={`block w-6 h-0.5 bg-white transition-all duration-300 ${isMenuOpen ? "rotate-45 translate-y-1.5" : ""}`}
+                ></span>
+                <span
+                  className={`block w-6 h-0.5 bg-white my-1.5 transition-all duration-300 ${isMenuOpen ? "opacity-0" : "opacity-100"}`}
+                ></span>
+                <span
+                  className={`block w-6 h-0.5 bg-white transition-all duration-300 ${isMenuOpen ? "-rotate-45 -translate-y-1.5" : ""}`}
+                ></span>
               </button>
             </div>
           </div>
@@ -85,17 +126,15 @@ const Navbar = () => {
             <div className=" border-t border-purple-500/30 pt-4">
               <div className="flex flex-col gap-4">
                 {navItems.map((item) => (
-                  <a
-                    key={item}
-                    href="#"
-                    className="text-base italic hover:text-purple-400 transition-colors duration-200 py-2"
+                  <button
+                    onClick={() => handleNavClick(item)}
+                    className="text-base italic hover:text-purple-400 transition-colors duration-200 py-2 text-left"
                     style={{ fontFamily: "Milonga" }}
-                    onClick={() => setIsMenuOpen(false)}
                   >
                     {item}
-                  </a>
+                  </button>
                 ))}
-                
+
                 {/* Mobile Login Button */}
                 <button className="sm:hidden bg-white text-[#050214] px-8 py-2 rounded-full font-bold text-sm hover:bg-gray-200 transition-colors duration-200 mt-2 w-full">
                   Login

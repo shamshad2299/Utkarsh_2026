@@ -2,20 +2,31 @@ import axios from "axios";
 
 const API_URL = "http://localhost:7000/api";
 
+const PUBLIC_URLS = [
+  "/v1/auth/login",
+  "/v1/auth/forgot-password",
+  "/v1/auth/reset-password",
+  "/v1/auth/refresh-token",
+];
+
 let isRefreshing = false;
 let failedQueue = [];
 
 const processQueue = (error, token = null) => {
-  failedQueue.forEach(prom => {
-    if (error) prom.reject(error);
-    else prom.resolve(token);
+  failedQueue.forEach(({ resolve, reject, config }) => {
+    if (error) {
+      reject(error);
+    } else {
+      config.headers.Authorization = `Bearer ${token}`;
+      resolve(api(config));
+    }
   });
   failedQueue = [];
 };
 
 export const api = axios.create({
   baseURL: API_URL,
-  withCredentials: true, // IMPORTANT for refresh-token cookie
+  withCredentials: true,
 });
 
 // attach access token
@@ -31,17 +42,25 @@ api.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    if (!originalRequest) return Promise.reject(error);
+
+    const isPublic = PUBLIC_URLS.some(url =>
+      originalRequest.url.includes(url)
+    );
+
+    if (
+      error.response?.status === 401 &&
+      !originalRequest._retry &&
+      !isPublic
+    ) {
+      originalRequest._retry = true;
+
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
-          failedQueue.push({ resolve, reject });
-        }).then(token => {
-          originalRequest.headers.Authorization = `Bearer ${token}`;
-          return api(originalRequest);
+          failedQueue.push({ resolve, reject, config: originalRequest });
         });
       }
 
-      originalRequest._retry = true;
       isRefreshing = true;
 
       try {
@@ -52,14 +71,14 @@ api.interceptors.response.use(
         );
 
         localStorage.setItem("accessToken", data.accessToken);
-        api.defaults.headers.Authorization = `Bearer ${data.accessToken}`;
-        processQueue(null, data.accessToken);
 
+        processQueue(null, data.accessToken);
         return api(originalRequest);
+
       } catch (err) {
         processQueue(err, null);
         localStorage.clear();
-        window.location.href = "/login";
+        window.dispatchEvent(new Event("auth:logout"));
         return Promise.reject(err);
       } finally {
         isRefreshing = false;

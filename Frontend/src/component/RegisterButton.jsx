@@ -1,8 +1,12 @@
 import { ArrowUpRight } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
-const RegisterButton = () => {
+
+const RegisterButton = ({ onClick }) => {
+  const navigate = useNavigate();
   return (
     <button
+      onClick={()=>navigate("/register")}
       className="
         flex items-center justify-between
         bg-white
@@ -13,6 +17,8 @@ const RegisterButton = () => {
         shadow-xl
         hover:scale-105
         transition-transform
+        active:scale-95
+        cursor-pointer
       "
     >
       {/* Text */}

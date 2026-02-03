@@ -8,11 +8,10 @@ const HeroTitle = () => {
           Virasat se vikas tak
         </p>
 
-        {/* Main Title */}
-        <h1 className="text-[56px] xs:text-[64px] sm:text-[80px] md:text-[100px] lg:text-[120px] xl:text-[140px] 2xl:text-[160px] font-black uppercase leading-[0.8] sm:leading-[0.85] tracking-tighter mb-6 sm:mb-8 md:mb-10">
-          <span className="block">UTKARSH</span>
-          <span className="lowercase block mt-2 sm:mt-4">fest'26</span>
-        </h1>
+      <h1 className="text-[80px] md:text-[100px] lg:text-[140px] font-black uppercase leading-[0.85] tracking-tighter mb-6">
+        UTKARSH <br />
+        <span className="lowercase">fest'26</span>
+      </h1>
 
         {/* Date */}
         <p className="text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl font-bold tracking-tight">

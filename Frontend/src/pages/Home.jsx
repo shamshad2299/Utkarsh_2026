@@ -1,32 +1,40 @@
-import Navbar from "../component/Navbar";
 import HeroSection from "../component/HeroSection";
 import MonumentBottom from "../component/MonumentBottom";
 import BackgroundGlow from "../component/BackgroundGlow";
 import EventsSection from "../component/EventsSection";
 import EventGallerySection from "../component/EventGallerySection";
-
-
+import { useEffect } from "react";
+import { useLocation } from "react-router-dom";
 
 const Home = () => {
+  const location = useLocation();
+
+  useEffect(() => {
+    if (location.state?.scrollTo) {
+      document
+        .getElementById(location.state.scrollTo)
+        ?.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [location]);
+
   return (
-    <div className="text-white text-shadow-2xs relative overflow-x-hidden">
-      
-      {/* HERO AREA */}
-      <div className="relative min-h-screen flex flex-col">
-        <Navbar />
-        <HeroSection />
-        <MonumentBottom />
-        <BackgroundGlow />
-      </div>
+    <>
+      <HeroSection />
+     <div className="relative ">
+  <MonumentBottom />
+</div>
 
-     
-   
-      <EventsSection />
 
-      {/* EVENT GALLERY */}
-     
+      <BackgroundGlow />
 
-    </div>
+      <section id="events" className="scroll-mt-28">
+        <EventsSection />
+      </section>
+
+      <section id="schedule">
+        <EventGallerySection />
+      </section>
+    </>
   );
 };
 

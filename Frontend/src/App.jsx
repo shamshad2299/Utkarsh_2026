@@ -1,43 +1,27 @@
-import Login from "./component/login/Login";
-import Register from "./component/register/Register";
-import Home from "./pages/Home";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import PublicAdminRoute from "./routes/PublicAdminRoutes";
-import AdminRoute from "./routes/AdminRoutes";
-import AdminDashboard from "./AdminDashboard/AdminDashboard";
-import AdminLogin from "./AdminDashboard/adminLogin/AdminLogin";
-import AdminRegister from "./AdminDashboard/adminLogin/AdminRegister";
+import Layout from "./component/Layout/Layout";
+import Home from "./pages/Home";
+import SponsorshipForm from "./component/SponsorshipForm";
+import FoodStallForm from "./component/FoodStallForm";
+import LoginPage from "./component/Auth/LoginPage";
+import RegistrationPage from "./component/Auth/RegistrationPage";
 
 function App() {
   return (
-    <>
-      <BrowserRouter>
-        <Routes>
+    <BrowserRouter>
+      <Routes>
+        {/* Layout with Navbar */}
+        <Route path="/" element={<Layout />}>
+          <Route index element={<Home />} />
+          <Route path="sponsorship_form" element={<SponsorshipForm />} />
+          <Route path="food_stall_form" element={<FoodStallForm />} />
+        </Route>
 
-          {/* User Routes */}
-          <Route path="/" element={<Home />} />
-
-
-          {/* Admin Login */}
-          <Route path="/admin" element={<AdminLogin />} />
-          <Route path="/admin/register" element={<AdminRegister />} />
-
-          {/* Admin Protected Routes */}
-          <Route
-            path="/admin/dashboard"
-            element={
-              <AdminRoute>
-                <AdminDashboard />
-              </AdminRoute>
-            }
-          />
-         
-        </Routes>
-         <Login/>
-          <Register/>
-        {/* <Register /> */}
-      </BrowserRouter>
-    </>
+        {/* Auth pages (no navbar if you want) */}
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegistrationPage />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
 
