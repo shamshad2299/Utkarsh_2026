@@ -27,13 +27,6 @@ const userSchema = new Schema(
       select: false
    },
 
-   role: {
-      type: String,
-      enum: ["user", "eventAdmin", "superAdmin"],
-      default: "user",
-      index: true
-   },
-
    mobile_no: {
       type: String,
       required: true,
@@ -67,7 +60,7 @@ const userSchema = new Schema(
 
     role: {
       type: String,
-      enum: ["user", "admin"],
+      enum: ["user"],
       default: "user",
       index: true,
     },

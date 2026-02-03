@@ -1,46 +1,35 @@
 import jwt from "jsonwebtoken";
 import Admin from "../models/admin.model.js";
-import dotenv from "dotenv"
-dotenv.config();
+import { ApiError } from "../utils/ApiError.js";
 
 const adminAuth = async (req, res, next) => {
-  try {
-    const authHeader = req.headers.authorization;
+  const authHeader = req.headers.authorization;
 
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return res.status(401).json({
-        success: false,
-        message: "Authorization token missing",
-      });
-    }
-
-    const token = authHeader.split(" ")[1];
-    const decoded = jwt.verify(token, process.env.JWT_SECRET_ADMIN);
-   
-    const admin = await Admin.findById(decoded.id).select("-password");
-
-    if (!admin) {
-      return res.status(401).json({
-        success: false,
-        message: "Admin not found",
-      });
-    }
-
-    if (admin.adminStatus === "blocked") {
-      return res.status(403).json({
-        success: false,
-        message: "Admin access blocked",
-      });
-    }
-
-    req.admin = admin;
-    next();
-  } catch (error) {
-    return res.status(401).json({
-      success: false,
-      message: "Invalid or expired token",
-    });
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    throw new ApiError(401, "Authorization token missing");
   }
+
+  const token = authHeader.split(" ")[1];
+
+  let decoded;
+  try {
+    decoded = jwt.verify(token, process.env.JWT_SECRET_ADMIN);
+  } catch (err) {
+    throw new ApiError(401, "Invalid or expired admin token");
+  }
+
+  const admin = await Admin.findById(decoded.id).select("-password");
+
+  if (!admin) {
+    throw new ApiError(401, "Admin not found");
+  }
+
+  if (admin.adminStatus !== "active") {
+    throw new ApiError(403, "Admin access not active");
+  }
+
+  req.admin = admin;
+  next();
 };
 
 export default adminAuth;

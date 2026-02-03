@@ -29,6 +29,11 @@ const AdminSchema = new mongoose.Schema(
       enum: ["active", "blocked", "pending"],
       default: "pending",
     },
+    refreshToken: {
+      type: String,
+      select: false,
+    },
+
   },
   { timestamps: true }
 );

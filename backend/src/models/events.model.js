@@ -24,6 +24,14 @@ const eventSchema = new mongoose.Schema(
       index: true
    },
 
+   subCategoryId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "SubCategory",
+      required: true,
+      index: true
+   },
+
+
    description: {
       type: String,
       required: true
