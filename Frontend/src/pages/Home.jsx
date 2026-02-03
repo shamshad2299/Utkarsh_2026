@@ -3,6 +3,9 @@ import MonumentBottom from "../component/MonumentBottom";
 import BackgroundGlow from "../component/BackgroundGlow";
 import EventsSection from "../component/EventsSection";
 import EventGallerySection from "../component/EventGallerySection";
+import AboutUs from "../component/AboutUs";
+import EDM from "../component/edm";
+import Footer from "../component/Footer";
 import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
 
@@ -19,21 +22,36 @@ const Home = () => {
 
   return (
     <>
+      {/* HERO */}
       <HeroSection />
-     <div className="relative ">
-  <MonumentBottom />
-</div>
 
+      <div className="relative">
+        <MonumentBottom />
+      </div>
 
       <BackgroundGlow />
 
+
+      {/* EVENTS */}
       <section id="events" className="scroll-mt-28">
         <EventsSection />
       </section>
 
-      <section id="schedule">
+      {/* GALLERY / SCHEDULE */}
+      <section id="schedule" className="scroll-mt-28">
         <EventGallerySection />
       </section>
+
+        {/* ABOUT US SECTION */}
+      <section id="about" className="scroll-mt-28">
+        <AboutUs />
+      </section>
+
+      <section className="scroll-mt-28">
+  <EDM />
+</section>
+<Footer />
+
     </>
   );
 };
