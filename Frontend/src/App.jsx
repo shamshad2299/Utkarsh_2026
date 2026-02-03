@@ -8,6 +8,7 @@ import LoginPage from "./component/Auth/LoginPage";
 import RegistrationPage from "./component/Auth/RegistrationPage";
 import AdminLogin from "./admin/pages/AdminLogin";
 import AdminRegister from "./admin/pages/AdminRegister";
+import AdminRoutes from "./admin/routes/AdminRoutes";
 
 function App() {
   return (
@@ -25,6 +26,10 @@ function App() {
         {/* Auth pages (no navbar if you want) */}
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegistrationPage />} />
+
+
+        {/* Admin Routes (Isolated) */}
+         <Route path="/admin/*" element={<AdminRoutes />} />
       </Routes>
     </BrowserRouter>
   );
