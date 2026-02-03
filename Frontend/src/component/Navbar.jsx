@@ -80,7 +80,7 @@ const Navbar = () => {
                 <button
                   key={item}
                   onClick={() => handleNavClick(item)}
-                  className="text-base xl:text-lg italic cursor-pointer hover:text-purple-400 transition-colors duration-200 whitespace-nowrap"
+                  className="text-base nav-item xl:text-lg italic cursor-pointer hover:text-purple-400 transition-colors duration-200 whitespace-nowrap"
                   style={{ fontFamily: "Milonga" }}
                 >
                   {item}

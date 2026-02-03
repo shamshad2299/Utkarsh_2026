@@ -1,10 +1,13 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Layout from "./component/Layout/Layout";
 import Home from "./pages/Home";
+import "./app.css"
 import SponsorshipForm from "./component/SponsorshipForm";
 import FoodStallForm from "./component/FoodStallForm";
 import LoginPage from "./component/Auth/LoginPage";
 import RegistrationPage from "./component/Auth/RegistrationPage";
+import AdminLogin from "./admin/pages/AdminLogin";
+import AdminRegister from "./admin/pages/AdminRegister";
 
 function App() {
   return (
@@ -16,6 +19,8 @@ function App() {
           <Route path="sponsorship_form" element={<SponsorshipForm />} />
           <Route path="food_stall_form" element={<FoodStallForm />} />
         </Route>
+        <Route path="/admin" element={<AdminLogin/>}></Route>
+        <Route path="/admin/register" element={<AdminRegister/>}></Route>
 
         {/* Auth pages (no navbar if you want) */}
         <Route path="/login" element={<LoginPage />} />

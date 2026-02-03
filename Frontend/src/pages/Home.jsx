@@ -20,12 +20,13 @@ const Home = () => {
   return (
     <>
       <HeroSection />
-     <div className="relative ">
-  <MonumentBottom />
-</div>
+      <div className="relative ">
+        <MonumentBottom />
+      </div>
 
-
-      <BackgroundGlow />
+      <div className="relative overflow-x-hidden">
+        <BackgroundGlow />
+      </div>
 
       <section id="events" className="scroll-mt-28">
         <EventsSection />
