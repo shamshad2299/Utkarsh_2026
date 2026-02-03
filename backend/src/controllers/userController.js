@@ -260,14 +260,34 @@ export const logoutUser = async (req, res) => {
 };
 export const getAllUsers = async (req, res) => {
   try {
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 10;
-    const skip = (page - 1) * limit;
+    const { all, role, city } = req.query;
 
     // optional filters
     const filter = {};
-    if (req.query.role) filter.role = req.query.role;
-    if (req.query.city) filter.city = req.query.city;
+    if (role) filter.role = role;
+    if (city) filter.city = city;
+
+    // 🔥 CASE 1: Get ALL users (no pagination)
+    if (all === "true") {
+      const users = await User.find(filter)
+        .select("-password -refreshToken -__v")
+        .sort({ createdAt: -1 });
+
+      return res.status(200).json({
+        success: true,
+        message: "All users fetched successfully",
+        data: users,
+        meta: {
+          total: users.length,
+          all: true,
+        },
+      });
+    }
+
+    // 🔥 CASE 2: Paginated users (default)
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 1;
+    const skip = (page - 1) * limit;
 
     const [users, total] = await Promise.all([
       User.find(filter)
@@ -298,7 +318,6 @@ export const getAllUsers = async (req, res) => {
     });
   }
 };
-
 
 export const getUserById = async (req, res) => {
   try {
