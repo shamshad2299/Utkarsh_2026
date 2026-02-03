@@ -7,13 +7,18 @@ const AdminSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
+email: {
+  type: String,
+  required: true,
+  unique: true,
+  lowercase: true,
+  trim: true,
+  match: [
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+    "Please enter a valid email address"
+  ]
+},
 
-    email: {
-      type: String,
-      required: true,
-      unique: true,
-      lowercase: true,
-    },
 
     password: {
       type: String,
