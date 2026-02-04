@@ -22,7 +22,7 @@ const Home = () => {
 
   return (
     <>
-      {/* HERO */}
+      
       <HeroSection />
 
       <div className="relative">
@@ -32,17 +32,17 @@ const Home = () => {
       <BackgroundGlow />
 
 
-      {/* EVENTS */}
+      
       <section id="events" className="scroll-mt-28">
         <EventsSection />
       </section>
 
-      {/* GALLERY / SCHEDULE */}
+    
       <section id="schedule" className="scroll-mt-28">
         <EventGallerySection />
       </section>
 
-        {/* ABOUT US SECTION */}
+        
       <section id="about" className="scroll-mt-28">
         <AboutUs />
       </section>

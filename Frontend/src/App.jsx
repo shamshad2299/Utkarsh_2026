@@ -23,16 +23,17 @@ function App() {
           <Route path="sponsorship_form" element={<SponsorshipForm />} />
           <Route path="food_stall_form" element={<FoodStallForm />} />
         </Route>
-        <Route path="/admin" element={<AdminLogin/>}></Route>
-        <Route path="/admin/register" element={<AdminRegister/>}></Route>
 
         {/* Auth pages (no Navbar) */}
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegistrationPage />} />
 
+        {/*  admin login and register */}
+        <Route path="/admin" element={<AdminLogin />}></Route>
+        <Route path="/admin/register" element={<AdminRegister />}></Route>
 
         {/* Admin Routes (Isolated) */}
-         <Route path="/admin/*" element={<AdminRoutes />} />
+        <Route path="/admin/*" element={<AdminRoutes />} />
       </Routes>
     </BrowserRouter>
   );
