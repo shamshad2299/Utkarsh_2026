@@ -5,6 +5,8 @@ import authRoutes from "../src/routes/userRoutes.js"
 import adminRoutes from "../src/routes/adminRoutes.js"
 import categoryRoutes from "../src/routes/categoryRoutes.js"
 import subCategoryRoutes from "../src/routes/subCategoryRoutes.js"
+import { globalErrorHandler } from "./middleWares/errorMiddleWare.js";
+import { notFoundHandler } from "./middlewares/notFoundMiddleWare.js";
 
 const app = express();
 
@@ -36,5 +38,9 @@ app.use("/api/admin/auth", adminRoutes);
 app.use("/category" , categoryRoutes);
 app.use("/subCategory" , subCategoryRoutes);
 
+/* ================= 404 HANDLER ================= */
+app.use(notFoundHandler);
 
+/* ================= GLOBAL ERROR HANDLER (ALWAYS LAST) ================= */
+app.use(globalErrorHandler)
 export { app };

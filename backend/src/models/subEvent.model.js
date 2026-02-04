@@ -19,7 +19,16 @@ const SubCategorySchema = new mongoose.Schema(
       ref: "Category",
       required: true,
     },
+     isActive: {
+    type: Boolean,
+    default: true
+  },
 
+  isDeleted: {
+    type: Boolean,
+    default: false,
+    index: true
+  },
     description: String,
   },
   { timestamps: true }
