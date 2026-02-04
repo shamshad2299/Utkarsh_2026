@@ -8,16 +8,16 @@ import m6 from "../assets/monument-6.svg";
 // const MonumentBottom = () => {
 //   const monuments = [m1, m2, m3, m4, m3, m2, m5, m6];
 
-
 //   return (
-//     <div className="absolute bottom-0 left-0 w-full pointer-events-none">
-//       <div className="flex items-end w-full h-40 px-4">
+//     <div className="absolute bottom-0 left-0 w-full pointer-events-none ">
+//       <div className="flex items-end h-40 leading-none">
 //         {monuments.map((src, index) => (
 //           <img
 //             key={index}
 //             src={src}
 //             alt={`Monument ${index + 1}`}
-//             className="flex-1 h-full object-contain object-bottom opacity-90"
+//             className="block h-full object-contain object-bottom opacity-90 "
+//             style={{ width: `${100 / monuments.length}%` }}
 //           />
 //         ))}
 //       </div>
@@ -45,6 +45,5 @@ const MonumentBottom = () => {
     </div>
   );
 };
-
 
 export default MonumentBottom

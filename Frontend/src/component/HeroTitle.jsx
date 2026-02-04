@@ -1,17 +1,22 @@
 const HeroTitle = () => {
   return (
-    <div className="max-w-2xl" style={{ fontFamily: "Poppins" }}>
-      
-      <p className="text-xl font-light mb-2 tracking-wide">
+    <div
+      className="max-w-2xl flex flex-col gap-4 px-4 sm:px-6 lg:px-8"
+      style={{ fontFamily: "Poppins" }}
+    >
+      {/* Tagline */}
+      <p className="text-base sm:text-lg md:text-xl font-light tracking-wide">
         Virasat se vikas tak
       </p>
 
-      <h1 className="text-[80px] md:text-[100px] lg:text-[140px] font-black uppercase leading-[0.85] tracking-tighter mb-6">
+      {/* Main Heading */}
+      <h1 className="heading leading-tight">
         UTKARSH <br />
-        <span className="lowercase">fest'26</span>
+        <span className="lowercase">fest&apos;26</span>
       </h1>
 
-      <p className="text-2xl font-bold tracking-tight">
+      {/* Date */}
+      <p className="text-lg sm:text-xl md:text-2xl font-semibold tracking-tight">
         26-28 February 2026
       </p>
     </div>

@@ -1,11 +1,37 @@
-import express from "express"
-import { loginAdmin, registerAdmin } from "../controllers/adminController.js";
+// import express from "express"
+// import { loginAdmin, registerAdmin } from "../controllers/adminController.js";
+
+// const router = express.Router();
+
+// router.post("/register", registerAdmin);
+// router.post("/login" , loginAdmin);
+
+
+
+// export default router;
+
+import express from "express";
+import {registerAdmin,loginAdmin,logoutAdmin,} from "../controllers/adminController.js";
+import {getUsers,updateUserStatus,updateUserDetails,} from "../controllers/adminUser.controller.js";
+import { asyncHandler } from "../middleWares/asyncErrorHandlerMiddleWare.js";
+import adminAuth from "../middleWares/adminAuth.js";
+import { refreshAdminAccessToken } from "../controllers/refreshTokenController.js";
 
 const router = express.Router();
 
-router.post("/register", registerAdmin);
-router.post("/login" , loginAdmin);
+/* ================= ADMIN AUTH ================= */
+router.post("/register", asyncHandler(registerAdmin));
+router.post("/login", asyncHandler(loginAdmin));
+router.post("/logout", adminAuth, asyncHandler(logoutAdmin));
+router.post("/refresh-token", asyncHandler(refreshAdminAccessToken));
 
+/* ================= ADMIN → USER MANAGEMENT ================= */
+router.get("/users",adminAuth,asyncHandler(getUsers));
 
+// Block / Unblock user
+router.patch("/users/:userId/status",adminAuth,asyncHandler(updateUserStatus));
+
+// FULL USER UPDATE BY ADMIN
+router.patch("/users/:userId",adminAuth,asyncHandler(updateUserDetails));
 
 export default router;

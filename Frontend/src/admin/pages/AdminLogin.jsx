@@ -14,7 +14,6 @@ const AdminLogin = () => {
     try {
       const res = await api.post("/admin/auth/login", form);
 
-      // store token
       localStorage.setItem("adminToken", res.data.token);
       localStorage.setItem("admin", JSON.stringify(res.data.admin));
 
@@ -25,17 +24,39 @@ const AdminLogin = () => {
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      <h2>Admin Login</h2>
-      <input name="email" onChange={handleChange} placeholder="Email" />
-      <input
-        type="password"
-        name="password"
-        onChange={handleChange}
-        placeholder="Password"
-      />
-      <button type="submit">Login</button>
-    </form>
+    <div className="min-h-screen flex items-center justify-center bg-gray-100">
+      <form
+        onSubmit={handleSubmit}
+        className="w-full max-w-md bg-white p-8 rounded-2xl shadow-lg space-y-5 text-black"
+      >
+        <h2 className="text-2xl font-bold text-center text-gray-800">
+          Admin Login
+        </h2>
+
+        <input
+          name="email"
+          type="email"
+          onChange={handleChange}
+          placeholder="Email"
+          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+
+        <input
+          type="password"
+          name="password"
+          onChange={handleChange}
+          placeholder="Password"
+          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+
+        <button
+          type="submit"
+          className="w-full bg-blue-600 text-white py-2 rounded-lg font-semibold hover:bg-blue-700 transition duration-200"
+        >
+          Login
+        </button>
+      </form>
+    </div>
   );
 };
 

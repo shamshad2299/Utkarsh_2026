@@ -31,7 +31,7 @@ const EventsSection = () => {
 
       <div className="max-w-7xl mx-auto relative z-10">
         
-        {/* Header */}
+        
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6">
       
           <div className="max-w-2xl md:-ml-6">

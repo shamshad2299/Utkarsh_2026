@@ -1,6 +1,6 @@
-import AdminSidebar from "../components/AdminSidebar";
-import AdminNavbar from "../components/AdminNavbar";
-import DashboardCard from "../components/DashboardCard";
+import AdminSidebar from "../../component/AdminSidebar";
+import AdminNavbar from "../../component/AdminNavbar";
+import DashboardCard from "../../component/DashboardCard";
 
 const AdminDashboard = () => {
   return (
