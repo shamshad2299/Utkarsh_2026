@@ -2,23 +2,16 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import Layout from "./component/Layout/Layout";
 import Home from "./pages/Home";
-<<<<<<< HEAD
 import AboutUs from "./component/AboutUs";
-=======
-import "./app.css"
->>>>>>> 208c8c2baf1f7e3041b7f543e8574d6426dd93d7
 import SponsorshipForm from "./component/SponsorshipForm";
 import FoodStallForm from "./component/FoodStallForm";
 
 import LoginPage from "./component/Auth/LoginPage";
 import RegistrationPage from "./component/Auth/RegistrationPage";
-<<<<<<< HEAD
 import AdminDashboard from "./pages/AdminDashboard";
-=======
 import AdminLogin from "./admin/pages/AdminLogin";
 import AdminRegister from "./admin/pages/AdminRegister";
 import AdminRoutes from "./admin/routes/AdminRoutes";
->>>>>>> 208c8c2baf1f7e3041b7f543e8574d6426dd93d7
 
 function App() {
   return (
@@ -37,14 +30,9 @@ function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegistrationPage />} />
 
-<<<<<<< HEAD
-        {/* Admin */}
-        <Route path="/admin" element={<AdminDashboard />} />
-=======
 
         {/* Admin Routes (Isolated) */}
          <Route path="/admin/*" element={<AdminRoutes />} />
->>>>>>> 208c8c2baf1f7e3041b7f543e8574d6426dd93d7
       </Routes>
     </BrowserRouter>
   );

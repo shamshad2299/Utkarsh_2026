@@ -29,4 +29,3 @@ const EventGallerySection = () => {
 };
 
 export default EventGallerySection;
-s

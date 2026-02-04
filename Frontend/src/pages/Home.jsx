@@ -24,22 +24,12 @@ const Home = () => {
     <>
       {/* HERO */}
       <HeroSection />
-<<<<<<< HEAD
 
       <div className="relative">
         <MonumentBottom />
       </div>
 
       <BackgroundGlow />
-=======
-      <div className="relative ">
-        <MonumentBottom />
-      </div>
-
-      <div className="relative overflow-x-hidden">
-        <BackgroundGlow />
-      </div>
->>>>>>> 208c8c2baf1f7e3041b7f543e8574d6426dd93d7
 
 
       {/* EVENTS */}

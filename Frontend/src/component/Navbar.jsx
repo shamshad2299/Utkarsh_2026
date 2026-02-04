@@ -74,55 +74,12 @@ const Navbar = () => {
               />
             </div>
 
-<<<<<<< HEAD
             <div className="bg-white px-2 py-1 rounded-sm flex items-center gap-2">
               <img
                 src={bbdLogo}
                 alt="BBD Logo"
                 className="h-10 sm:h-12 object-contain"
               />
-=======
-            {/* Desktop Navigation Items */}
-            <div className="hidden lg:flex ml-20 xl:w-4xl  items-center gap-8 xl:gap-12 absolute  xl:justify-between left-1/2 transform -translate-x-1/2">
-              {navItems.map((item) => (
-                <button
-                  key={item}
-                  onClick={() => handleNavClick(item)}
-                  className="text-base nav-item xl:text-lg italic cursor-pointer hover:text-purple-400 transition-colors duration-200 whitespace-nowrap"
-                  style={{ fontFamily: "Milonga" }}
-                >
-                  {item}
-                </button>
-              ))}
-            </div>
-
-            {/* Right section - Login and Mobile Menu */}
-            <div className="flex items-center gap-4">
-              {/* Desktop Login Button */}
-              <Link
-                to={"/login"}
-                className="hidden sm:block bg-white text-[#050214] px-6 sm:px-8 py-2 rounded-full font-bold text-sm hover:bg-gray-200 transition-colors duration-200 whitespace-nowrap"
-              >
-                Login
-              </Link>
-
-              {/* Mobile Menu Toggle */}
-              <button
-                onClick={() => setIsMenuOpen(!isMenuOpen)}
-                className="lg:hidden flex flex-col items-center justify-center w-10 h-10"
-                aria-label="Toggle menu"
-              >
-                <span
-                  className={`block w-6 h-0.5 bg-white transition-all duration-300 ${isMenuOpen ? "rotate-45 translate-y-1.5" : ""}`}
-                ></span>
-                <span
-                  className={`block w-6 h-0.5 bg-white my-1.5 transition-all duration-300 ${isMenuOpen ? "opacity-0" : "opacity-100"}`}
-                ></span>
-                <span
-                  className={`block w-6 h-0.5 bg-white transition-all duration-300 ${isMenuOpen ? "-rotate-45 -translate-y-1.5" : ""}`}
-                ></span>
-              </button>
->>>>>>> 208c8c2baf1f7e3041b7f543e8574d6426dd93d7
             </div>
           </div>
 
