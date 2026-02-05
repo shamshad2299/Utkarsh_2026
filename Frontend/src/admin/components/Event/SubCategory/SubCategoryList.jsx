@@ -64,8 +64,6 @@ const SubCategoryList = () => {
       setLoading(false);
     }
   }, []);
- console.log(categories)
-  console.log(filteredSubcategories)
   useEffect(() => {
     fetchData();
   }, [fetchData]);

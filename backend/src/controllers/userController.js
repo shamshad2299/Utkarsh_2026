@@ -6,6 +6,7 @@ import { Counter } from "../models/counter.model.js";
 import jwt from "jsonwebtoken";
 import { ApiError } from "../utils/ApiError.js";
 import { getNextSequence } from "../utils/getNextSequence.js";
+import { verifyJWT } from "../middleWares/authMiddleWare.js";
 
 
 
@@ -162,17 +163,14 @@ export const loginUser = async (req, res) => {
     sameSite: "strict",
     maxAge: 7 * 24 * 60 * 60 * 1000,
   });
+  user.password = undefined;
+  user.refreshToken=undefined;
 
   res.status(200).json({
     success: true,
     message: "Login successful",
     accessToken,
-    user: {
-      _id: user._id,
-      userId: user.userId,
-      name: user.name,
-      email: user.email,
-    },
+    user
   });
 };
 
@@ -335,6 +333,51 @@ export const updateUser = async (req, res) => {
     });
   }
 };
+
+
+export const updateMyProfile = async (req, res) => {
+  const allowedFields = [
+    "name",
+    "mobile_no",
+    "gender",
+    "city",
+    "college",
+    "course",
+  ];
+
+  const updates = {};
+
+  allowedFields.forEach((field) => {
+    if (req.body[field] !== undefined) {
+      updates[field] = req.body[field];
+    }
+  });
+
+  // ❌ Nothing to update
+  if (Object.keys(updates).length === 0) {
+    throw new ApiError(400, "No valid fields provided for update");
+  }
+
+  const user = await User.findByIdAndUpdate(
+    req.user._id,
+    { $set: updates },
+    {
+      new: true,
+      runValidators: true,
+    }
+  ).select("-password -refreshToken -__v");
+
+  if (!user) {
+    throw new ApiError(404, "User not found");
+  }
+
+  res.status(200).json({
+    success: true,
+    message: "Profile updated successfully",
+    user,
+  });
+};
+
 
 
 

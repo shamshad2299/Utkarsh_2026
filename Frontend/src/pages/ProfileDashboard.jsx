@@ -8,95 +8,182 @@ import {
   CalendarDays,
   MapPin,
   LogOut,
-  BadgeCheck,
   ShieldCheck,
+  Save,
+  X,
+  Edit,
 } from "lucide-react";
+import { useAuth } from "../Context/AuthContext";
+import { api } from "../api/axios";
 
 const ProfileDashboard = () => {
   const navigate = useNavigate();
-
-  const [user, setUser] = useState(null);
+  const { user: authUser, logout } = useAuth();
   const [registeredEvents, setRegisteredEvents] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [isEditing, setIsEditing] = useState(false);
+  const [formData, setFormData] = useState({});
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveMessage, setSaveMessage] = useState({ type: "", text: "" });
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-
-    if (!token) {
-      setUser({
-        name: "Demo User",
-        email: "demo@gmail.com",
-        phone: "+91 99999 99999",
-        college: "BBD University, Lucknow",
-        city: "Lucknow",
-        utkarshId: "UTK26-DEMO",
-      });
-
-      setRegisteredEvents([
-        {
-          id: 1,
-          title: "Hackathon 2026",
-          category: "Technical Event",
-          date: "26 Feb 2026",
-          status: "Confirmed",
-        },
-        {
-          id: 2,
-          title: "Dance Battle",
-          category: "Cultural Event",
-          date: "27 Feb 2026",
-          status: "Pending",
-        },
-      ]);
-
+    if (!authUser) {
+      navigate("/login");
       return;
     }
 
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    } else {
-      setUser({
-        name: "Aditya Singh",
-        email: "aditya@gmail.com",
-        phone: "+91 98765 43210",
-        college: "BBD University, Lucknow",
-        city: "Lucknow",
-        utkarshId: "UTK26-10239",
-      });
-    }
+    // Initialize form data with user data
+    setFormData({
+      name: authUser.name || "",
+      email: authUser.email || "",
+      mobile_no: authUser.mobile_no || "",
+      college: authUser.college || "",
+      city: authUser.city || "",
+      course: authUser.course || "",
+      gender: authUser.gender || "",
+    });
 
-    setRegisteredEvents([
-      {
-        id: 1,
-        title: "Hackathon 2026",
-        category: "Technical Event",
-        date: "26 Feb 2026",
-        status: "Confirmed",
-      },
-      {
-        id: 2,
-        title: "Dance Battle",
-        category: "Cultural Event",
-        date: "27 Feb 2026",
-        status: "Confirmed",
-      },
-      {
-        id: 3,
-        title: "EDM Night Pass",
-        category: "Concert",
-        date: "28 Feb 2026",
-        status: "Pending",
-      },
-    ]);
-  }, []);
+    fetchRegisteredEvents();
+  }, [authUser, navigate]);
+
+  const fetchRegisteredEvents = async () => {
+    try {
+      const token = localStorage.getItem("accessToken");
+      
+      if (token) {
+        setTimeout(() => {
+          const sampleEvents = [
+            {
+              id: 1,
+              title: "Hackathon 2026",
+              category: "Technical Event",
+              date: "26 Feb 2026",
+              status: "Confirmed",
+            },
+            {
+              id: 2,
+              title: "Dance Battle",
+              category: "Cultural Event",
+              date: "27 Feb 2026",
+              status: authUser.email === "aditya@gmail.com" ? "Confirmed" : "Pending",
+            },
+            {
+              id: 3,
+              title: "EDM Night Pass",
+              category: "Concert",
+              date: "28 Feb 2026",
+              status: "Pending",
+            },
+          ];
+          setRegisteredEvents(sampleEvents);
+          setLoading(false);
+        }, 500);
+      } else {
+        setRegisteredEvents([]);
+        setLoading(false);
+      }
+    } catch (error) {
+      console.error("Error fetching events:", error);
+      setRegisteredEvents([]);
+      setLoading(false);
+    }
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({
+      ...formData,
+      [name]: value,
+    });
+  };
+
+  const handleSaveProfile = async () => {
+    try {
+      setIsSaving(true);
+      setSaveMessage({ type: "", text: "" });
+
+      // Filter out empty values and unchanged values
+      const updates = {};
+      const allowedFields = ["name", "mobile_no", "gender", "city", "college", "course"];
+      
+      allowedFields.forEach(field => {
+        if (formData[field] !== undefined && formData[field] !== "" && formData[field] !== authUser[field]) {
+          updates[field] = formData[field];
+        }
+      });
+
+      if (Object.keys(updates).length === 0) {
+        setSaveMessage({ type: "warning", text: "No changes to save" });
+        setIsEditing(false);
+        setIsSaving(false);
+        return;
+      }
+
+      const token = localStorage.getItem("accessToken");
+      if (!token) {
+        throw new Error("No authentication token found");
+      }
+
+      const response = await api.patch("v1/auth/me", updates, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (response.data.success) {
+        // Update localStorage with new user data
+        const updatedUser = { ...authUser, ...updates };
+        localStorage.setItem("user", JSON.stringify(updatedUser));
+        
+        // Refresh the page to get updated data from context
+        window.location.reload();
+        
+        setSaveMessage({ 
+          type: "success", 
+          text: "Profile updated successfully!" 
+        });
+        setIsEditing(false);
+      }
+    } catch (error) {
+      console.error("Error updating profile:", error);
+      setSaveMessage({ 
+        type: "error", 
+        text: error.response?.data?.message || "Failed to update profile" 
+      });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleCancelEdit = () => {
+    // Reset form data to original user data
+    setFormData({
+      name: authUser.name || "",
+      email: authUser.email || "",
+      mobile_no: authUser.mobile_no || "",
+      college: authUser.college || "",
+      city: authUser.city || "",
+      course: authUser.course || "",
+      gender: authUser.gender || "",
+    });
+    setIsEditing(false);
+    setSaveMessage({ type: "", text: "" });
+  };
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
+    logout();
     navigate("/login");
   };
 
-  if (!user) return null;
+  if (!authUser) {
+    return null;
+  }
+
+  const formatDateTime = (date) =>
+    new Intl.DateTimeFormat("en-IN", {
+      dateStyle: "medium",
+      timeStyle: "short",
+    }).format(new Date(date));
 
   return (
     <div className="min-h-screen w-full relative overflow-hidden text-white">
@@ -123,50 +210,185 @@ const ProfileDashboard = () => {
                   <User size={28} />
                 </div>
 
-                <div className="min-w-0">
-                  <h2 className="text-xl font-bold text-white truncate">
-                    {user.name}
-                  </h2>
-                  <p className="text-sm text-white/70 truncate">
-                    {user.utkarshId}
-                  </p>
+                <div className="min-w-0 flex-1">
+                  {isEditing ? (
+                    <input
+                      type="text"
+                      name="name"
+                      value={formData.name}
+                      onChange={handleInputChange}
+                      className="w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-white text-xl font-bold focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      placeholder="Your Name"
+                    />
+                  ) : (
+                    <>
+                      <h2 className="text-xl font-bold text-white truncate">
+                        {authUser.name || "User"}
+                      </h2>
+                      <p className="text-sm text-white/70 truncate">
+                        {authUser.userId || `UTK26-${(authUser._id || "").slice(-5).toUpperCase()}`}
+                      </p>
+                    </>
+                  )}
                 </div>
               </div>
 
               <div className="mt-6 space-y-4">
+                {/* Email - Not editable */}
                 <div className="flex items-center gap-3 text-white/90">
                   <Mail size={18} className="text-purple-300" />
-                  <span className="text-sm truncate">{user.email}</span>
+                  <span className="text-sm truncate">{authUser.email || "No email provided"}</span>
                 </div>
 
+                {/* Phone Number */}
                 <div className="flex items-center gap-3 text-white/90">
                   <Phone size={18} className="text-purple-300" />
-                  <span className="text-sm truncate">{user.phone}</span>
+                  {isEditing ? (
+                    <input
+                      type="tel"
+                      name="mobile_no"
+                      value={formData.mobile_no}
+                      onChange={handleInputChange}
+                      className="flex-1 bg-white/10 border border-white/20 rounded-lg px-3 py-1 text-white text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      placeholder="+91 XXXXX XXXXX"
+                    />
+                  ) : (
+                    <span className="text-sm truncate">
+                      {authUser.mobile_no || "+91 XXXXX XXXXX"}
+                    </span>
+                  )}
                 </div>
 
+                {/* College */}
                 <div className="flex items-center gap-3 text-white/90">
                   <GraduationCap size={18} className="text-purple-300" />
-                  <span className="text-sm truncate">{user.college}</span>
+                  {isEditing ? (
+                    <input
+                      type="text"
+                      name="college"
+                      value={formData.college}
+                      onChange={handleInputChange}
+                      className="flex-1 bg-white/10 border border-white/20 rounded-lg px-3 py-1 text-white text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      placeholder="Your College"
+                    />
+                  ) : (
+                    <span className="text-sm truncate">
+                      {authUser.college || "College not specified"}
+                    </span>
+                  )}
                 </div>
 
+                {/* City */}
                 <div className="flex items-center gap-3 text-white/90">
                   <MapPin size={18} className="text-purple-300" />
-                  <span className="text-sm truncate">{user.city}</span>
+                  {isEditing ? (
+                    <input
+                      type="text"
+                      name="city"
+                      value={formData.city}
+                      onChange={handleInputChange}
+                      className="flex-1 bg-white/10 border border-white/20 rounded-lg px-3 py-1 text-white text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      placeholder="Your City"
+                    />
+                  ) : (
+                    <span className="text-sm truncate">
+                      {authUser.city || "City not specified"}
+                    </span>
+                  )}
                 </div>
+
+                {/* Course - Only show in edit mode */}
+                {isEditing && (
+                  <div className="flex items-center gap-3 text-white/90">
+                    <GraduationCap size={18} className="text-purple-300" />
+                    <input
+                      type="text"
+                      name="course"
+                      value={formData.course}
+                      onChange={handleInputChange}
+                      className="flex-1 bg-white/10 border border-white/20 rounded-lg px-3 py-1 text-white text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      placeholder="Your Course"
+                    />
+                  </div>
+                )}
+
+                {/* Gender - Only show in edit mode */}
+                {isEditing && (
+                  <div className="flex items-center gap-3 text-white/90">
+                    <User size={18} className="text-purple-300" />
+                    <select
+                      name="gender"
+                      value={formData.gender}
+                      onChange={handleInputChange}
+                      className="flex-1 bg-white/10 border border-white/20 rounded-lg px-3 py-1 text-white text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    >
+                      <option value="">Select Gender</option>
+                      <option value="male">Male</option>
+                      <option value="female">Female</option>
+                      <option value="other">Other</option>
+                    </select>
+                  </div>
+                )}
               </div>
 
-              <div className="mt-8 flex gap-3">
-                <button className="flex-1 py-3 rounded-2xl font-semibold bg-white text-[#080131] hover:bg-gray-100 transition">
-                  Edit Profile
-                </button>
+              {/* Save Message */}
+              {saveMessage.text && (
+                <div className={`mt-4 p-3 rounded-lg text-sm ${
+                  saveMessage.type === "success" 
+                    ? "bg-green-500/20 text-green-300 border border-green-500/30" 
+                    : saveMessage.type === "error"
+                    ? "bg-red-500/20 text-red-300 border border-red-500/30"
+                    : "bg-yellow-500/20 text-yellow-300 border border-yellow-500/30"
+                }`}>
+                  {saveMessage.text}
+                </div>
+              )}
 
-                <button
-                  onClick={handleLogout}
-                  className="w-14 h-14 rounded-2xl bg-white/10 backdrop-blur-xl border border-white/10 hover:bg-white/15 flex items-center justify-center transition"
-                  title="Logout"
-                >
-                  <LogOut size={20} className="text-white" />
-                </button>
+              <div className="mt-8 flex gap-3">
+                {isEditing ? (
+                  <>
+                    <button
+                      onClick={handleSaveProfile}
+                      disabled={isSaving}
+                      className="flex-1 py-3 rounded-2xl font-semibold bg-green-600 hover:bg-green-700 text-white transition flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {isSaving ? (
+                        "Saving..."
+                      ) : (
+                        <>
+                          <Save size={18} />
+                          Save Changes
+                        </>
+                      )}
+                    </button>
+                    <button
+                      onClick={handleCancelEdit}
+                      disabled={isSaving}
+                      className="w-14 h-14 rounded-2xl bg-red-600/20 backdrop-blur-xl border border-red-500/30 hover:bg-red-600/30 flex items-center justify-center transition disabled:opacity-50"
+                      title="Cancel"
+                    >
+                      <X size={20} className="text-white" />
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <button
+                      onClick={() => setIsEditing(true)}
+                      className="flex-1 py-3 rounded-2xl cursor-pointer font-semibold bg-white text-[#080131] hover:bg-gray-100 transition flex items-center justify-center gap-2"
+                      title="Edit"
+                    >
+                      <Edit size={18} />
+                      Edit Profile
+                    </button>
+                    <button
+                      onClick={handleLogout}
+                      className="w-14 h-14 rounded-2xl cursor-pointer bg-white/10 backdrop-blur-xl border border-white/10 hover:bg-white/15 flex items-center justify-center transition"
+                      title="Logout"
+                    >
+                      <LogOut size={20} className="text-white" />
+                    </button>
+                  </>
+                )}
               </div>
             </div>
 
@@ -177,15 +399,14 @@ const ProfileDashboard = () => {
                 <div className="rounded-2xl bg-linear-to-br from-white/10 to-white/5 border border-white/10 p-4">
                   <p className="text-xs text-white/70">Registered Events</p>
                   <p className="text-2xl font-extrabold text-white mt-1">
-                    {registeredEvents.length}
+                    {loading ? "..." : registeredEvents.length}
                   </p>
                 </div>
 
                 <div className="rounded-2xl bg-linear-to-br from-white/10 to-white/5 border border-white/10 p-4">
-                  <p className="text-xs text-white/70">Account</p>
-                  <p className="text-base font-bold text-white mt-2 flex items-center gap-2">
-                    <ShieldCheck size={18} className="text-green-400" />
-                    Active
+                  <p className="text-xs text-white/70">Member Since</p>
+                  <p className="text-base font-bold text-white mt-2">
+                    {authUser.createdAt ? formatDateTime(authUser.createdAt) : "N/A"}
                   </p>
                 </div>
               </div>
@@ -206,7 +427,7 @@ const ProfileDashboard = () => {
 
                 <button
                   onClick={() => navigate("/")}
-                  className="px-5 py-3 rounded-2xl font-semibold bg-white text-[#080131] hover:bg-gray-100 transition"
+                  className="px-5 py-3 rounded-2xl cursor-pointer font-semibold bg-white text-[#080131] hover:bg-gray-100 transition"
                 >
                   Back to Home
                 </button>
@@ -220,58 +441,66 @@ const ProfileDashboard = () => {
                   </h2>
                 </div>
 
-                <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-5">
-                  {registeredEvents.map((event) => (
-                    <div
-                      key={event.id}
-                      className="rounded-3xl border border-white/10 bg-gradient-to-br from-white/10 to-white/5 shadow-md hover:shadow-xl transition p-6"
-                    >
-                      <div className="flex items-start justify-between gap-4">
-                        <div>
-                          <p className="text-xs uppercase tracking-widest text-purple-200 font-semibold">
-                            {event.category}
-                          </p>
-
-                          <h3 className="text-xl font-extrabold text-white mt-2">
-                            {event.title}
-                          </h3>
-
-                          <p className="text-sm text-white/70 mt-2">
-                            Date:{" "}
-                            <span className="font-semibold text-white">
-                              {event.date}
-                            </span>
-                          </p>
-                        </div>
-
-                        <span
-                          className={`px-4 py-2 rounded-full text-xs font-bold border ${
-                            event.status === "Confirmed"
-                              ? "bg-green-500/15 text-green-200 border-green-400/20"
-                              : "bg-yellow-500/15 text-yellow-200 border-yellow-400/20"
-                          }`}
-                        >
-                          {event.status}
-                        </span>
-                      </div>
-
-                      <div className="mt-6 flex gap-3">
-                        <button className="flex-1 py-3 rounded-2xl font-semibold bg-white text-[#080131] hover:bg-gray-100 transition">
-                          View Pass
-                        </button>
-
-                        <button className="flex-1 py-3 rounded-2xl font-semibold bg-white/10 border border-white/10 hover:bg-white/15 transition text-white">
-                          Details
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                {registeredEvents.length === 0 && (
+                {loading ? (
                   <div className="mt-8 text-center text-white/70">
-                    No registrations yet.
+                    Loading events...
                   </div>
+                ) : (
+                  <>
+                    <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-5">
+                      {registeredEvents.map((event) => (
+                        <div
+                          key={event.id}
+                          className="rounded-3xl border border-white/10 bg-gradient-to-br from-white/10 to-white/5 shadow-md hover:shadow-xl transition p-6"
+                        >
+                          <div className="flex items-start justify-between gap-4">
+                            <div>
+                              <p className="text-xs uppercase tracking-widest text-purple-200 font-semibold">
+                                {event.category}
+                              </p>
+
+                              <h3 className="text-xl font-extrabold text-white mt-2">
+                                {event.title}
+                              </h3>
+
+                              <p className="text-sm text-white/70 mt-2">
+                                Date:{" "}
+                                <span className="font-semibold text-white">
+                                  {event.date}
+                                </span>
+                              </p>
+                            </div>
+
+                            <span
+                              className={`px-4 py-2 rounded-full text-xs font-bold border ${
+                                event.status === "Confirmed"
+                                  ? "bg-green-500/15 text-green-200 border-green-400/20"
+                                  : "bg-yellow-500/15 text-yellow-200 border-yellow-400/20"
+                              }`}
+                            >
+                              {event.status}
+                            </span>
+                          </div>
+
+                          <div className="mt-6 flex gap-3">
+                            <button className="flex-1 py-3 rounded-2xl font-semibold bg-white text-[#080131] hover:bg-gray-100 transition">
+                              View Pass
+                            </button>
+
+                            <button className="flex-1 py-3 rounded-2xl font-semibold bg-white/10 border border-white/10 hover:bg-white/15 transition text-white">
+                              Details
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    {registeredEvents.length === 0 && (
+                      <div className="mt-8 text-center text-white/70">
+                        No registrations yet.
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
             </div>
