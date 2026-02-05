@@ -4,10 +4,13 @@ import RegisterButton from "./RegisterButton";
 
 const HeroSection = ({ onRegister }) => {
   return (
-    <main className="flex-1 flex flex-col justify-center px-12 relative z-10 pb-56 mt-25">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
-        <HeroTitle />
-        <div className="flex flex-col items-end gap-12 mt-12 md:mt-0">
+    <main className="flex-1 flex flex-col justify-center relative z-10 px-4 sm:px-8 lg:px-12 pt-32 sm:pt-36 pb-36 sm:pb-56">
+      <div className="w-full flex flex-col md:flex-row justify-between items-center md:items-center gap-10 md:gap-0">
+        <div className="w-full md:w-auto text-center md:text-left">
+          <HeroTitle />
+        </div>
+
+        <div className="w-full md:w-auto flex flex-col items-center md:items-end gap-8 sm:gap-12">
           <CountdownTimer />
           <RegisterButton onClick={onRegister} />
         </div>

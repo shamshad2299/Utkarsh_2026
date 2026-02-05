@@ -1,16 +1,18 @@
 import { useState } from "react";
 import { useAuth } from "../../store/ContextStore";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const Login = () => {
   const { login, loading, requestPassword, resetPassword } = useAuth();
+  const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
     identifier: "",
     password: "",
   });
+
   const [showForgot, setShowForgot] = useState(false);
-  const [step, setStep] = useState(1); // 1 = send OTP, 2 = reset
+  const [step, setStep] = useState(1);
   const [forgotLoading, setForgotLoading] = useState(false);
   const [forgotMsg, setForgotMsg] = useState("");
 
@@ -36,8 +38,7 @@ const Login = () => {
 
     try {
       await login(formData);
-      // redirect example
-      // navigate("/dashboard");
+      navigate("/");
     } catch (err) {
       setError(err?.response?.data?.message || "Login failed");
     }
@@ -61,7 +62,7 @@ const Login = () => {
         identifier: forgotData.identifier,
       });
 
-        setForgotMsg(res.message || "OTP sent successfully");
+      setForgotMsg(res.message || "OTP sent successfully");
       setStep(2);
     } catch (err) {
       setForgotMsg(err?.response?.data?.message || "Failed to send OTP");
@@ -71,43 +72,41 @@ const Login = () => {
   };
 
   const resetPwd = async () => {
-  const { identifier, otp, newPassword, confirmPassword } = forgotData;
+    const { identifier, otp, newPassword, confirmPassword } = forgotData;
 
-  // frontend-only validation
-  if (!otp || !newPassword || !confirmPassword) {
-    return setForgotMsg("All fields are required");
-  }
+    if (!otp || !newPassword || !confirmPassword) {
+      return setForgotMsg("All fields are required");
+    }
 
-  if (newPassword !== confirmPassword) {
-    return setForgotMsg("Passwords do not match");
-  }
+    if (newPassword !== confirmPassword) {
+      return setForgotMsg("Passwords do not match");
+    }
 
-  try {
-    setForgotLoading(true);
-    setForgotMsg("");
+    try {
+      setForgotLoading(true);
+      setForgotMsg("");
 
-    await resetPassword({
-      identifier,
-      code: otp,          // 👈 backend expects "code"
-      newPassword,        // 👈 only required field
-    });
+      await resetPassword({
+        identifier,
+        code: otp,
+        newPassword,
+      });
 
-    setForgotMsg("🎉 Password reset successful");
+      setForgotMsg("🎉 Password reset successful");
 
-    setTimeout(() => {
-      setShowForgot(false);
-      setStep(1);
-    }, 1500);
-  } catch (err) {
-    setForgotMsg(err?.response?.data?.message || "Reset failed");
-  } finally {
-    setForgotLoading(false);
-  }
-};
-
+      setTimeout(() => {
+        setShowForgot(false);
+        setStep(1);
+      }, 1500);
+    } catch (err) {
+      setForgotMsg(err?.response?.data?.message || "Reset failed");
+    } finally {
+      setForgotLoading(false);
+    }
+  };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 px-4">
+    <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-indigo-600 via-purple-600 to-pink-600 px-4">
       <div className="w-full max-w-md bg-white/95 backdrop-blur-lg rounded-2xl shadow-2xl p-8">
         <h2 className="text-3xl font-bold text-center text-gray-800 mb-2">
           Welcome Back 👋
@@ -121,7 +120,6 @@ const Login = () => {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Identifier */}
           <Input
             label="Email / Mobile / User ID"
             name="identifier"
@@ -129,7 +127,6 @@ const Login = () => {
             onChange={handleChange}
           />
 
-          {/* Password */}
           <Input
             label="Password"
             name="password"
@@ -150,11 +147,7 @@ const Login = () => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full mt-4 py-3 rounded-lg text-white font-semibold
-              bg-gradient-to-r from-indigo-600 to-purple-600
-              hover:from-indigo-700 hover:to-purple-700
-              transition-all duration-200
-              disabled:opacity-60 disabled:cursor-not-allowed"
+            className="w-full mt-4 py-3 rounded-lg text-white font-semibold bg-linear-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed"
           >
             {loading ? "Logging in..." : "Login"}
           </button>
@@ -162,14 +155,12 @@ const Login = () => {
 
         <p className="text-center text-sm text-gray-500 mt-6">
           Don’t have an account?{" "}
-          <Link
-            to={"/"}
-            className="text-indigo-600 hover:underline cursor-pointer"
-          >
+          <Link to={"/"} className="text-indigo-600 hover:underline cursor-pointer">
             Register
           </Link>
         </p>
       </div>
+
       {showForgot && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-white rounded-xl w-full max-w-sm p-6 relative">
@@ -198,7 +189,6 @@ const Login = () => {
               <div className="mb-3 text-sm text-indigo-600">{forgotMsg}</div>
             )}
 
-            {/* STEP 1 */}
             {step === 1 && (
               <>
                 <input
@@ -206,23 +196,19 @@ const Login = () => {
                   placeholder="Email or User ID"
                   value={forgotData.identifier}
                   onChange={handleForgotChange}
-
-                  className="w-full border-2 rounded-lg px-3 py-2 mb-4
-              focus:ring-2 focus:ring-indigo-500 border-gray-200 text-fuchsia-900 font-bold" 
+                  className="w-full border-2 rounded-lg px-3 py-2 mb-4 focus:ring-2 focus:ring-indigo-500 border-gray-200 text-fuchsia-900 font-bold"
                 />
 
                 <button
                   onClick={sendOtp}
                   disabled={forgotLoading}
-                  className="w-full py-2 rounded-lg text-white font-medium
-              bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60"
+                  className="w-full py-2 rounded-lg text-white font-medium bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60"
                 >
                   {forgotLoading ? "Sending OTP..." : "Send OTP"}
                 </button>
               </>
             )}
 
-            {/* STEP 2 */}
             {step === 2 && (
               <>
                 <input
@@ -254,8 +240,7 @@ const Login = () => {
                 <button
                   onClick={resetPwd}
                   disabled={forgotLoading}
-                  className="w-full py-2 rounded-lg text-white font-medium
-              bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60"
+                  className="w-full py-2 rounded-lg text-white font-medium bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60"
                 >
                   {forgotLoading ? "Resetting..." : "Reset Password"}
                 </button>
@@ -270,7 +255,6 @@ const Login = () => {
 
 export default Login;
 
-/* 🔹 Reusable Input */
 const Input = ({ label, ...props }) => (
   <div>
     <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -280,11 +264,7 @@ const Input = ({ label, ...props }) => (
       {...props}
       required
       placeholder={label}
-      className="w-full rounded-lg border-gray-300
-      border-2
-      text-amber-400
-        focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500
-        px-3 py-2"
+      className="w-full rounded-lg border-gray-300 border-2 text-amber-400 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 px-3 py-2"
     />
   </div>
 );

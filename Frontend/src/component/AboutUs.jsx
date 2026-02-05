@@ -1,14 +1,11 @@
 import React from "react";
-import aboutImage from "../assets/about.svg";
+import aboutImage from "../assets/about.png";
 
 const AboutUs = () => {
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden text-white px-6">
-      
-      {/* BASE DARK BACKGROUND */}
-      <div className="absolute inset-0 bg-[#050214]" />
+    <section className="relative w-full py-6 sm:py-20 flex items-center justify-center overflow-hidden text-white px-6">
+      <div className="absolute inset-0 bg-[#080131]" />
 
-      {/* GRID BACKGROUND (SAME AS EVENTS SECTION) */}
       <div
         className="absolute inset-0 opacity-10 pointer-events-none"
         style={{
@@ -18,7 +15,6 @@ const AboutUs = () => {
         }}
       />
 
-      {/* CONTENT (ABOUT IMAGE) */}
       <div className="relative z-10 flex items-center justify-center w-full">
         <img
           src={aboutImage}
