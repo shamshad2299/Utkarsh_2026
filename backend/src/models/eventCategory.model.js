@@ -1,29 +1,23 @@
-// models/category.js
+// src/models/eventCategory.model.js
 import mongoose from "mongoose";
 
-const CategorySchema = new mongoose.Schema({
-  name: {
-    type: String,
-    unique: true,
-    required: true,
-  },
-  description:{
-    type : String,
-  },
-  rules :{
-    type : String,
-  },
-    image: {
-    type: String, // ✅ URL only
-    required: true,
-  },
+const CategorySchema = new mongoose.Schema(
+  {
+    name: { type: String, required: true, unique: true },
+    description: String,
+    rules: String,
 
-  slug: {
-    type: String,
-    unique: true,
-    lowercase: true,
+    images: [
+      {
+        url: { type: String, required: true },
+        publicId: { type: String, required: true },
+      },
+    ],
+
+    slug: { type: String, lowercase: true, unique: true },
   },
-});
+  { timestamps: true }
+);
 
 export default mongoose.models.Category ||
   mongoose.model("Category", CategorySchema);

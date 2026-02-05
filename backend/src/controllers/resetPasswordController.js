@@ -1,3 +1,4 @@
+// src/controllers/resetPasswordController.js
 import crypto from "crypto";
 import { User } from "../models/users.model.js";
 import { ApiError } from "../utils/ApiError.js";
