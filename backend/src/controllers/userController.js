@@ -406,66 +406,6 @@ export const logoutUser = async (req, res) => {
     message: "Logged out"
   });
 };
-export const getAllUsers = async (req, res) => {
-  try {
-    const { all, role, city } = req.query;
-
-    // optional filters
-    const filter = {};
-    if (role) filter.role = role;
-    if (city) filter.city = city;
-
-    // 🔥 CASE 1: Get ALL users (no pagination)
-    if (all === "true") {
-      const users = await User.find(filter)
-        .select("-password -refreshToken -__v")
-        .sort({ createdAt: -1 });
-
-      return res.status(200).json({
-        success: true,
-        message: "All users fetched successfully",
-        data: users,
-        meta: {
-          total: users.length,
-          all: true,
-        },
-      });
-    }
-
-    // 🔥 CASE 2: Paginated users (default)
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 1;
-    const skip = (page - 1) * limit;
-
-    const [users, total] = await Promise.all([
-      User.find(filter)
-        .select("-password -refreshToken -__v")
-        .sort({ createdAt: -1 })
-        .skip(skip)
-        .limit(limit),
-
-      User.countDocuments(filter),
-    ]);
-
-    return res.status(200).json({
-      success: true,
-      message: "Users fetched successfully",
-      data: users,
-      meta: {
-        total,
-        page,
-        limit,
-        totalPages: Math.ceil(total / limit),
-      },
-    });
-  } catch (error) {
-    console.error("Get All Users Error:", error);
-    return res.status(500).json({
-      success: false,
-      message: "Internal server error",
-    });
-  }
-};
 
 export const updateUser = async (req, res) => {
   const session = await mongoose.startSession();

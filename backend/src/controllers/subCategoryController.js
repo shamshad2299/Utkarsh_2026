@@ -36,7 +36,10 @@ export const getSubCategories = async (req, res) => {
     filter.category = req.query.category;
   }
 
-  const subCategories = await SubCategory.find(filter)
+  const subCategories = await SubCategory.find(filter).populate({
+    path: "category",
+    select: "name slug", 
+  })
     .sort({ title: 1 });
 
   res.status(200).json({

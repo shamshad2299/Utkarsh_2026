@@ -1,32 +1,4 @@
-// import jwt from "jsonwebtoken";
-// import { User } from "../models/users.model.js";
-// import { generateAccessToken } from "./userController.js";
 
-// export const refreshAccessToken = async (req, res) => {
-//   try {
-//     const token = req.cookies.refreshToken;
-//     if (!token) return res.sendStatus(401);
-
-//     const decoded = jwt.verify(
-//       token,
-//       process.env.JWT_REFRESH_SECRET
-//     );
-
-//     const user = await User.findById(decoded._id);
-//     if (!user || user.refreshToken !== token)
-//       return res.sendStatus(403);
-
-//     const newAccessToken = generateAccessToken(user);
-
-//     return res.json({
-//       success: true,
-//       accessToken: newAccessToken
-//     });
-
-//   } catch {
-//     return res.sendStatus(401);
-//   }
-// };
 
 import jwt from "jsonwebtoken";
 import { User } from "../models/users.model.js";
@@ -74,7 +46,7 @@ export const refreshUserAccessToken = async (req, res) => {
 
 /* ================= ADMIN REFRESH TOKEN ================= */
 export const refreshAdminAccessToken = async (req, res) => {
-  const token = req.cookies.adminRefreshToken;
+  const token = req.cookies?.adminRefreshToken;
 
   if (!token) {
     throw new ApiError(401, "Admin refresh token missing");
@@ -86,10 +58,11 @@ export const refreshAdminAccessToken = async (req, res) => {
       token,
       process.env.JWT_REFRESH_SECRET_ADMIN
     );
-  } catch (err) {
+  } catch {
     throw new ApiError(401, "Invalid or expired admin refresh token");
   }
 
+  // 🔥 FIX HERE
   const admin = await Admin.findById(decoded.id).select("+refreshToken");
 
   if (!admin || admin.refreshToken !== token) {

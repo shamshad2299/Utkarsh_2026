@@ -52,9 +52,8 @@ const userSchema = new Schema(
 
    course: {
       type: String,
-      required: [true, "Password is required"],
+      required: [true, "Course is required"],
       select: false,
-      minlength: 6,
     },
 
     role: {
@@ -63,37 +62,6 @@ const userSchema = new Schema(
       default: "user",
       index: true,
     },
-
-    mobile_no: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-
-    city: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-
-    gender: {
-      type: String,
-      enum: ["male", "female", "other"],
-      required: true,
-    },
-
-    college: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-
-    course: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-
     isBlocked: {
       type: Boolean,
       default: false,
