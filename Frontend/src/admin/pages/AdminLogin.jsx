@@ -9,19 +9,48 @@ const AdminLogin = () => {
   const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      const res = await api.post("/admin/auth/login", form);
+const handleSubmit = async (e) => {
+  e.preventDefault();
 
-      localStorage.setItem("adminToken", res.data.token);
-      localStorage.setItem("admin", JSON.stringify(res.data.admin));
+  if (!form.email || !form.password) {
+    alert("Email and password are required");
+    return;
+  }
 
-      navigate("/admin/dashboard");
-    } catch (err) {
-      alert(err.response?.data?.message || "Login failed");
+  try {
+    const res = await api.post("/admin/auth/login", form, {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+    console.log("LOGIN RESPONSE:", res.data);
+
+
+    const { accessToken, admin } = res.data;
+
+    if (!accessToken || !admin) {
+      throw new Error("Invalid login response");
     }
-  };
+
+    // 🔐 Store access token
+    localStorage.setItem("adminAccessToken", accessToken);
+    localStorage.setItem("admin", JSON.stringify(admin));
+
+    // 🚀 Navigate only after everything is safe
+    navigate("/admin/dashboard", { replace: true });
+
+  } catch (err) {
+    console.error("Admin login error:", err);
+
+    const message =
+      err.response?.data?.message ||
+      err.message ||
+      "Login failed. Please try again.";
+
+    alert(message);
+  }
+};
+
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
