@@ -95,7 +95,7 @@ export const getSubCategoryByCategory = async (req, res) => {
   const { categoryId } = req.params;
 
   const subCategories = await SubCategory.find({ category: categoryId })
-    .populate("category", "name slug")
+    .populate("category", "title slug")
     .sort({ createdAt: -1 });
 
   res.status(200).json({

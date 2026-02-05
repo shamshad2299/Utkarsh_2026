@@ -3,18 +3,15 @@ import utkarshLogo from "../assets/utkarsh_logo_new.png";
 import bbdLogo from "../assets/bbd-logo.png";
 import rulebookPdf from "../assets/rulebook.pdf";
 import { Link, useNavigate, useLocation } from "react-router-dom";
+import { useAuth } from "../Context/AuthContext";
 
 const Navbar = () => {
+  const { user, logout } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-
   const navigate = useNavigate();
   const location = useLocation();
 
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    setIsLoggedIn(!!token);
-  }, [location.pathname]);
+  const isLoggedIn = !!user;
 
   const handleNavClick = (item) => {
     if (item === "Rulebook") {
@@ -62,6 +59,12 @@ const Navbar = () => {
     }
 
     setIsMenuOpen(false);
+  };
+
+  const handleLogout = () => {
+    logout();
+    setIsMenuOpen(false);
+    navigate("/");
   };
 
   const navItems = [
@@ -113,7 +116,19 @@ const Navbar = () => {
           </div>
 
           <div className="flex items-center gap-4">
-            {!isLoggedIn && (
+            {isLoggedIn ? (
+              <div className="flex items-center gap-4">
+                <span className="hidden sm:block text-sm text-white/80">
+                  Hello, {user.name || user.username || "User"}
+                </span>
+                <button
+                  onClick={handleLogout}
+                  className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-full font-bold text-sm transition"
+                >
+                  Logout
+                </button>
+              </div>
+            ) : (
               <Link
                 to="/login"
                 className="hidden sm:block bg-white text-[#050214] px-6 py-2 rounded-full font-bold text-sm hover:bg-gray-200 transition"
@@ -162,9 +177,21 @@ const Navbar = () => {
               </button>
             ))}
 
-            {!isLoggedIn && (
+            {isLoggedIn ? (
+              <div className="flex flex-col gap-3">
+                <div className="text-sm text-white/80 border-b border-purple-500/30 pb-2">
+                  Logged in as: <span className="font-semibold">{user.name || user.username || "User"}</span>
+                </div>
+                <button
+                  onClick={handleLogout}
+                  className="bg-red-600 hover:bg-red-700 text-white px-8 py-2 rounded-full font-bold text-sm text-center"
+                >
+                  Logout
+                </button>
+              </div>
+            ) : (
               <Link
-                to="/login"
+                to="/"
                 className="sm:hidden bg-white text-[#050214] px-8 py-2 rounded-full font-bold text-sm text-center"
               >
                 Login

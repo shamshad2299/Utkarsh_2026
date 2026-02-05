@@ -142,7 +142,15 @@ export const updateEvent = async (req, res) => {
 
   for (const field of allowedFields) {
     if (req.body[field] !== undefined) {
-      event[field] = req.body[field];
+      if (field === "teamSize") {
+        // 🔥 FIX: parse if string
+        event.teamSize =
+          typeof req.body.teamSize === "string"
+            ? JSON.parse(req.body.teamSize)
+            : req.body.teamSize;
+      } else {
+        event[field] = req.body[field];
+      }
     }
   }
 
@@ -177,6 +185,7 @@ export const updateEvent = async (req, res) => {
     data: event,
   });
 };
+
 
 /* ================= DELETE EVENT (SOFT DELETE) ================= */
 export const deleteEvent = async (req, res) => {

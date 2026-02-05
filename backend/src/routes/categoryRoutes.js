@@ -16,10 +16,10 @@ router.post(
 );
 
 // Get all categories
-router.get("/get", adminAuth, asyncHandler(getAllCategories));
+router.get("/get", asyncHandler(getAllCategories));
 
 // Get category by id
-router.get("/get/:id", adminAuth, asyncHandler(getCategoryById));
+router.get("/get/:id", asyncHandler(getCategoryById));
 
 // Update category
 router.put("/update/:id",adminAuth,upload.single("image"),asyncHandler(updateCategory),);

@@ -59,7 +59,7 @@ const AllEventCategory = () => {
       setLoading(true);
       setError('');
       const response = await api.get('/category/get');
-      console.log(response)
+     
       setCategories(response.data?.data || []);
     } catch (err) {
       console.error('Error fetching categories:', err);
@@ -342,7 +342,7 @@ const AllEventCategory = () => {
           <div className="flex items-center space-x-3">
             <button
               onClick={fetchCategories}
-              className="px-4 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-all duration-200 flex items-center"
+              className="px-4 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-all duration-200 flex items-center cursor-pointer"
             >
               <RefreshCw className="mr-2" />
               Refresh
@@ -434,21 +434,21 @@ const AllEventCategory = () => {
                       <div className="flex items-center space-x-2">
                         <button
                           onClick={() => openViewModal(category)}
-                          className="p-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors duration-200"
+                          className="p-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors duration-200 cursor-pointer"
                           title="View Details"
                         >
                           <Eye size={18} />
                         </button>
                         <button
                           onClick={() => openEditModal(category)}
-                          className="p-2 bg-yellow-50 text-yellow-600 rounded-lg hover:bg-yellow-100 transition-colors duration-200"
+                          className="p-2 bg-yellow-50 text-yellow-600 rounded-lg hover:bg-yellow-100 transition-colors duration-200 cursor-pointer"
                           title="Edit Category"
                         >
                           <Edit size={18} />
                         </button>
                         <button
                           onClick={() => openDeleteModal(category)}
-                          className="p-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors duration-200"
+                          className="p-2 bg-red-50 cursor-pointer text-red-600 rounded-lg hover:bg-red-100 transition-colors duration-200"
                           title="Delete Category"
                         >
                           <Trash2 size={18} />
@@ -677,7 +677,7 @@ const AllEventCategory = () => {
                 <h3 className="text-xl font-bold text-gray-900">Category Details</h3>
                 <button
                   onClick={() => setShowViewModal(false)}
-                  className="text-gray-400 hover:text-gray-600"
+                  className="text-gray-400 hover:text-gray-600 cursor-pointer"
                 >
                   ✕
                 </button>
@@ -685,7 +685,7 @@ const AllEventCategory = () => {
               
               <div className="space-y-6">
                 <div className="flex items-center space-x-6">
-                  <img src={selectedCategory.image} alt={selectedCategory.name} className="h-24 w-24 object-cover rounded-xl" />
+                  <img src={selectedCategory.image?.url} alt={selectedCategory.name} className="h-24 w-24 object-cover rounded-xl" />
                   <div>
                     <h4 className="text-2xl font-bold text-gray-900">{selectedCategory.name}</h4>
                     <p className="text-sm text-purple-600 font-medium mt-1">{selectedCategory.slug}</p>
@@ -715,7 +715,7 @@ const AllEventCategory = () => {
               <div className="mt-8 flex justify-end">
                 <button
                   onClick={() => setShowViewModal(false)}
-                  className="px-6 py-3 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200"
+                  className="px-6 py-3 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 cursor-pointer"
                 >
                   Close
                 </button>

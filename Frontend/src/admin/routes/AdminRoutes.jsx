@@ -21,6 +21,7 @@ import Configuration from "../components/Configuration/Configuration";
 import Event_List from "../components/Event/Event_List";
 import SoloRegistrion from "../components/Solo_Registartion/SoloRegistrion";
 import Add_Solo_Registration from "../components/Solo_Registartion/Add_Solo_Registration";
+import EditEvent from "../components/Event/EditEvent";
 
 const AdminRoutes = () => {
   return (
@@ -60,6 +61,7 @@ const AdminRoutes = () => {
        
         <Route path="events-list" element={<Event_List />} />
         <Route path="events/add" element={<AddEvent />} />
+        <Route path="edit-event/:id" element={<EditEvent />} />
 
         <Route path="solo-registrations" element={<Add_Solo_Registration />} />
         <Route path="solo-registrations/add" element={<Solo_Registration />} />
