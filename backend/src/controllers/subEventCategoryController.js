@@ -1,3 +1,4 @@
+// src/controllers/subEventCategoryController.js
 import SubCategory from "../models/subEvent.model.js";
 import Category from "../models/eventCategory.model.js";
 import slugify from "slugify";

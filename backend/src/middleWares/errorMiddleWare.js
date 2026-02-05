@@ -1,3 +1,4 @@
+// src/middlewares/errorMiddleWare.js
 export const globalErrorHandler = (err, req, res, next) => {
   if (process.env.NODE_ENV === "development") {
     console.error(err);

@@ -1,3 +1,4 @@
+// src/controllers/adminUser.controller.js
 import mongoose from "mongoose";
 import { User } from "../models/users.model.js";
 import { ApiError } from "../utils/ApiError.js";
