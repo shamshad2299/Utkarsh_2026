@@ -59,6 +59,7 @@ const AllEventCategory = () => {
       setLoading(true);
       setError('');
       const response = await api.get('/category/get');
+      console.log(response)
       setCategories(response.data?.data || []);
     } catch (err) {
       console.error('Error fetching categories:', err);
@@ -67,6 +68,7 @@ const AllEventCategory = () => {
       setLoading(false);
     }
   };
+
 
   // Add category
   const handleAddCategory = async () => {
@@ -90,7 +92,7 @@ const AllEventCategory = () => {
       formDataToSend.append('rules', formData.rules.trim());
       formDataToSend.append('image', formData.image);
 
-      const response = await api.post('/category/add', formDataToSend, {
+       await api.post('/category/add', formDataToSend, {
         headers: {
           'Content-Type': 'multipart/form-data'
         }
@@ -131,7 +133,7 @@ const AllEventCategory = () => {
         formDataToSend.append('image', formData.image);
       }
 
-      const response = await api.put(`/category/update/${selectedCategory._id}`, formDataToSend, {
+      await api.put(`/category/update/${selectedCategory._id}`, formDataToSend, {
         headers: {
           'Content-Type': 'multipart/form-data'
         }
@@ -203,13 +205,6 @@ const AllEventCategory = () => {
       };
       reader.readAsDataURL(file);
     }
-  };
-
-  // Open modals
-  const openAddModal = () => {
-    resetForm();
-    setShowAddModal(true);
-    setError('');
   };
 
   const openEditModal = (category) => {
@@ -414,7 +409,7 @@ const AllEventCategory = () => {
                   <tr key={category._id} className="hover:bg-gray-50 transition-colors duration-200">
                     <td className="px-6 py-4 ">
                       <img
-                        src={category.image}
+                        src={category?.image?.url}
                         alt={category.name}
                         className="h-14  hover:scale-110 w-14 rounded-lg object-cover border border-gray-200 cursor-pointer"
                       />
@@ -601,7 +596,7 @@ const AllEventCategory = () => {
                   </label>
                   <div className="space-y-4">
                     <div className="flex items-center space-x-4">
-                      <img src={selectedCategory.image} alt="Current" className="h-20 w-20 object-cover rounded" />
+                      <img src={selectedCategory.image?.url} alt="Current" className="h-20 w-20 object-cover rounded" />
                       <span className="text-sm text-gray-500">Current image</span>
                     </div>
                     <div className="border-2 border-dashed border-gray-300 rounded-xl p-4">

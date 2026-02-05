@@ -1,75 +1,47 @@
+// src/models/events.model.js
 import mongoose from "mongoose";
 
 const eventSchema = new mongoose.Schema(
   {
-    title: {
-      type: String,
-      required: true,
-      trim: true,
-      index: true,
-    },
+    title: { type: String, required: true, trim: true, index: true },
 
     category: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Category",
       required: true,
-      index: true,
     },
 
     subCategory: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "SubCategory",
       required: true,
-      index: true,
     },
 
-    description: {
-      type: String,
-      required: true,
-    },
+    description: { type: String, required: true },
 
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Admin",
       required: true,
     },
-    venueName: {
-      type: String,
-      required: true,
-    },
 
-    date: {
-      type: Date,
-      required: true,
-      index: true,
-    },
+    venueName: { type: String, required: true },
 
-    startTime: {
-      type: Date,
-      required: true,
-    },
+    startTime: { type: Date, required: true, index: true },
+    endTime: { type: Date, required: true, index: true },
 
-    endTime: {
-      type: Date,
-      required: true,
-    },
+    registrationDeadline: { type: Date, required: true },
 
-    registrationDeadline: {
-      type: Date,
-      required: true,
-    },
+    capacity: { type: Number, required: true, min: 1 },
 
-    capacity: {
-      type: Number,
-      required: true,
-      min: 1,
-    },
+    fee: { type: Number, default: 0, min: 0 },
 
-    fee: {
-      type: Number,
-      default: 0,
-      min: 0,
-    },
+    images: [
+      {
+        url: { type: String, required: true },
+        publicId: { type: String, required: true },
+      },
+    ],
 
     eventType: {
       type: String,
@@ -77,18 +49,46 @@ const eventSchema = new mongoose.Schema(
       required: true,
     },
 
-    resultsLocked: {
-      type: Boolean,
-      default: false,
+    teamSize: {
+      min: { type: Number, default: 1 },
+      max: { type: Number, default: 1 },
     },
 
-    isDeleted: {
-      type: Boolean,
-      default: false,
-      index: true,
-    },
+    resultsLocked: { type: Boolean, default: false },
+
+    isDeleted: { type: Boolean, default: false, index: true },
   },
-  { timestamps: true },
+  { timestamps: true }
 );
 
+eventSchema.pre("save", function () {
+  if (this.endTime <= this.startTime) {
+    throw new Error("endTime must be after startTime");
+  }
+  if (this.teamSize.min > this.teamSize.max) {
+    throw new Error("Invalid team size range");
+  }
+});
+
+//  pre save hook 
+eventSchema.pre("save", function () {
+  if (this.endTime <= this.startTime) {
+    throw new Error("endTime must be after startTime");
+  }
+
+  if (this.teamSize.min > this.teamSize.max) {
+    throw new Error("Invalid team size range");
+  }
+
+  // 🔒 enforce team size based on event type
+  if (this.eventType === "solo") {
+    this.teamSize.min = 1;
+    this.teamSize.max = 1;
+  }
+
+  if (this.eventType === "duo") {
+    this.teamSize.min = 2;
+    this.teamSize.max = 2;
+  }
+});
 export const Event = mongoose.model("Event", eventSchema);

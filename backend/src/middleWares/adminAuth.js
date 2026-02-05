@@ -1,9 +1,7 @@
+// src/middlewares/adminAuth.js
 import jwt from "jsonwebtoken";
 import Admin from "../models/admin.model.js";
-import dotenv from "dotenv";
 import { ApiError } from "../utils/ApiError.js";
-
-dotenv.config();
 
 const adminAuth = async (req, res, next) => {
   const authHeader = req.headers.authorization;

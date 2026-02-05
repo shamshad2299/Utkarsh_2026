@@ -2,14 +2,14 @@ import Category from "../models/eventCategory.model.js";
 import cloudinary from "../utils/cloudinary.js";
 import slugify from "slugify";
 import { ApiError } from "../utils/ApiError.js";
-
+import { removeLocalFile } from "../utils/removeLocalFile.js";
 
 /* ================= ADD CATEGORY ================= */
 export const addCategory = async (req, res) => {
   const { name, description, rules } = req.body;
 
-  if (!name || !req.file) {
-    throw new ApiError(400, "Name and image are required");
+  if (!name) {
+    throw new ApiError(400, "Category name is required");
   }
 
   const existing = await Category.findOne({ name });
@@ -19,18 +19,31 @@ export const addCategory = async (req, res) => {
 
   const slug = slugify(name, { lower: true, strict: true });
 
-  const result = await cloudinary.uploader.upload(req.file.path, {
-    folder: "categories",
-  });
+  let image = null;
+
+  // ✅ single image upload
+  if (req.file) {
+    const result = await cloudinary.uploader.upload(req.file.path, {
+      folder: "categories",
+    });
+
+    image = {
+      url: result.secure_url,
+      publicId: result.public_id,
+    };
+
+    // cleanup local file
+    removeLocalFile(req.file.path);
+  }
 
   const category = await Category.create({
     name,
     description,
     rules,
     slug,
-    image: result.secure_url,
-    imagePublicId: result.public_id, // 🔥 future delete ke liye
+    image, // ✅ single image
   });
+ 
 
   res.status(201).json({
     success: true,
@@ -43,8 +56,7 @@ export const addCategory = async (req, res) => {
 export const getAllCategories = async (req, res) => {
   const categories = await Category.find()
     .sort({ createdAt: -1 })
-    .select("name description rules image slug");
-
+   
   res.status(200).json({
     success: true,
     count: categories.length,
@@ -77,19 +89,24 @@ export const updateCategory = async (req, res) => {
     throw new ApiError(404, "Category not found");
   }
 
-  // update image
+  // ✅ replace image if new one provided
   if (req.file) {
-    // delete old image (🔥 important)
-    if (category.imagePublicId) {
-      await cloudinary.uploader.destroy(category.imagePublicId);
+    // delete old image from cloudinary
+    if (category.image?.publicId) {
+      await cloudinary.uploader.destroy(category.image.publicId);
     }
 
     const result = await cloudinary.uploader.upload(req.file.path, {
       folder: "categories",
     });
 
-    category.image = result.secure_url;
-    category.imagePublicId = result.public_id;
+    category.image = {
+      url: result.secure_url,
+      publicId: result.public_id,
+    };
+
+    // cleanup local file
+    removeLocalFile(req.file.path);
   }
 
   if (name) {
@@ -109,6 +126,7 @@ export const updateCategory = async (req, res) => {
   });
 };
 
+
 /* ================= DELETE CATEGORY ================= */
 export const deleteCategory = async (req, res) => {
   const { id } = req.params;
@@ -118,9 +136,9 @@ export const deleteCategory = async (req, res) => {
     throw new ApiError(404, "Category not found");
   }
 
-  // delete image from cloudinary
-  if (category.imagePublicId) {
-    await cloudinary.uploader.destroy(category.imagePublicId);
+  // ✅ delete image from cloudinary
+  if (category.image?.publicId) {
+    await cloudinary.uploader.destroy(category.image.publicId);
   }
 
   await category.deleteOne();
@@ -130,3 +148,4 @@ export const deleteCategory = async (req, res) => {
     message: "Category deleted successfully",
   });
 };
+

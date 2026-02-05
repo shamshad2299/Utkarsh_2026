@@ -1,4 +1,4 @@
-// middlewares/notFound.middleware.js
+// src/middlewares/notFoundMiddleWare.js
 export const notFoundHandler = (req, res) => {
   res.status(404).json({
     success: false,

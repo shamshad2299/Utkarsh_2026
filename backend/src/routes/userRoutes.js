@@ -1,3 +1,4 @@
+// src/routes/userRoutes.js
 import express from "express";
 import {  loginUser, logoutUser, registerUser, updateUser } from "../controllers/userController.js";
 import {  refreshUserAccessToken } from "../controllers/refreshTokenController.js";
@@ -16,7 +17,7 @@ router.post("/logout", verifyJWT, logoutUser);
 router.post("/refresh-token", asyncHandler(refreshUserAccessToken));
 
 //reset-password through mail
-router.post("/request-password" , asyncHandler(requestPasswordReset));
+router.post("/request-pass-reset-otp" , asyncHandler(requestPasswordReset));
 router.post("/reset-password" , asyncHandler(resetPassword));
 
 //get all user @only for admin

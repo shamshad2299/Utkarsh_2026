@@ -12,6 +12,7 @@ import {
   Loader2,
   Info
 } from "lucide-react";
+import {useNavigate} from "react-router-dom"
 
 const AddEventCategory = () => {
   const [formData, setFormData] = useState({
@@ -24,6 +25,7 @@ const AddEventCategory = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const navigate = useNavigate();
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -95,11 +97,12 @@ const AddEventCategory = () => {
       
       // Show success message
       setSuccess("Category added successfully!");
+      navigate("/admin/dashboard/events");
       
-      // Clear success message after 3 seconds
+      // Clear success message after 1 seconds
       setTimeout(() => {
         setSuccess("");
-      }, 3000);
+      }, 1000);
 
     } catch (err) {
       console.error("Error adding category:", err);
@@ -122,7 +125,7 @@ const AddEventCategory = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-4 md:p-6">
+    <div className="min-h-screen bg-linear-to-br from-gray-50 to-gray-100 p-4 md:p-6">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="mb-8">
@@ -189,7 +192,7 @@ const AddEventCategory = () => {
           {/* Form Section */}
           <div className="lg:col-span-2">
             <div className="bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden">
-              <div className="p-6 border-b border-gray-200 bg-gradient-to-r from-purple-50 to-white">
+              <div className="p-6 border-b border-gray-200 bg-linear-to-r from-purple-50 to-white">
                 <h2 className="text-2xl font-bold text-gray-900 flex items-center">
                   <PlusCircle className="mr-3 text-purple-600" />
                   Add New Category
@@ -366,7 +369,7 @@ const AddEventCategory = () => {
                       <button
                         type="submit"
                         disabled={loading}
-                        className="w-full sm:w-auto px-8 py-3 bg-gradient-to-r from-purple-600 to-purple-700 text-white font-medium rounded-xl hover:from-purple-700 hover:to-purple-800 transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center"
+                        className="w-full sm:w-auto px-8 py-3 bg-linear-to-r from-purple-600 to-purple-700 text-white font-medium rounded-xl hover:from-purple-700 hover:to-purple-800 transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center"
                       >
                         {loading ? (
                           <>
@@ -391,7 +394,7 @@ const AddEventCategory = () => {
           <div className="space-y-6">
             {/* Preview Card */}
             <div className="bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden">
-              <div className="p-6 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white">
+              <div className="p-6 border-b border-gray-200 bg-linear-to-r from-gray-50 to-white">
                 <h3 className="text-lg font-semibold text-gray-900 flex items-center">
                   <ImageIcon className="h-5 w-5 mr-2 text-gray-600" />
                   Category Preview
@@ -438,7 +441,7 @@ const AddEventCategory = () => {
 
             {/* Guidelines Card */}
             <div className="bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden">
-              <div className="p-6 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-white">
+              <div className="p-6 border-b border-gray-200 bg-linear-to-r from-blue-50 to-white">
                 <h3 className="text-lg font-semibold text-gray-900 flex items-center">
                   <Info className="h-5 w-5 mr-2 text-blue-600" />
                   Guidelines
@@ -447,13 +450,13 @@ const AddEventCategory = () => {
               <div className="p-6">
                 <ul className="space-y-3">
                   <li className="flex items-start">
-                    <div className="flex-shrink-0 h-5 w-5 rounded-full bg-blue-100 flex items-center justify-center mt-0.5">
+                    <div className="shrink-0 h-5 w-5 rounded-full bg-blue-100 flex items-center justify-center mt-0.5">
                       <span className="text-xs font-medium text-blue-600">1</span>
                     </div>
                     <span className="ml-3 text-sm text-gray-600">Category names should be unique and descriptive</span>
                   </li>
                   <li className="flex items-start">
-                    <div className="flex-shrink-0 h-5 w-5 rounded-full bg-blue-100 flex items-center justify-center mt-0.5">
+                    <div className="shrink-0 h-5 w-5 rounded-full bg-blue-100 flex items-center justify-center mt-0.5">
                       <span className="text-xs font-medium text-blue-600">2</span>
                     </div>
                     <span className="ml-3 text-sm text-gray-600">Use high-quality images (min. 800x600px)</span>
@@ -471,7 +474,7 @@ const AddEventCategory = () => {
                     <span className="ml-3 text-sm text-gray-600">Rules should be clear and easy to understand</span>
                   </li>
                   <li className="flex items-start">
-                    <div className="flex-shrink-0 h-5 w-5 rounded-full bg-blue-100 flex items-center justify-center mt-0.5">
+                    <div className="shrink-0 h-5 w-5 rounded-full bg-blue-100 flex items-center justify-center mt-0.5">
                       <span className="text-xs font-medium text-blue-600">5</span>
                     </div>
                     <span className="ml-3 text-sm text-gray-600">Slug will be auto-generated from the name</span>
@@ -481,7 +484,7 @@ const AddEventCategory = () => {
             </div>
 
             {/* Quick Stats */}
-            <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl shadow-xl p-6 text-white">
+            <div className="bg-linear-to-br from-purple-500 to-purple-600 rounded-2xl shadow-xl p-6 text-white">
               <h3 className="text-lg font-semibold mb-4">Quick Stats</h3>
               <div className="space-y-3">
                 <div className="flex items-center justify-between">

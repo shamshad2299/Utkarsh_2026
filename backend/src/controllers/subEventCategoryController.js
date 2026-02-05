@@ -1,3 +1,4 @@
+// src/controllers/subEventCategoryController.js
 import SubCategory from "../models/subEvent.model.js";
 import Category from "../models/eventCategory.model.js";
 import slugify from "slugify";
@@ -58,6 +59,7 @@ export const deleteSubCategory = async (req, res) => {
   });
 };
 
+
 /* ================= GET ALL SUB CATEGORIES ================= */
 export const getAllSubCategories = async (req, res) => {
   const subCategories = await SubCategory.find()
@@ -68,6 +70,23 @@ export const getAllSubCategories = async (req, res) => {
     success: true,
     count: subCategories.length,
     data: subCategories,
+  });
+};
+
+/* ================= GET SUB CATEGORY BY ID ================= */
+export const getSubCategoryById = async (req, res) => {
+  const { id } = req.params;
+
+  const subCategory = await SubCategory.findById(id)
+    .populate("category", "name slug");
+
+  if (!subCategory) {
+    throw new ApiError(404, "SubCategory not found");
+  }
+
+  res.status(200).json({
+    success: true,
+    data: subCategory,
   });
 };
 

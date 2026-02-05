@@ -40,10 +40,7 @@ const SubCategoryList = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
   const [expandedRows, setExpandedRows] = useState(new Set());
-  console.log(subcategories);
-  console.log(categories);
-
-  // Fetch data
+ // Fetch data
   const fetchData = useCallback(async () => {
     try {
       setLoading(true);
@@ -67,7 +64,8 @@ const SubCategoryList = () => {
       setLoading(false);
     }
   }, []);
-
+ console.log(categories)
+  console.log(filteredSubcategories)
   useEffect(() => {
     fetchData();
   }, [fetchData]);

@@ -1,3 +1,4 @@
+// src/controllers/adminUser.controller.js
 import mongoose from "mongoose";
 import { User } from "../models/users.model.js";
 import { ApiError } from "../utils/ApiError.js";
@@ -24,13 +25,12 @@ export const getUsers = async (req, res) => {
 
   const [users, total] = await Promise.all([
     User.find(filter)
-      .select("+course -password -refreshToken -__v")
+      .select("-password")
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(Number(limit)),
     User.countDocuments(filter),
   ]);
-
   res.status(200).json({
     success: true,
     data: users,
@@ -118,7 +118,7 @@ export const getUserById = async (req, res) => {
   let user;
 
   if (mongoose.Types.ObjectId.isValid(id)) {
-    user = await User.findById(id).select("+course -password -refreshToken -__v");
+    user = await User.findById(id).select(" -password -refreshToken -__v");
   } else {
     user = await User.findOne({ userId: id }).select(
       "-password -refreshToken -__v",

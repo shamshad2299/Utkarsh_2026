@@ -1,14 +1,17 @@
-// user.models.js
+// src/models/users.model.js
 import mongoose, { Schema } from "mongoose";
 import bcrypt from "bcryptjs";
 
 const userSchema = new Schema(
   {
-    name: {
+    userId: {
       type: String,
       required: true,
-      trim: true,
+      unique: true,
+      index: true,
     },
+
+    name: { type: String, required: true, trim: true },
 
     email: {
       type: String,
@@ -16,100 +19,48 @@ const userSchema = new Schema(
       unique: true,
       lowercase: true,
       trim: true,
-      match: [/^\S+@\S+\.\S+$/, "Please use a valid email"],
-      index: true
-   },
+      index: true,
+    },
 
-   password: {
+    password: {
       type: String,
       required: true,
       minlength: 8,
-      select: false
-   },
-   mobile_no: {
-      type: String,
-      required: true,
-      trim: true
-   },
-
-   city: {
-      type: String,
-      required: true,
-      trim: true
-   },
-
-   gender: {
-      type: String,
-      enum: ["male", "female", "other"],
-      required: true
-   },
-
-   college: {
-      type: String,
-      required: true,
-      trim: true
-   },
-
-   course: {
-      type: String,
-      required: [true, "Course is required"],
       select: false,
     },
+
+    mobile_no: { type: String, required: true, trim: true },
+    city: { type: String, required: true, trim: true },
+
+    gender: {
+      type: String,
+      enum: ["male", "female", "other"],
+      required: true,
+    },
+
+    college: { type: String, required: true, trim: true },
+    course: { type: String, required: true, trim: true },
 
     role: {
       type: String,
-      enum: ["user", "admin"],
+      enum: ["user"],
       default: "user",
       index: true,
     },
-    isBlocked: {
-      type: Boolean,
-      default: false,
-    },
 
-    isDeleted: {
-      type: Boolean,
-      default: false,
-      index: true,
-    },
+    isBlocked: { type: Boolean, default: false },
+    isDeleted: { type: Boolean, default: false, index: true },
 
-    userId: {
-      type: String,
-      unique: true,
-      index: true,
-    },
-
-    refreshToken: {
-      type: String,
-      select: false,
-    },
-    resetPasswordCode: {
-  type: String,
-  select: false,
-},
-resetPasswordExpire: {
-  type: Date,
-  select: false,
-},
-
+    refreshToken: { type: String, select: false },
+    resetPasswordCode: { type: String, select: false },
+    resetPasswordExpire: { type: Date, select: false },
   },
-  
-  {
-    timestamps: true,
-  }
+  { timestamps: true }
 );
 
-// PRE SAVE HOOK                                      
 userSchema.pre("save", async function () {
-
-  if (this.email) {
-    this.email = this.email.toLowerCase();
-  }
-
   if (!this.isModified("password")) return;
-
   this.password = await bcrypt.hash(this.password, 10);
 });
-
 
 export const User = mongoose.model("User", userSchema);

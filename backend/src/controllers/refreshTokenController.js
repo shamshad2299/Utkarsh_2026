@@ -1,5 +1,4 @@
-
-
+// src/controllers/refreshTokenController.js
 import jwt from "jsonwebtoken";
 import { User } from "../models/users.model.js";
 import Admin from "../models/admin.model.js";
@@ -9,7 +8,7 @@ import { ApiError } from "../utils/ApiError.js";
 
 /* ================= USER REFRESH TOKEN ================= */
 export const refreshUserAccessToken = async (req, res) => {
-  const token = req.cookies.refreshToken;
+  const token = req.cookies?.refreshToken;
 
   if (!token) {
     throw new ApiError(401, "Refresh token missing");

@@ -21,6 +21,7 @@ const Item = ({ label, to, addTo }) => {
       className="
         flex justify-between items-center px-3 py-2 border-b last:border-b-0
         text-sm font-medium cursor-pointer
+        hover:underline
         hover:bg-yellow-50
       "
     >
@@ -28,11 +29,7 @@ const Item = ({ label, to, addTo }) => {
       <NavLink
         to={to}
         className={({ isActive }) =>
-          `flex-1 ${
-            isActive
-              ? "text-blue-700 font-semibold"
-              : "text-gray-800"
-          }`
+          `flex-1 ${isActive ? "text-blue-700 font-semibold" : "text-gray-800"}`
         }
       >
         {label}
@@ -87,10 +84,7 @@ const AdminSidebar = () => {
         {/* Header */}
         <div className="flex items-center justify-between bg-teal-700 text-yellow-300 text-lg font-bold px-4 py-3">
           UTKARSH Administration
-          <button
-            className="md:hidden"
-            onClick={() => setDeleteConfirm(null)}
-          >
+          <button className="md:hidden" onClick={() => setDeleteConfirm(null)}>
             <X size={20} />
           </button>
         </div>
@@ -109,68 +103,67 @@ const AdminSidebar = () => {
           <Item label="Groups" to="/admin/dashboard/groups" />
         </Section>
 
-      <Section title="Website">
-  <Item
-    label="Accommodation details"
-    to="/admin/dashboard/accommodation"
-    addTo="/admin/dashboard/accommodation/add"
-  />
+        <Section title="Website">
+          <Item
+            label="Accommodation details"
+            to="/admin/dashboard/accommodation"
+            addTo="/admin/dashboard/accommodation/add"
+          />
 
-  <Item
-    label="Configurations"
-    to="/admin/dashboard/configurations"
-    addTo="/admin/dashboard/configurations/add"
-  />
+          <Item
+            label="Configurations"
+            to="/admin/dashboard/configurations"
+            addTo="/admin/dashboard/configurations/add"
+          />
 
-  <Item
-    label="Event categories"
-    to="/admin/dashboard/events"
-    addTo="/admin/dashboard/event-category/add"
-  />
+          <Item
+            label="Event categories"
+            to="/admin/dashboard/events"
+            addTo="/admin/dashboard/event-category/add"
+          />
 
-  <Item
-    label="Events"
-    to="/admin/dashboard/events-list"
-    addTo="/admin/dashboard/events/add"
-  />
+          <Item
+            label="Events"
+            to="/admin/dashboard/events-list"
+            addTo="/admin/dashboard/events/add"
+          />
 
-  <Item
-    label="Solo event registrations"
-    to="/admin/dashboard/solo-registrations"
-    addTo="/admin/dashboard/solo-registrations/add"
-  />
+          <Item
+            label="Solo event registrations"
+            to="/admin/dashboard/solo-registrations"
+            addTo="/admin/dashboard/solo-registrations/add"
+          />
 
-  <Item
-    label="Sub events categories"
-    to="/admin/dashboard/sub-events"
-    addTo="/admin/dashboard/sub-events/add"
-  />
+          <Item
+            label="Sub events categories"
+            to="/admin/dashboard/sub-events"
+            addTo="/admin/dashboard/sub-events/add"
+          />
 
-  <Item
-    label="Team event registrations"
-    to="/admin/dashboard/team-registrations"
-    addTo="/admin/dashboard/team-registrations/add"
-  />
+          <Item
+            label="Team event registrations"
+            to="/admin/dashboard/team-registrations"
+            addTo="/admin/dashboard/team-registrations/add"
+          />
 
-  <Item
-    label="Team members"
-    to="/admin/dashboard/team-members"
-    addTo="/admin/dashboard/team-members/add"
-  />
+          <Item
+            label="Team members"
+            to="/admin/dashboard/team-members"
+            addTo="/admin/dashboard/team-members/add"
+          />
 
-  <Item
-    label="Users"
-    to="/admin/dashboard/users"
-    addTo="/admin/dashboard/users/add"
-  />
+          <Item
+            label="Users"
+            to="/admin/dashboard/users"
+            addTo="/admin/dashboard/users/add"
+          />
 
-  <Item
-    label="Website teams"
-    to="/admin/dashboard/teams"
-    addTo="/admin/dashboard/teams/add"
-  />
-</Section>
-
+          <Item
+            label="Website teams"
+            to="/admin/dashboard/teams"
+            addTo="/admin/dashboard/teams/add"
+          />
+        </Section>
       </aside>
     </>
   );
