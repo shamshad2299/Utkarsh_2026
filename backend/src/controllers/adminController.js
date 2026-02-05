@@ -2,8 +2,10 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import Admin from "../models/admin.model.js";
 import { ApiError } from "../utils/ApiError.js";
+import dotenv from "dotenv"
+dotenv.config();
 
-/* ================= TOKEN HELPERS ================= */
+/* ================= ACCESS TOKEN ================= */
 export const generateAdminAccessToken = (admin) => {
   return jwt.sign(
     {
@@ -16,13 +18,18 @@ export const generateAdminAccessToken = (admin) => {
   );
 };
 
+/* ================= REFRESH TOKEN ================= */
+
 export const generateAdminRefreshToken = (admin) => {
   return jwt.sign(
-    { id: admin._id },
+    {
+      id: admin._id,
+    },
     process.env.JWT_REFRESH_SECRET_ADMIN,
     { expiresIn: process.env.JWT_ADMIN_REFRESH_EXPIRY }
   );
 };
+
 
 /* ================= REGISTER ADMIN ================= */
 export const registerAdmin = async (req, res) => {
@@ -83,30 +90,37 @@ export const loginAdmin = async (req, res) => {
     throw new ApiError(403, "Status pending, contact active-admin");
   }
 
+  /* ===== TOKENS ===== */
   const accessToken = generateAdminAccessToken(admin);
   const refreshToken = generateAdminRefreshToken(admin);
+  
+  // console.log("access token " ,accessToken);
+  // console.log("refresh token ", refreshToken);
 
+  /* ===== STORE REFRESH TOKEN ===== */
   admin.refreshToken = refreshToken;
   await admin.save({ validateBeforeSave: false });
 
-  res.cookie("adminRefreshToken", refreshToken, {
-    httpOnly: true,
-    secure: false, // true in production
-    sameSite: "strict",
-    maxAge: 7 * 24 * 60 * 60 * 1000,
-  });
-
-  res.status(200).json({
-    success: true,
-    message: "Admin login successful",
-    accessToken,
-    admin: {
-      id: admin._id,
-      name: admin.name,
-      email: admin.email,
-      adminStatus: admin.adminStatus,
-    },
-  });
+  /* ===== SET COOKIES ===== */
+  res
+    .cookie("adminRefreshToken", refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 24 * 60 * 60 * 1000, // must match refresh expiry
+    })
+    .status(200)
+    .json({
+      success: true,
+      message: "Admin login successful",
+      accessToken, // frontend uses this
+      admin: {
+        id: admin._id,
+        name: admin.name,
+        email: admin.email,
+        adminStatus: admin.adminStatus,
+      },
+    });
 };
 
 /* ================= LOGOUT ADMIN ================= */

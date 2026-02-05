@@ -6,6 +6,7 @@ import {
   deleteSubCategory,
   getAllSubCategories,
   getSubCategoryByCategory,
+  getSubCategoryById,
   updateSubCategory,
 } from "../controllers/subEventCategoryController.js";
 
@@ -30,6 +31,8 @@ router.get(
   adminAuth,
   asyncHandler(getSubCategoryByCategory),
 );
+router.get("/subcategories/:id", asyncHandler(getSubCategoryById));
+
 
 // Update subcategory
 router.patch("/subcategories/:id", adminAuth, asyncHandler(updateSubCategory));

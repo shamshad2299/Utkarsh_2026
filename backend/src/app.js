@@ -41,9 +41,9 @@ res.json({
 })
 
 app.use("/api/v1/auth" , authRoutes);
-app.use("/api/v1/admin/", adminRoutes);
-app.use("/category" , categoryRoutes);
-app.use("/subCategory" , subCategoryRoutes);
+app.use("/api/admin/auth", adminRoutes);
+app.use("/api/category" , categoryRoutes);
+app.use("/api/subCategory" , subCategoryRoutes);
 app.use("/events", eventRoutes);
 app.use("/registrations", registrationRoutes);
 app.use("/teams", teamRoutes);

@@ -25,13 +25,12 @@ export const getUsers = async (req, res) => {
 
   const [users, total] = await Promise.all([
     User.find(filter)
-      .select("-password -refreshToken -__v")
+      .select("-password")
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(Number(limit)),
     User.countDocuments(filter),
   ]);
-
   res.status(200).json({
     success: true,
     data: users,
@@ -119,7 +118,7 @@ export const getUserById = async (req, res) => {
   let user;
 
   if (mongoose.Types.ObjectId.isValid(id)) {
-    user = await User.findById(id).select("-password -refreshToken -__v");
+    user = await User.findById(id).select(" -password -refreshToken -__v");
   } else {
     user = await User.findOne({ userId: id }).select(
       "-password -refreshToken -__v",
@@ -130,6 +129,7 @@ export const getUserById = async (req, res) => {
     throw new ApiError(404, "User not found");
   }
 
+ 
   res.status(200).json({
     success: true,
     message: "User fetched successfully",
