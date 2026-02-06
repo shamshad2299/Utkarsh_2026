@@ -148,12 +148,12 @@ const EventsPage = () => {
       setLoading(true);
       setError(null);
 
-      // Categories fetch 
+      // Categories fetch
       const categoriesResponse = await api.get("/category/get");
-     const categoriesData = categoriesResponse.data.data || [];
+      const categoriesData = categoriesResponse.data.data || [];
       setCategories(categoriesData);
 
-      // Filter options 
+      // Filter options
       const filters = [{ id: "all", label: "All", icon: Filter }];
 
       categoriesData.forEach((cat) => {
@@ -176,7 +176,7 @@ const EventsPage = () => {
         setFilteredEvents(eventsData);
       } else {
         const eventsResponse = await api.get(`/events/category/${categoryId}`);
-       
+
         const eventsData = eventsResponse.data.data || [];
         setAllEvents(eventsData);
         setFilteredEvents(eventsData);

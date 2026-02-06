@@ -12,6 +12,7 @@ import {
   Loader2
 } from 'lucide-react';
 import api from "../../api/axios.js"
+import { useNavigate } from 'react-router-dom';
 
 const AddEvent = () => {
   const [loading, setLoading] = useState(false);
@@ -36,6 +37,7 @@ const AddEvent = () => {
     fee: 0,
     eventType: 'solo',
   });
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchCategories();
@@ -172,7 +174,7 @@ const AddEvent = () => {
         data.append('images', image);
       });
       
-      const token = localStorage.getItem('accessToken');
+      const token = localStorage.getItem('adminAccessToken');
       if (!token) {
         throw new Error('No authentication token found');
       }
@@ -184,9 +186,10 @@ const AddEvent = () => {
         }
       });
       
-      if (response.data.success) {
+      if(response.data.success) {
         alert('Event created successfully!');
         resetForm();
+        navigate("/admin/dashboard/events-list");
       }
       
     } catch (error) {
@@ -327,7 +330,6 @@ const AddEvent = () => {
                   className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-xl text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                 >
                   <option value="solo">Solo</option>
-                  <option value="duo">Duo</option>
                   <option value="team">Team</option>
                 </select>
               </div>
