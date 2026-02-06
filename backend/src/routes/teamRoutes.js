@@ -7,8 +7,8 @@ import {
   getTeamById,
   deleteTeam,
 } from "../controllers/teamController.js";
-import { verifyJWT } from "../middleWares/authMiddleWare.js";
-import { asyncHandler } from "../middleWares/asyncErrorHandlerMiddleWare.js";
+import { verifyJWT } from "../middlewares/authMiddleWare.js";
+import { asyncHandler } from "../middlewares/asyncErrorHandlerMiddleWare.js";
 
 const router = express.Router();
 

@@ -7,9 +7,9 @@ import {
   getCategoryById,
   updateCategory,
 } from "../controllers/categoryController.js";
-import adminAuth from "../middleWares/adminAuth.js";
-import { upload } from "../middleWares/upload.js";
-import { asyncHandler } from "../middleWares/asyncErrorHandlerMiddleWare.js";
+import adminAuth from "../middlewares/adminAuth.js";
+import { upload } from "../middlewares/upload.js";
+import { asyncHandler } from "../middlewares/asyncErrorHandlerMiddleWare.js";
 
 const router = express.Router();
 
