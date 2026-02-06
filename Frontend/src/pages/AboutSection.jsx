@@ -12,6 +12,10 @@ import {
   ArrowUpRight,
 } from "lucide-react";
 
+
+
+
+
 const AboutSection = () => {
   const highlights = [
     {

@@ -32,7 +32,7 @@ const HeroTitle = () => {
         className="mt-3 text-white/90 font-medium text-lg sm:text-xl md:text-2xl"
         style={{ fontFamily: "Milonga" }}
       >
-        22-24 February 2026
+        26-28 February 2026
       </p>
     </div>
   );
