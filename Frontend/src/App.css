@@ -28,5 +28,13 @@
   line-height: 1;       /* 100% */
   letter-spacing: 0;
 }
+/* Hide scrollbar but keep scrolling */
+.no-scrollbar {
+  overflow: auto;                 /* scrolling ON */
+  -ms-overflow-style: none;       /* IE, Edge */
+  scrollbar-width: none;          /* Firefox */
+}
 
-
+.no-scrollbar::-webkit-scrollbar {
+  display: none;                  /* Chrome, Safari */
+}
