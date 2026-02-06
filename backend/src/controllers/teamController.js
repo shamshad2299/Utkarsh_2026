@@ -147,7 +147,7 @@ export const getTeamById = async (req, res) => {
   });
 };
 
-/* ================= DELETE TEAM (SOFT DELETE) ================= */
+/* ================= DELETE TEAM ================= */
 export const deleteTeam = async (req, res) => {
   const { id } = req.params;
   const userId = req.user._id;

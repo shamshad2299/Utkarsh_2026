@@ -89,6 +89,7 @@ export const registerUser = async (req, res) => {
   }
 };
 
+/* ================= GENERATE ACCESS TOKEN USER ================= */
 export const generateAccessToken = (user) => {
   return jwt.sign(
     {
@@ -102,6 +103,7 @@ export const generateAccessToken = (user) => {
   );
 };
 
+/* ================= GENERATE REFRESH TOKEN USER ================= */
 const generateRefreshToken = (user) => {
   return jwt.sign(
     {
@@ -174,7 +176,7 @@ export const loginUser = async (req, res) => {
   });
 };
 
-//logout 
+/* ================= LOGOUT USER ================= */
 export const logoutUser = async (req, res) => {
   req.user.refreshToken = null;
   await req.user.save({ validateBeforeSave: false });
@@ -187,6 +189,7 @@ export const logoutUser = async (req, res) => {
   });
 };
 
+/* ================= GET ALL USER ================= */
 export const getAllUsers = async (req, res) => {
   try {
     const { all, city } = req.query;
@@ -247,6 +250,7 @@ export const getAllUsers = async (req, res) => {
   }
 };
 
+/* ================= UPDATE USER ================= */
 export const updateUser = async (req, res) => {
   const session = await mongoose.startSession();
   session.startTransaction();

@@ -12,6 +12,7 @@ import teamRoutes from "../src/routes/teamRoutes.js";
 import resultRoutes from "../src/routes/resultRoutes.js";
 import foodStallRoutes from "../src/routes/foodStallRoutes.js";
 import sponsorshipRoutes from "../src/routes/sponsorshipRoutes.js";
+import auditLogRoutes from "../src/routes/auditLogRoutes.js";
 import { globalErrorHandler } from "./middleWares/errorMiddleWare.js";
 import { notFoundHandler } from "./middlewares/notFoundMiddleWare.js";
 
@@ -28,11 +29,11 @@ app.use(express.json());
 
 app.use(express.urlencoded({
   extended: true,
-  limit: '10kb', // Prevent DoS attacks
-  parameterLimit: 50, // Max parameters
+  limit: '10kb', 
+  parameterLimit: 50, 
   type: 'application/x-www-form-urlencoded'
 }));
-app.use(cookieParser()); //  MUST
+app.use(cookieParser());
 app.get("/" , (req , res)=>{
 res.json({
   name : "utkarsh Backend",

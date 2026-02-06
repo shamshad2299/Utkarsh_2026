@@ -3,6 +3,7 @@ import { Registration } from "../models/registerations.model.js";
 import { Event } from "../models/events.model.js";
 import { Team } from "../models/team.model.js";
 import { ApiError } from "../utils/ApiError.js";
+import { logAudit } from "../utils/auditLogger.js";
 
 /* ================= REGISTER FOR EVENT ================= */
 export const registerForEvent = async (req, res) => {
@@ -42,6 +43,15 @@ export const registerForEvent = async (req, res) => {
       formData,
     });
 
+    // AUDIT LOG (USER)
+    await logAudit({
+      req,
+      action: "REGISTRATION_CREATED",
+      targetCollection: "Registration",
+      targetId: registration._id,
+      newData: registration,
+    });
+
     return res.status(201).json({
       success: true,
       message: "Registered successfully",
@@ -59,7 +69,6 @@ export const registerForEvent = async (req, res) => {
     throw new ApiError(404, "Team not found");
   }
 
-  // check if user is part of team
   const isMember =
     team.teamLeader.toString() === userId.toString() ||
     team.teamMembers.some(
@@ -96,6 +105,15 @@ export const registerForEvent = async (req, res) => {
     teamId,
     registeredBy: userId,
     formData,
+  });
+
+  // AUDIT LOG (USER)
+  await logAudit({
+    req,
+    action: "REGISTRATION_CREATED",
+    targetCollection: "Registration",
+    targetId: registration._id,
+    newData: registration,
   });
 
   res.status(201).json({
@@ -156,9 +174,22 @@ export const cancelRegistration = async (req, res) => {
     throw new ApiError(403, "Not authorized to cancel this registration");
   }
 
+  // capture old state
+  const oldData = registration.toObject();
+
   registration.status = "cancelled";
   registration.isDeleted = true;
   await registration.save();
+
+  // AUDIT LOG (USER)
+  await logAudit({
+    req,
+    action: "REGISTRATION_CANCELLED",
+    targetCollection: "Registration",
+    targetId: registration._id,
+    oldData,
+    newData: registration,
+  });
 
   res.status(200).json({
     success: true,

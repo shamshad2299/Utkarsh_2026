@@ -3,8 +3,9 @@ import { Result } from "../models/results.model.js";
 import { Event } from "../models/events.model.js";
 import { Registration } from "../models/registerations.model.js";
 import { ApiError } from "../utils/ApiError.js";
+import { logAudit } from "../utils/auditLogger.js";
 
-/* ================= ADD / UPDATE RESULT (ADMIN) ================= */
+/* ================= ADD RESULT (ADMIN) ================= */
 export const addResult = async (req, res) => {
   const { eventId, registrationId, position } = req.body;
 
@@ -34,6 +35,15 @@ export const addResult = async (req, res) => {
     eventId,
     registrationId,
     position,
+  });
+
+  // AUDIT LOG (ADMIN)
+  await logAudit({
+    req,
+    action: "RESULT_CREATED",
+    targetCollection: "Result",
+    targetId: result._id,
+    newData: result,
   });
 
   res.status(201).json({
@@ -77,8 +87,21 @@ export const lockResults = async (req, res) => {
     throw new ApiError(400, "Results already locked");
   }
 
+  // capture old state
+  const oldData = event.toObject();
+
   event.resultsLocked = true;
   await event.save();
+
+  // AUDIT LOG (ADMIN)
+  await logAudit({
+    req,
+    action: "RESULTS_LOCKED",
+    targetCollection: "Event",
+    targetId: event._id,
+    oldData,
+    newData: event,
+  });
 
   res.status(200).json({
     success: true,
@@ -100,7 +123,19 @@ export const deleteResult = async (req, res) => {
     throw new ApiError(403, "Cannot delete result after locking");
   }
 
+  // capture old state
+  const oldData = result.toObject();
+
   await result.deleteOne();
+
+  // AUDIT LOG (ADMIN)
+  await logAudit({
+    req,
+    action: "RESULT_DELETED",
+    targetCollection: "Result",
+    targetId: result._id,
+    oldData,
+  });
 
   res.status(200).json({
     success: true,

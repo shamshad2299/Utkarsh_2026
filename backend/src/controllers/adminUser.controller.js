@@ -2,6 +2,7 @@
 import mongoose from "mongoose";
 import { User } from "../models/users.model.js";
 import { ApiError } from "../utils/ApiError.js";
+import { logAudit } from "../utils/auditLogger.js";
 
 /* ================= GET USERS (WITH FILTERS) ================= */
 export const getUsers = async (req, res) => {
@@ -9,15 +10,14 @@ export const getUsers = async (req, res) => {
 
   const filter = { isDeleted: false };
 
-  // Search by name or email (❌ _id regex removed – bug)
-  if (search) {
+  if (search) { // can search by userid, email, naem
     filter.$or = [
+      { userId: search },
       { email: { $regex: search, $options: "i" } },
       { name: { $regex: search, $options: "i" } },
     ];
   }
 
-  // Active / Blocked filter
   if (active === "true") filter.isBlocked = false;
   if (active === "false") filter.isBlocked = true;
 
@@ -52,15 +52,34 @@ export const updateUserStatus = async (req, res) => {
     throw new ApiError(400, "Active status must be boolean");
   }
 
-  const user = await User.findOneAndUpdate(
-    { _id: userId, isDeleted: false },
+  // old state data
+  const oldUser = await User.findOne({
+    _id: userId,
+    isDeleted: false,
+  });
+
+  if (!oldUser) {
+    throw new ApiError(404, "User not found or already deleted");
+  }
+
+  const oldData = oldUser.toObject();
+
+  // Update
+  const user = await User.findByIdAndUpdate(
+    userId,
     { isBlocked: !active },
     { new: true },
   ).select("-password -refreshToken -__v");
 
-  if (!user) {
-    throw new ApiError(404, "User not found or already deleted");
-  }
+  // AUDIT LOG
+  await logAudit({
+    req,
+    action: active ? "USER_UNBLOCKED" : "USER_BLOCKED",
+    targetCollection: "User",
+    targetId: user._id,
+    oldData,
+    newData: user,
+  });
 
   res.status(200).json({
     success: true,
@@ -94,15 +113,34 @@ export const updateUserDetails = async (req, res) => {
     throw new ApiError(400, "No valid fields provided for update");
   }
 
+  // old state data
+  const oldUser = await User.findOne({
+    _id: userId,
+    isDeleted: false,
+  });
+
+  if (!oldUser) {
+    throw new ApiError(404, "User not found or already deleted");
+  }
+
+  const oldData = oldUser.toObject();
+
+  // Update
   const user = await User.findOneAndUpdate(
     { _id: userId, isDeleted: false },
     updates,
     { new: true, runValidators: true },
   ).select("-password -refreshToken -__v");
 
-  if (!user) {
-    throw new ApiError(404, "User not found or already deleted");
-  }
+  // AUDIT LOG
+  await logAudit({
+    req,
+    action: "USER_UPDATED",
+    targetCollection: "User",
+    targetId: user._id,
+    oldData,
+    newData: user,
+  });
 
   res.status(200).json({
     success: true,
@@ -137,7 +175,7 @@ export const getUserById = async (req, res) => {
   });
 };
 
-/* ================= DELETE USER (SOFT DELETE - ADMIN) ================= */
+/* ================= DELETE USER  ================= */
 export const deleteUser = async (req, res) => {
   const session = await mongoose.startSession();
   session.startTransaction();
@@ -154,8 +192,21 @@ export const deleteUser = async (req, res) => {
       throw new ApiError(400, "User already deleted");
     }
 
+    const oldData = user.toObject();
+
     user.isDeleted = true;
     await user.save({ session });
+
+    // AUDIT LOG 
+    await logAudit({
+      req,
+      action: "USER_DELETED",
+      targetCollection: "User",
+      targetId: user._id,
+      oldData,
+      newData: user,
+      session,
+    });
 
     await session.commitTransaction();
     session.endSession();
@@ -167,6 +218,6 @@ export const deleteUser = async (req, res) => {
   } catch (error) {
     await session.abortTransaction();
     session.endSession();
-    throw error; // ✅ ApiError/global handler will catch
+    throw error;
   }
 };
