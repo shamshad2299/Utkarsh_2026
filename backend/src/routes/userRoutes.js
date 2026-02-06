@@ -1,29 +1,64 @@
 // src/routes/userRoutes.js
 import express from "express";
-import {  loginUser, logoutUser, registerUser, updateMyProfile, updateUser } from "../controllers/userController.js";
-import {  refreshUserAccessToken } from "../controllers/refreshTokenController.js";
-import { requestPasswordReset, resetPassword } from "../controllers/resetPasswordController.js";
+import {
+  loginUser,
+  logoutUser,
+  registerUser,
+  updateMyProfile,
+  updateUser,
+} from "../controllers/userController.js";
+import { refreshUserAccessToken } from "../controllers/refreshTokenController.js";
+import {
+  requestPasswordReset,
+  resetPassword,
+} from "../controllers/resetPasswordController.js";
 import adminAuth from "../middleWares/adminAuth.js";
 import { verifyJWT } from "../middleWares/authMiddleWare.js";
-import { deleteUser, getUserById } from "../controllers/adminUser.controller.js";
+import {
+  deleteUser,
+  getUserById,
+} from "../controllers/adminUser.controller.js";
 import { asyncHandler } from "../middleWares/asyncErrorHandlerMiddleWare.js";
+
 const router = express.Router();
 
-router.post("/register" , registerUser);
-router.post("/login" , loginUser);
-router.post("/logout", verifyJWT, logoutUser);
+/* ================= AUTH / PUBLIC ================= */
 
-//verify refresh token 
+router.post("/register", asyncHandler(registerUser));
+router.post("/login", asyncHandler(loginUser));
 router.post("/refresh-token", asyncHandler(refreshUserAccessToken));
 
-//reset-password through mail
-router.post("/request-pass-reset-otp" , asyncHandler(requestPasswordReset));
-router.post("/reset-password" , asyncHandler(resetPassword));
+router.post(
+  "/request-pass-reset-otp",
+  asyncHandler(requestPasswordReset)
+);
+router.post("/reset-password", asyncHandler(resetPassword));
 
-//get all user @only for admin
-router.get("/users/:id", adminAuth, asyncHandler(getUserById));
-router.put("/update/users/:id", adminAuth, asyncHandler(updateUser));
-router.delete("/:id", adminAuth, asyncHandler(deleteUser));
-router.patch("/me" , verifyJWT , updateMyProfile);
+/* ================= USER (AUTH REQUIRED) ================= */
 
-export default router
+router.post("/logout", verifyJWT, asyncHandler(logoutUser));
+router.patch("/me", verifyJWT, asyncHandler(updateMyProfile));
+
+/* ================= ADMIN ================= */
+
+// static prefix first
+router.get(
+  "/users/:id",
+  adminAuth,
+  asyncHandler(getUserById)
+);
+
+router.put(
+  "/update/users/:id",
+  adminAuth,
+  asyncHandler(updateUser)
+);
+
+// generic dynamic LAST
+router.delete(
+  "/:id",
+  adminAuth,
+  asyncHandler(deleteUser)
+);
+
+export default router;

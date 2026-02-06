@@ -1,32 +1,62 @@
 // src/routes/categoryRoutes.js
 import express from "express";
-import {addCategory,deleteCategory,getAllCategories,getCategoryById,updateCategory,} from "../controllers/categoryController.js";
+import {
+  addCategory,
+  deleteCategory,
+  getAllCategories,
+  getCategoryById,
+  updateCategory,
+} from "../controllers/categoryController.js";
 import adminAuth from "../middleWares/adminAuth.js";
 import { upload } from "../middleWares/upload.js";
 import { asyncHandler } from "../middleWares/asyncErrorHandlerMiddleWare.js";
 
 const router = express.Router();
 
-// Add category
+/* =======================
+   CREATE
+======================= */
 router.post(
   "/add",
   adminAuth,
-  upload.single("image"),   // ✅ single image
+  upload.single("image"),
   asyncHandler(addCategory)
 );
 
-// Get category by id
-router.get("/:id", asyncHandler(getCategoryById));
-// Get all categories
+/* =======================
+   READ (STATIC FIRST)
+======================= */
+
+// ✅ Get all categories
 router.get("/get", asyncHandler(getAllCategories));
 
-// Get category by id
+// ✅ Get category by id (explicit)
 router.get("/get/:id", asyncHandler(getCategoryById));
 
-// Update category
-router.put("/update/:id",adminAuth,upload.single("image"),asyncHandler(updateCategory),);
+/* =======================
+   UPDATE
+======================= */
+router.put(
+  "/update/:id",
+  adminAuth,
+  upload.single("image"),
+  asyncHandler(updateCategory)
+);
 
-// Delete category
-router.delete("/delete/:id", adminAuth, asyncHandler(deleteCategory));
+/* =======================
+   DELETE
+======================= */
+router.delete(
+  "/delete/:id",
+  adminAuth,
+  asyncHandler(deleteCategory)
+);
+
+/* =======================
+   ❗ DYNAMIC ROUTE LAST
+======================= */
+
+// ⚠️ This must be LAST
+router.get("/:id", asyncHandler(getCategoryById));
 
 export default router;
