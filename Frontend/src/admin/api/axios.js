@@ -1,26 +1,48 @@
 import axios from "axios";
 
+const API_URL = import.meta.env.VITE_API_URL;
+
+let isRefreshing = false;
+let failedQueue = [];
+
+const processQueue = (error, token = null) => {
+  failedQueue.forEach(({ resolve, reject, config }) => {
+    if (error) reject(error);
+    else {
+      config.headers.Authorization = `Bearer ${token}`;
+      resolve(api(config));
+    }
+  });
+  failedQueue = [];
+};
+
 const api = axios.create({
-  baseURL: "http://localhost:7000/api",
+  baseURL: API_URL,
   withCredentials: true,
 });
 
-// Attach access token
+// attach admin access token
 api.interceptors.request.use((config) => {
-  
-  const token = localStorage.getItem("adminAccessToken");
-
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
+  if (typeof window !== "undefined") {
+    const token = localStorage.getItem("adminAccessToken");
+    if (token && !config.headers.Authorization) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
   }
   return config;
 });
 
-// Auto refresh on 401
+// response interceptor
 api.interceptors.response.use(
-  (response) => response,
+  (res) => res,
   async (error) => {
     const originalRequest = error.config;
+    if (!originalRequest) return Promise.reject(error);
+
+    // ⛔ never retry refresh endpoint itself
+    if (originalRequest.url?.endsWith("/admin/auth/refresh-token")) {
+      return Promise.reject(error);
+    }
 
     if (
       error.response?.status === 401 &&
@@ -28,29 +50,36 @@ api.interceptors.response.use(
     ) {
       originalRequest._retry = true;
 
-      try {
-        const res = await axios.post(
-          "http://localhost:7000/api/admin/auth/refresh-token",
-          {},
-          { withCredentials: true }
-        );
+      if (isRefreshing) {
+        return new Promise((resolve, reject) => {
+          failedQueue.push({ resolve, reject, config: originalRequest });
+        });
+      }
 
-        const newAccessToken = res.data.accessToken;
+      isRefreshing = true;
+
+      try {
+        const { data } = await api.post(
+          "/admin/auth/refresh-token",
+          {}
+        );
 
         localStorage.setItem(
           "adminAccessToken",
-          newAccessToken
+          data.accessToken
         );
 
-        originalRequest.headers.Authorization =
-          `Bearer ${newAccessToken}`;
-
+        processQueue(null, data.accessToken);
         return api(originalRequest);
 
-      } catch (refreshError) {
-        // Refresh failed → force logout
+      } catch (err) {
+        processQueue(err, null);
         localStorage.clear();
         window.location.href = "/admin/login";
+        return Promise.reject(err);
+
+      } finally {
+        isRefreshing = false;
       }
     }
 
@@ -59,6 +88,7 @@ api.interceptors.response.use(
 );
 
 export default api;
+
 
 
 export const subcategoryService = {

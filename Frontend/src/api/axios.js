@@ -1,7 +1,6 @@
 import axios from "axios";
 
-const API_URL = "http://localhost:7000/api";
-
+const API_URL = import.meta.env.VITE_API_URL;
 const PUBLIC_URLS = [
   "/v1/auth/login",
   "/v1/auth/forgot-password",

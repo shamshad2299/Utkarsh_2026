@@ -20,6 +20,8 @@ import AllEvents from "./website/AllEvent/AllEvents";
 import EventsLayout from "./website/EventLayout/EventLayout";
 
 function App() {
+ 
+
   return (
     <BrowserRouter>
       <Routes>
