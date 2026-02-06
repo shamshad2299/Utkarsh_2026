@@ -1,11 +1,11 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import "./App.css"
 
 import Layout from "./component/Layout/Layout";
 import Home from "./pages/Home";
 import SponsorshipForm from "./component/SponsorshipForm";
 import FoodStallForm from "./component/FoodStallForm";
 import AboutSection from "./pages/AboutSection";
-
 
 import LoginPage from "./component/Auth/LoginPage";
 import RegistrationPage from "./component/Auth/RegistrationPage";
@@ -15,7 +15,9 @@ import AdminRegister from "./admin/pages/AdminRegister";
 import AdminRoutes from "./admin/routes/AdminRoutes";
 
 import ProfileDashboard from "./pages/ProfileDashboard";
-import EventsPage from "./website/EventsPage/EventsPage";
+
+import AllEvents from "./website/AllEvent/AllEvents";
+import EventsLayout from "./website/EventLayout/EventLayout";
 
 function App() {
   return (
@@ -24,11 +26,16 @@ function App() {
         <Route path="/" element={<Layout />}>
           <Route index element={<Home />} />
           <Route path="dashboard" element={<Home />} />
-           <Route path="about" element={<AboutSection />} />
+          <Route path="about" element={<AboutSection />} />
           <Route path="profile" element={<ProfileDashboard />} />
           <Route path="sponsorship_form" element={<SponsorshipForm />} />
           <Route path="food_stall_form" element={<FoodStallForm />} />
-           <Route path="events/category/:categoryId" element={<EventsPage />} />
+  
+
+          {/* event filter routing  */}
+          <Route path="events" element={<EventsLayout />}>
+            <Route index element={<AllEvents />} />
+          </Route>
         </Route>
 
         <Route path="/login" element={<LoginPage />} />

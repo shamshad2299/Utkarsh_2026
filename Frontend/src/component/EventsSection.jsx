@@ -70,15 +70,15 @@ const EventsSection = () => {
   };
 
   const handleSeeAll = () => {
-    fetchAllEvents();
-    setSelectedCategory("all");
+   navigate("/events")
     
   };
 
   // Add this new function to handle category click
-  const handleCategoryClick = (categoryId) => {
+  const handleCategoryClick = (categ) => {
     // Navigate to events page with category ID
-    navigate(`/events/category/${categoryId}`);
+    navigate(`/events?filter=${categ?._id}`);
+  
   };
 
   // Get category name by ID
@@ -172,7 +172,7 @@ const EventsSection = () => {
                 >
                   <EventCard
                     title={categ.name}
-                    onClick={() => handleCategoryClick(categ._id)} // Changed this
+                    onClick={() => handleCategoryClick(categ)} // Changed this
                     isActive={selectedCategory === categ._id}
                   />
                 </div>
