@@ -1,6 +1,6 @@
 // src/routes/subCategoryRoutes.js
 import express from "express";
-import {addSubCategory,deleteSubCategory,getAllSubCategories,getSubCategoryByCategory,updateSubCategory,} from "../controllers/subEventCategoryController.js";
+import {addSubCategory,deleteSubCategory,getAllSubCategories,getSubCategoryByCategory,getSubCategoryById,updateSubCategory,} from "../controllers/subEventCategoryController.js";
 import adminAuth from "../middleWares/adminAuth.js";
 import { asyncHandler } from "../middleWares/asyncErrorHandlerMiddleWare.js";
 

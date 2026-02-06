@@ -1,6 +1,6 @@
 // src/routes/eventRoutes.js
 import express from "express";
-import {createEvent,getAllEvents,getEventById,updateEvent,deleteEvent,} from "../controllers/eventController.js";
+import {createEvent,getAllEvents,getEventById,updateEvent,deleteEvent, getEventsByCategory,} from "../controllers/eventController.js";
 import adminAuth from "../middleWares/adminAuth.js";
 import { upload } from "../middleWares/upload.js";
 import { asyncHandler } from "../middleWares/asyncErrorHandlerMiddleWare.js";
