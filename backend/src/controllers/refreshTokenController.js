@@ -57,10 +57,11 @@ export const refreshAdminAccessToken = async (req, res) => {
       token,
       process.env.JWT_REFRESH_SECRET_ADMIN
     );
-  } catch (err) {
+  } catch {
     throw new ApiError(401, "Invalid or expired admin refresh token");
   }
 
+  // 🔥 FIX HERE
   const admin = await Admin.findById(decoded.id).select("+refreshToken");
 
   if (!admin || admin.refreshToken !== token) {

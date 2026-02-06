@@ -1,24 +1,24 @@
 .heading {
   font-family: "Poppins", sans-serif;
-  font-weight: 900;        /* Black = 900 */
+  font-weight: 900;        
   font-size: 120px;
-  line-height: 120px;      /* same as font-size */
+  line-height: 120px;      
   letter-spacing: 0;
   text-transform: uppercase;
 }
 
 .text2 {
   font-family: "Milonga", serif;
-  font-weight: 400;      /* Regular */
+  font-weight: 400;      
   font-size: 28px;
-  line-height: 1;        /* 100% = 1 */
+  line-height: 1;        
   letter-spacing: 0;
 }
 .text1 {
   font-family: "Milonga", serif;
-  font-weight: 400;        /* Regular */
+  font-weight: 400;        
   font-size: 32.26px;
-  line-height: 1;          /* 100% */
+  line-height: 1;          
   letter-spacing: 0;
 }
 .nav-item {

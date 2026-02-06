@@ -16,7 +16,9 @@ router.post("/",adminAuth,upload.array("images", 5),asyncHandler(createEvent),);
 router.get("/", asyncHandler(getAllEvents));
 
 // Get event by id
+router.get("/:categoryId", getEventsByCategory);
 router.get("/:id", asyncHandler(getEventById));
+
 
 // Update event (Admin)
 router.put("/:id",adminAuth,upload.array("images", 5),asyncHandler(updateEvent),);

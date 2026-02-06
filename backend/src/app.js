@@ -42,16 +42,15 @@ res.json({
 })
 
 app.use("/api/v1/auth" , authRoutes);
-app.use("/api/v1/admin/", adminRoutes);
-app.use("/category" , categoryRoutes);
-app.use("/subCategory" , subCategoryRoutes);
-app.use("/events", eventRoutes);
-app.use("/registrations", registrationRoutes);
-app.use("/teams", teamRoutes);
-app.use("/results", resultRoutes);
-app.use("/food-stalls", foodStallRoutes);
-app.use("/sponsorships", sponsorshipRoutes);
-app.use("/api/v1/admin/audit-logs", auditLogRoutes);
+app.use("/api/admin/auth", adminRoutes);
+app.use("/api/category" , categoryRoutes);
+app.use("/api/subCategory" , subCategoryRoutes);
+app.use("/api/events", eventRoutes);
+app.use("/api/registrations", registrationRoutes);
+app.use("/api/teams", teamRoutes);
+app.use("/api/results", resultRoutes);
+app.use("/api/food-stalls", foodStallRoutes);
+app.use("/api/sponsorships", sponsorshipRoutes);
 
 /* ================= 404 HANDLER ================= */
 app.use(notFoundHandler);

@@ -10,6 +10,10 @@ const eventSchema = new mongoose.Schema(
       ref: "Category",
       required: true,
     },
+    
+    event_rule:{
+      type :String,
+    },
 
     subCategory: {
       type: mongoose.Schema.Types.ObjectId,

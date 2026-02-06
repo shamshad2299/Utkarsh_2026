@@ -38,14 +38,14 @@ const FoodStallForm = () => {
 
   return (
     <>
-      {/* BACKGROUND */}
+      
       <div
         className="min-h-screen flex items-center justify-center px-4 bg-cover bg-center"
         style={{
           backgroundImage: `linear-gradient(rgba(0,0,0,0.65), rgba(0,0,0,0.65)), url(${foodBg})`,
         }}
       >
-        {/* HOME BUTTON */}
+      
         <div 
           className="absolute top-6 left-6 flex items-center gap-2 cursor-pointer z-20 hover:text-yellow-400 transition-colors"
           onClick={handleBackToHome}
@@ -54,7 +54,7 @@ const FoodStallForm = () => {
           <span className="tracking-widest font-semibold">Home</span>
         </div>
 
-        {/* MAIN CARD (VIOLET GLASS + VIOLET GLOW) */}
+    
         <div
           className={`
             relative w-full max-w-3xl rounded-3xl p-10
@@ -65,7 +65,7 @@ const FoodStallForm = () => {
             ${show ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"}
           `}
         >
-          {/* VIOLET GLOW */}
+          
           <div className="absolute -inset-1 rounded-3xl bg-linear-to-br from-[#4a4a71] to-purple-700/40 blur-2xl -z-10" />
 
           {/* HEADER */}
@@ -78,12 +78,12 @@ const FoodStallForm = () => {
             </p>
           </div>
 
-          {/* INNER FORM BOX */}
+        
           <form
             onSubmit={handleSubmit}
             className="bg-white/5 border border-white/15 rounded-2xl p-8 space-y-8"
           >
-            {/* BUSINESS DETAILS */}
+      
             <div>
               <h3 className="text-lg font-semibold text-yellow-400 mb-6">
                 Business Details
@@ -111,7 +111,7 @@ const FoodStallForm = () => {
               </div>
             </div>
 
-            {/* STALL COUNT */}
+            
             <div>
               <h3 className="text-lg font-semibold text-yellow-400 mb-4">
                 Stall Requirement
@@ -133,7 +133,7 @@ const FoodStallForm = () => {
               </div>
             </div>
 
-            {/* SUBMIT */}
+        
             <div className="text-center pt-4">
               <button
                 disabled={loading}
@@ -156,7 +156,7 @@ const FoodStallForm = () => {
         </div>
       </div>
 
-      {/* SUCCESS POPUP */}
+    
       {success && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80">
           <div className="backdrop-blur-xl bg-white/15 border border-yellow-400/40 rounded-3xl p-8 max-w-md text-center text-white shadow-[0_20px_60px_rgba(255,193,7,0.6)] animate-scaleIn">
@@ -176,7 +176,7 @@ const FoodStallForm = () => {
         </div>
       )}
 
-      {/* Animation */}
+  
       <style>{`
         @keyframes scaleIn {
           from { transform: scale(0.9); opacity: 0; }
@@ -190,7 +190,7 @@ const FoodStallForm = () => {
   );
 };
 
-/* FLOATING INPUT – GOLD THEME (unchanged) */
+
 const FloatingInput = ({ label, type = "text", icon }) => (
   <div className="relative">
     <input

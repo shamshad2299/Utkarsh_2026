@@ -12,15 +12,13 @@ export const AuthProvider = ({ children }) => {
   // ===== USER AUTH =====
   const register = async (payload) => {
     const { data } = await api.post("/v1/auth/register", payload);
-    
-    console.log("data" , data);
     return data;
   };
 
   const login = async (payload) => {
     setLoading(true);
     const { data } = await api.post("/v1/auth/login", payload);
-    console.log("data" , data)
+  
 
     localStorage.setItem("accessToken", data.accessToken);
     localStorage.setItem("user", JSON.stringify(data.user));

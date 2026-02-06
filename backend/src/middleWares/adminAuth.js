@@ -16,6 +16,7 @@ const adminAuth = async (req, res, next) => {
   try {
     // Verify token
     const decoded = jwt.verify(token, process.env.JWT_SECRET_ADMIN);
+  
 
     // Find admin
     const admin = await Admin.findById(decoded.id).select("-password");
@@ -36,6 +37,7 @@ const adminAuth = async (req, res, next) => {
     // Attach admin to request
     req.admin = admin;
     next();
+    
   } catch (err) {
     return next(new ApiError(401, "Invalid or expired admin token"));
   }

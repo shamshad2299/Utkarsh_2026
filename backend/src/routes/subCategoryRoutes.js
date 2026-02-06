@@ -12,10 +12,16 @@ const router = express.Router();
 router.post("/add", adminAuth, asyncHandler(addSubCategory));
 
 // Get all subcategories
-router.get("/", adminAuth, asyncHandler(getAllSubCategories));
+router.get("/subcategories", asyncHandler(getAllSubCategories));
 
 // Get subcategories by category
-router.get("/:categoryId",adminAuth,asyncHandler(getSubCategoryByCategory),);
+router.get(
+  "/get-by-categ/:categoryId",
+  adminAuth,
+  asyncHandler(getSubCategoryByCategory),
+);
+router.get("/subcategories/:id", asyncHandler(getSubCategoryById));
+
 
 // Update subcategory
 router.patch("/:id", adminAuth, asyncHandler(updateSubCategory));

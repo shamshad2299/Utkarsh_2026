@@ -59,6 +59,7 @@ export const deleteSubCategory = async (req, res) => {
   });
 };
 
+
 /* ================= GET ALL SUB CATEGORIES ================= */
 export const getAllSubCategories = async (req, res) => {
   const subCategories = await SubCategory.find()
@@ -72,12 +73,29 @@ export const getAllSubCategories = async (req, res) => {
   });
 };
 
+/* ================= GET SUB CATEGORY BY ID ================= */
+export const getSubCategoryById = async (req, res) => {
+  const { id } = req.params;
+
+  const subCategory = await SubCategory.findById(id)
+    .populate("category", "name slug");
+
+  if (!subCategory) {
+    throw new ApiError(404, "SubCategory not found");
+  }
+
+  res.status(200).json({
+    success: true,
+    data: subCategory,
+  });
+};
+
 /* ================= GET SUB CATEGORIES BY CATEGORY ================= */
 export const getSubCategoryByCategory = async (req, res) => {
   const { categoryId } = req.params;
 
   const subCategories = await SubCategory.find({ category: categoryId })
-    .populate("category", "name slug")
+    .populate("category", "title slug")
     .sort({ createdAt: -1 });
 
   res.status(200).json({

@@ -7,17 +7,21 @@ import { asyncHandler } from "../middleWares/asyncErrorHandlerMiddleWare.js";
 
 const router = express.Router();
 
-// public routes for categories
+// Add category
+router.post(
+  "/add",
+  adminAuth,
+  upload.single("image"),   // ✅ single image
+  asyncHandler(addCategory)
+);
 
 // Get category by id
 router.get("/:id", asyncHandler(getCategoryById));
 // Get all categories
-router.get("/", asyncHandler(getAllCategories));
+router.get("/get", asyncHandler(getAllCategories));
 
-
-//admin routes for categories
-// Add category
-router.post("/add",adminAuth,upload.single("image"),asyncHandler(addCategory),);
+// Get category by id
+router.get("/get/:id", asyncHandler(getCategoryById));
 
 // Update category
 router.put("/update/:id",adminAuth,upload.single("image"),asyncHandler(updateCategory),);

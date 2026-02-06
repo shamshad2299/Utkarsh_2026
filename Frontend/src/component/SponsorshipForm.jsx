@@ -153,27 +153,32 @@ const SponsorshipForm = () => {
   );
 };
 
-/* 🔹 FLOATING INPUT (INLINE, NO EXTRA FILE) */
+/* 🔹 FLOATING INPUT (FIXED LABEL BEHAVIOUR) */
 const FloatingInput = ({ label, type = "text", icon }) => (
   <div className="relative">
     <input
       type={type}
       required
       placeholder=" "
-      className="peer w-full bg-black/30 border border-white/20 rounded-xl px-12 py-4 
-      text-white placeholder-transparent focus:outline-none focus:ring-2 focus:ring-yellow-400 transition"
+      className="peer w-full bg-black/30 border border-white/20 rounded-xl px-12 py-4
+      text-white placeholder-transparent
+      focus:outline-none focus:ring-2 focus:ring-yellow-400 transition"
     />
 
     {/* ICON */}
-    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 peer-focus:text-yellow-400">
+    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400
+    peer-focus:text-yellow-400 peer-not-placeholder-shown:text-yellow-400">
       {icon}
     </div>
 
-    {/* FLOATING LABEL */}
+    {/* FLOATING LABEL (FIXED) */}
     <label
       className="absolute left-12 top-4 text-gray-400 transition-all
       peer-placeholder-shown:top-4 peer-placeholder-shown:text-base
-      peer-focus:top-1 peer-focus:text-xs peer-focus:text-yellow-400"
+      peer-focus:top-1 peer-focus:text-xs peer-focus:text-yellow-400
+      peer-not-placeholder-shown:top-1
+      peer-not-placeholder-shown:text-xs
+      peer-not-placeholder-shown:text-yellow-400"
     >
       {label}
     </label>

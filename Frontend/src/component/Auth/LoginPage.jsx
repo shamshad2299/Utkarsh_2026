@@ -51,7 +51,7 @@ const LoginPage = () => {
       });
       setSuccess("Login successful! Redirecting...");
       setTimeout(() => {
-        navigate("/dashboard");
+        navigate("/profile");
       }, 1000);
     } catch (err) {
       console.error("Login failed", err);

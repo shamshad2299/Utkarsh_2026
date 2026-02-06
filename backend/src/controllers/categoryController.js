@@ -56,6 +56,7 @@ export const addCategory = async (req, res) => {
     targetId: category._id,
     newData: category,
   });
+ 
 
   res.status(201).json({
     success: true,
@@ -154,6 +155,7 @@ export const updateCategory = async (req, res) => {
   });
 };
 
+
 /* ================= DELETE CATEGORY ================= */
 export const deleteCategory = async (req, res) => {
   const { id } = req.params;
@@ -187,3 +189,4 @@ export const deleteCategory = async (req, res) => {
     message: "Category deleted successfully",
   });
 };
+

@@ -1,37 +1,70 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import utkarshLogo from "../assets/utkarsh_logo_new.png";
 import bbdLogo from "../assets/bbd-logo.png";
+import rulebookPdf from "../assets/rulebook.pdf";
 import { Link, useNavigate, useLocation } from "react-router-dom";
+import { useAuth } from "../Context/AuthContext";
 
 const Navbar = () => {
+  const { user, logout } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const Navigate = useNavigate();
-
+  const navigate = useNavigate();
   const location = useLocation();
 
+  const isLoggedIn = !!user;
+
   const handleNavClick = (item) => {
-    // routes wale pages
-    if (item === "Sponsorship_form") {
-      Navigate("/sponsorship_form");
-      return;
-    }
-    if (item === "Food_stall_form") {
-      Navigate("/food_stall_form");
+    if (item === "Rulebook") {
+      window.open(rulebookPdf, "_blank");
+      setIsMenuOpen(false);
       return;
     }
 
-    // scroll wale sections
-    const sectionId = item.toLowerCase();
+    if (item === "Sponsorship_form") {
+      navigate("/sponsorship_form");
+      setIsMenuOpen(false);
+      return;
+    }
+
+    if (item === "Food_stall_form") {
+      navigate("/food_stall_form");
+      setIsMenuOpen(false);
+      return;
+    }
+
+    if (item === "Profile") {
+      navigate("/profile");
+      setIsMenuOpen(false);
+      return;
+    }
+
+    if (item === "About") {
+      navigate("/about");
+      setIsMenuOpen(false);
+      return;
+    }
+
+    const sectionMap = {
+      Events: "events",
+      Schedule: "schedule",
+    };
+
+    const sectionId = sectionMap[item];
+    if (!sectionId) return;
 
     if (location.pathname === "/") {
-      document
-        .getElementById(sectionId)
-        ?.scrollIntoView({ behavior: "smooth" });
+      document.getElementById(sectionId)?.scrollIntoView({ behavior: "smooth" });
     } else {
-      Navigate("/", { state: { scrollTo: sectionId } });
+      navigate("/", { state: { scrollTo: sectionId } });
     }
 
     setIsMenuOpen(false);
+  };
+
+  const handleLogout = () => {
+    logout();
+    setIsMenuOpen(false);
+    navigate("/");
   };
 
   const navItems = [
@@ -41,110 +74,133 @@ const Navbar = () => {
     "Rulebook",
     "Sponsorship_form",
     "Food_stall_form",
+    ...(isLoggedIn ? ["Profile"] : []),
   ];
 
   return (
-    <>
-      <nav className="fixed top-0 w-full inset-x-0 px-4 sm:px-6 lg:px-8 py-6 z-50 bg-[#050214]">
-        <div className=" mx-auto">
-          <div className="flex items-center justify-between">
-            {/* Left logos container */}
-            <div className="flex items-center gap-4 sm:gap-6 md:gap-10">
-              {/* Utkarsh Logo */}
-              <div
-                className="bg-white p-1 rounded-sm shrink-0 cursor-pointer"
-                onClick={() => Navigate("/")}
+    <nav className="fixed top-0 w-full inset-x-0 px-4 sm:px-6 lg:px-8 py-6 z-50 bg-[#080131]">
+      <div className="mx-auto">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4 sm:gap-6 md:gap-10">
+            <div
+              className="bg-white p-1 rounded-sm cursor-pointer"
+              onClick={() => navigate("/")}
+            >
+              <img
+                src={utkarshLogo}
+                alt="Utkarsh Logo"
+                className="h-10 w-10 sm:h-12 sm:w-12 object-contain"
+              />
+            </div>
+
+            <div className="bg-white px-2 py-1 rounded-sm flex items-center gap-2">
+              <img
+                src={bbdLogo}
+                alt="BBD Logo"
+                className="h-10 sm:h-12 object-contain"
+              />
+            </div>
+          </div>
+
+          <div className="hidden lg:flex absolute left-1/2 -translate-x-1/2 gap-10">
+            {navItems.map((item) => (
+              <button
+                key={item}
+                onClick={() => handleNavClick(item)}
+                className="italic text-lg hover:text-purple-400 transition"
+                style={{ fontFamily: "Milonga" }}
               >
-                <img
-                  src={utkarshLogo}
-                  alt="Utkarsh Logo"
-                  className="h-10 w-10 sm:h-12 sm:w-12 object-contain"
-                  loading="lazy"
-                />
-              </div>
+                {item}
+              </button>
+            ))}
+          </div>
 
-              {/* BBD Logo */}
-              <div className="bg-white px-2 py-1 rounded-sm flex items-center gap-2 shrink-0">
-                <img
-                  src={bbdLogo}
-                  alt="BBD Logo"
-                  className="h-10 sm:h-12 object-contain"
-                  loading="lazy"
-                />
-              </div>
-            </div>
-
-            {/* Desktop Navigation Items */}
-            <div className="hidden lg:flex ml-20 xl:w-4xl  items-center gap-8 xl:gap-12 absolute  xl:justify-between left-1/2 transform -translate-x-1/2">
-              {navItems.map((item) => (
+          <div className="flex items-center gap-4">
+            {isLoggedIn ? (
+              <div className="flex items-center gap-4">
+                <span className="hidden sm:block text-sm text-white/80">
+                  Hello, {user.name || user.username || "User"}
+                </span>
                 <button
-                  key={item}
-                  onClick={() => handleNavClick(item)}
-                  className="text-base nav-item xl:text-lg italic cursor-pointer hover:text-purple-400 transition-colors duration-200 whitespace-nowrap"
-                  style={{ fontFamily: "Milonga" }}
+                  onClick={handleLogout}
+                  className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-full font-bold text-sm transition"
                 >
-                  {item}
+                  Logout
                 </button>
-              ))}
-            </div>
-
-            {/* Right section - Login and Mobile Menu */}
-            <div className="flex items-center gap-4">
-              {/* Desktop Login Button */}
+              </div>
+            ) : (
               <Link
-                to={"/login"}
-                className="hidden sm:block bg-white text-[#050214] px-6 sm:px-8 py-2 rounded-full font-bold text-sm hover:bg-gray-200 transition-colors duration-200 whitespace-nowrap"
+                to="/login"
+                className="hidden sm:block bg-white text-[#050214] px-6 py-2 rounded-full font-bold text-sm hover:bg-gray-200 transition"
               >
                 Login
               </Link>
+            )}
 
-              {/* Mobile Menu Toggle */}
-              <button
-                onClick={() => setIsMenuOpen(!isMenuOpen)}
-                className="lg:hidden flex flex-col items-center justify-center w-10 h-10"
-                aria-label="Toggle menu"
-              >
-                <span
-                  className={`block w-6 h-0.5 bg-white transition-all duration-300 ${isMenuOpen ? "rotate-45 translate-y-1.5" : ""}`}
-                ></span>
-                <span
-                  className={`block w-6 h-0.5 bg-white my-1.5 transition-all duration-300 ${isMenuOpen ? "opacity-0" : "opacity-100"}`}
-                ></span>
-                <span
-                  className={`block w-6 h-0.5 bg-white transition-all duration-300 ${isMenuOpen ? "-rotate-45 -translate-y-1.5" : ""}`}
-                ></span>
-              </button>
-            </div>
-          </div>
-
-          {/* Mobile Navigation Menu */}
-          <div
-            className={`lg:hidden transition-all duration-300 ease-in-out overflow-hidden ${
-              isMenuOpen ? "max-h-100  mt-4 opacity-100" : "max-h-0 opacity-0"
-            }`}
-          >
-            <div className=" border-t border-purple-500/30 pt-4">
-              <div className="flex flex-col gap-4">
-                {navItems.map((item) => (
-                  <button
-                    onClick={() => handleNavClick(item)}
-                    className="text-base italic hover:text-purple-400 transition-colors duration-200 py-2 text-left"
-                    style={{ fontFamily: "Milonga" }}
-                  >
-                    {item}
-                  </button>
-                ))}
-
-                {/* Mobile Login Button */}
-                <button className="sm:hidden bg-white text-[#050214] px-8 py-2 rounded-full font-bold text-sm hover:bg-gray-200 transition-colors duration-200 mt-2 w-full">
-                  Login
-                </button>
-              </div>
-            </div>
+            <button
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              className="lg:hidden flex flex-col justify-center w-10 h-10"
+            >
+              <span
+                className={`w-6 h-0.5 bg-white mb-1 transition ${
+                  isMenuOpen ? "rotate-45 translate-y-1.5" : ""
+                }`}
+              />
+              <span
+                className={`w-6 h-0.5 bg-white mb-1 transition ${
+                  isMenuOpen ? "opacity-0" : ""
+                }`}
+              />
+              <span
+                className={`w-6 h-0.5 bg-white transition ${
+                  isMenuOpen ? "-rotate-45 -translate-y-1.5" : ""
+                }`}
+              />
+            </button>
           </div>
         </div>
-      </nav>
-    </>
+
+        <div
+          className={`lg:hidden overflow-hidden transition-all duration-300 ${
+            isMenuOpen ? "max-h-96 mt-4 opacity-100" : "max-h-0 opacity-0"
+          }`}
+        >
+          <div className="border-t border-purple-500/30 pt-4 flex flex-col gap-4">
+            {navItems.map((item) => (
+              <button
+                key={item}
+                onClick={() => handleNavClick(item)}
+                className="italic text-left hover:text-purple-400 transition"
+                style={{ fontFamily: "Milonga" }}
+              >
+                {item}
+              </button>
+            ))}
+
+            {isLoggedIn ? (
+              <div className="flex flex-col gap-3">
+                <div className="text-sm text-white/80 border-b border-purple-500/30 pb-2">
+                  Logged in as: <span className="font-semibold">{user.name || user.username || "User"}</span>
+                </div>
+                <button
+                  onClick={handleLogout}
+                  className="bg-red-600 hover:bg-red-700 text-white px-8 py-2 rounded-full font-bold text-sm text-center"
+                >
+                  Logout
+                </button>
+              </div>
+            ) : (
+              <Link
+                to="/"
+                className="sm:hidden bg-white text-[#050214] px-8 py-2 rounded-full font-bold text-sm text-center"
+              >
+                Login
+              </Link>
+            )}
+          </div>
+        </div>
+      </div>
+    </nav>
   );
 };
 

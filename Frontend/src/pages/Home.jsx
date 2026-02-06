@@ -3,6 +3,11 @@ import MonumentBottom from "../component/MonumentBottom";
 import BackgroundGlow from "../component/BackgroundGlow";
 import EventsSection from "../component/EventsSection";
 import EventGallerySection from "../component/EventGallerySection";
+import AboutUs from "../component/AboutUs";
+import EDM from "../component/edm";
+import TeamSection from "../component/TeamSection";
+import Footer from "../component/Footer";
+
 import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
 
@@ -18,24 +23,47 @@ const Home = () => {
   }, [location]);
 
   return (
-    <>
-      <HeroSection />
-      <div className="relative ">
+    <div className="w-full overflow-x-hidden">
+      {/* HERO */}
+      <div className="relative w-full overflow-hidden">
+        <section id="hero">
+          <HeroSection />
+        </section>
+
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          <BackgroundGlow />
+        </div>
+
         <MonumentBottom />
       </div>
 
-      <div className="relative overflow-x-hidden">
-        <BackgroundGlow />
-      </div>
-
+      {/* EVENTS */}
       <section id="events" className="scroll-mt-28">
         <EventsSection />
       </section>
 
-      <section id="schedule">
+      {/* GALLERY */}
+      <section id="schedule" className="scroll-mt-28 -mt-12">
         <EventGallerySection />
       </section>
-    </>
+
+      {/* ABOUT */}
+      <section id="about" className="scroll-mt-28">
+        <AboutUs />
+      </section>
+
+      {/* EDM (GAP FIX) */}
+      <section className="scroll-mt-28 -mt-12">
+        <EDM />
+      </section>
+
+      {/* TEAM */}
+      <section id="team" className="scroll-mt-28">
+        <TeamSection />
+      </section>
+
+      <Footer />
+    </div>
   );
 };
 

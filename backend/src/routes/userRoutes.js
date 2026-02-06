@@ -1,6 +1,6 @@
 // src/routes/userRoutes.js
 import express from "express";
-import { getAllUsers, loginUser, logoutUser, registerUser, updateUser } from "../controllers/userController.js";
+import {  loginUser, logoutUser, registerUser, updateMyProfile, updateUser } from "../controllers/userController.js";
 import {  refreshUserAccessToken } from "../controllers/refreshTokenController.js";
 import { requestPasswordReset, resetPassword } from "../controllers/resetPasswordController.js";
 import adminAuth from "../middleWares/adminAuth.js";
@@ -21,9 +21,9 @@ router.post("/request-pass-reset-otp" , asyncHandler(requestPasswordReset));
 router.post("/reset-password" , asyncHandler(resetPassword));
 
 //get all user @only for admin
-router.get("/users", adminAuth, asyncHandler(getAllUsers));
 router.get("/users/:id", adminAuth, asyncHandler(getUserById));
 router.put("/update/users/:id", adminAuth, asyncHandler(updateUser));
 router.delete("/:id", adminAuth, asyncHandler(deleteUser));
+router.patch("/me" , verifyJWT , updateMyProfile);
 
 export default router
