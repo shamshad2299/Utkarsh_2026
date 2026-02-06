@@ -6,7 +6,7 @@ import { ApiError } from "../utils/ApiError.js";
 const adminAuth = async (req, res, next) => {
   const authHeader = req.headers.authorization;
 
-  // 1️⃣ Check token presence
+  // Check token presence
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
     return next(new ApiError(401, "Authorization token missing"));
   }
@@ -14,18 +14,18 @@ const adminAuth = async (req, res, next) => {
   const token = authHeader.split(" ")[1];
 
   try {
-    // 2️⃣ Verify token
+    // Verify token
     const decoded = jwt.verify(token, process.env.JWT_SECRET_ADMIN);
   
 
-    // 3️⃣ Find admin
+    // Find admin
     const admin = await Admin.findById(decoded.id).select("-password");
 
     if (!admin) {
       return next(new ApiError(401, "Admin not found"));
     }
 
-    // 4️⃣ Check admin status
+    // Check admin status
     if (admin.adminStatus === "blocked") {
       return next(new ApiError(403, "Admin access blocked"));
     }
@@ -34,7 +34,7 @@ const adminAuth = async (req, res, next) => {
       return next(new ApiError(403, "Admin access not active"));
     }
 
-    // 5️⃣ Attach admin to request
+    // Attach admin to request
     req.admin = admin;
     next();
     

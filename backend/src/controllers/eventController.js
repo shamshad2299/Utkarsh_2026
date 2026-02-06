@@ -5,6 +5,7 @@ import SubCategory from "../models/subEvent.model.js";
 import cloudinary from "../utils/cloudinary.js";
 import { removeLocalFile } from "../utils/removeLocalFile.js";
 import { ApiError } from "../utils/ApiError.js";
+import { logAudit } from "../utils/auditLogger.js";
 
 /* ================= CREATE EVENT (ADMIN) ================= */
 export const createEvent = async (req, res) => {
@@ -40,14 +41,12 @@ export const createEvent = async (req, res) => {
     throw new ApiError(400, "All required fields must be provided");
   }
 
-  // validate category & subcategory
   const categoryExists = await Category.findById(category);
   if (!categoryExists) throw new ApiError(404, "Category not found");
 
   const subCategoryExists = await SubCategory.findById(subCategory);
   if (!subCategoryExists) throw new ApiError(404, "SubCategory not found");
 
-  // upload images (optional)
   let images = [];
   if (req.files && req.files.length > 0) {
     for (const file of req.files) {
@@ -79,6 +78,15 @@ export const createEvent = async (req, res) => {
     eventType,
     teamSize: teamSize || { min: 1, max: 1 },
     createdBy: req.admin._id,
+  });
+
+  // AUDIT LOG
+  await logAudit({
+    req,
+    action: "EVENT_CREATED",
+    targetCollection: "Event",
+    targetId: event._id,
+    newData: event,
   });
 
   res.status(201).json({
@@ -129,6 +137,9 @@ export const updateEvent = async (req, res) => {
     throw new ApiError(404, "Event not found");
   }
 
+  // capture old state
+  const oldData = event.toObject();
+
   const allowedFields = [
     "title",
     "description",
@@ -156,7 +167,6 @@ export const updateEvent = async (req, res) => {
     }
   }
 
-  // replace images if new ones provided
   if (req.files && req.files.length > 0) {
     for (const img of event.images) {
       await cloudinary.uploader.destroy(img.publicId);
@@ -181,6 +191,16 @@ export const updateEvent = async (req, res) => {
 
   await event.save();
 
+  // AUDIT LOG
+  await logAudit({
+    req,
+    action: "EVENT_UPDATED",
+    targetCollection: "Event",
+    targetId: event._id,
+    oldData,
+    newData: event,
+  });
+
   res.status(200).json({
     success: true,
     message: "Event updated successfully",
@@ -188,8 +208,7 @@ export const updateEvent = async (req, res) => {
   });
 };
 
-
-/* ================= DELETE EVENT (SOFT DELETE) ================= */
+/* ================= DELETE EVENT (ADMIN – SOFT DELETE) ================= */
 export const deleteEvent = async (req, res) => {
   const { id } = req.params;
 
@@ -198,8 +217,21 @@ export const deleteEvent = async (req, res) => {
     throw new ApiError(404, "Event not found");
   }
 
+  // capture old state
+  const oldData = event.toObject();
+
   event.isDeleted = true;
   await event.save();
+
+  // AUDIT LOG
+  await logAudit({
+    req,
+    action: "EVENT_DELETED",
+    targetCollection: "Event",
+    targetId: event._id,
+    oldData,
+    newData: event,
+  });
 
   res.status(200).json({
     success: true,

@@ -84,7 +84,6 @@ eventSchema.pre("save", function () {
     throw new Error("Invalid team size range");
   }
 
-  // 🔒 enforce team size based on event type
   if (this.eventType === "solo") {
     this.teamSize.min = 1;
     this.teamSize.max = 1;

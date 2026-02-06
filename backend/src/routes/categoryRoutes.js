@@ -15,6 +15,8 @@ router.post(
   asyncHandler(addCategory)
 );
 
+// Get category by id
+router.get("/:id", asyncHandler(getCategoryById));
 // Get all categories
 router.get("/get", asyncHandler(getAllCategories));
 

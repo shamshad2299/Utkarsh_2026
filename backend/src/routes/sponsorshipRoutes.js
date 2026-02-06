@@ -1,13 +1,6 @@
 // src/routes/sponsorshipRoutes.js
 import express from "express";
-import {
-  createSponsorship,
-  getMySponsorships,
-  getAllSponsorships,
-  updateSponsorshipStatus,
-  deleteSponsorship,
-} from "../controllers/sponsorshipController.js";
-
+import {createSponsorship,getMySponsorships,getAllSponsorships,updateSponsorshipStatus,deleteSponsorship,} from "../controllers/sponsorshipController.js";
 import { verifyJWT } from "../middleWares/authMiddleWare.js";
 import adminAuth from "../middleWares/adminAuth.js";
 import { asyncHandler } from "../middleWares/asyncErrorHandlerMiddleWare.js";

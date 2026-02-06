@@ -1,12 +1,6 @@
 // src/routes/resultRoutes.js
 import express from "express";
-import {
-  addResult,
-  getResultsByEvent,
-  lockResults,
-  deleteResult,
-} from "../controllers/resultController.js";
-
+import {addResult,getResultsByEvent,lockResults,deleteResult,} from "../controllers/resultController.js";
 import adminAuth from "../middleWares/adminAuth.js";
 import { asyncHandler } from "../middleWares/asyncErrorHandlerMiddleWare.js";
 
@@ -21,11 +15,7 @@ router.post("/", adminAuth, asyncHandler(addResult));
 router.get("/event/:eventId", asyncHandler(getResultsByEvent));
 
 // Lock results (Admin)
-router.patch(
-  "/event/:eventId/lock",
-  adminAuth,
-  asyncHandler(lockResults),
-);
+router.patch("/event/:eventId/lock",adminAuth,asyncHandler(lockResults),);
 
 // Delete result (Admin)
 router.delete("/:id", adminAuth, asyncHandler(deleteResult));
