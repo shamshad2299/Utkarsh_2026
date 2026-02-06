@@ -13,8 +13,8 @@ import resultRoutes from "../src/routes/resultRoutes.js";
 import foodStallRoutes from "../src/routes/foodStallRoutes.js";
 import sponsorshipRoutes from "../src/routes/sponsorshipRoutes.js";
 import auditLogRoutes from "../src/routes/auditLogRoutes.js";
-import { globalErrorHandler } from "./middlewares/errorMiddleWare.js";
-import { notFoundHandler } from "./middlewares/notFoundMiddleWare.js";
+import {globalErrorHandler} from "./middlewares/errorMiddleware.js"
+import { notFoundHandler } from "./middlewares/notFoundMiddleware.js";
 
 const app = express();
 
