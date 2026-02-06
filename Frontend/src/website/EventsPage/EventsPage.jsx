@@ -754,7 +754,6 @@ const EventsPage = () => {
             Back to Home
           </button>
 
-{/* events show section  */}
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-12">
             <div>
               <h1 className="text-4xl md:text-5xl font-bold mb-2 bg-linear-to-r from-purple-400 via-white to-blue-400 bg-clip-text text-transparent">
