@@ -4,7 +4,7 @@ import BackgroundGlow from "../component/BackgroundGlow";
 import EventsSection from "../component/EventsSection";
 import EventGallerySection from "../component/EventGallerySection";
 import AboutUs from "../component/AboutUs";
-import EDM from "../component/edm";
+import EDM from "../component/EDM";
 import TeamSection from "../component/TeamSection";
 import Footer from "../component/Footer";
 
