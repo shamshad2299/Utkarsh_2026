@@ -15,6 +15,7 @@ import AdminRegister from "./admin/pages/AdminRegister";
 import AdminRoutes from "./admin/routes/AdminRoutes";
 
 import ProfileDashboard from "./pages/ProfileDashboard";
+import EventsPage from "./website/EventsPage/EventsPage";
 
 function App() {
   return (
@@ -27,6 +28,7 @@ function App() {
           <Route path="profile" element={<ProfileDashboard />} />
           <Route path="sponsorship_form" element={<SponsorshipForm />} />
           <Route path="food_stall_form" element={<FoodStallForm />} />
+           <Route path="events/category/:categoryId" element={<EventsPage />} />
         </Route>
 
         <Route path="/login" element={<LoginPage />} />
@@ -34,6 +36,7 @@ function App() {
 
         <Route path="/admin" element={<AdminLogin />} />
         <Route path="/admin/register" element={<AdminRegister />} />
+        {/* admin routes */}
         <Route path="/admin/*" element={<AdminRoutes />} />
       </Routes>
     </BrowserRouter>
