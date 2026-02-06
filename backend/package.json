@@ -4,10 +4,11 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "nodemon src/index.js",
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "build":" npm install"
-  },
+  "start": "node src/index.js",
+  "dev": "nodemon src/index.js",
+  "build": "echo \"No build step required\""
+}
+,
   "keywords": [],
   "author": "",
   "license": "ISC",
