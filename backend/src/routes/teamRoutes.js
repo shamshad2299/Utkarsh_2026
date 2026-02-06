@@ -1,13 +1,5 @@
 import express from "express";
-import {
-  createTeam,
-  addTeamMember,
-  removeTeamMember,
-  getMyTeams,
-  getTeamById,
-  deleteTeam,
-} from "../controllers/teamController.js";
-
+import {  createTeam,addTeamMember,removeTeamMember,getMyTeams,getTeamById,deleteTeam,} from "../controllers/teamController.js";
 import { verifyJWT } from "../middleWares/authMiddleWare.js";
 import { asyncHandler } from "../middleWares/asyncErrorHandlerMiddleWare.js";
 
@@ -25,18 +17,10 @@ router.get("/my", verifyJWT, asyncHandler(getMyTeams));
 router.get("/:id", verifyJWT, asyncHandler(getTeamById));
 
 // Add member (leader only)
-router.post(
-  "/:teamId/members",
-  verifyJWT,
-  asyncHandler(addTeamMember),
-);
+router.post("/:teamId/members",verifyJWT,asyncHandler(addTeamMember),);
 
 // Remove member (leader only)
-router.delete(
-  "/:teamId/members/:memberId",
-  verifyJWT,
-  asyncHandler(removeTeamMember),
-);
+router.delete("/:teamId/members/:memberId",verifyJWT,asyncHandler(removeTeamMember),);
 
 // Delete team (leader only)
 router.delete("/:id", verifyJWT, asyncHandler(deleteTeam));

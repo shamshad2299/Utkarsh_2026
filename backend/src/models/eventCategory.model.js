@@ -7,12 +7,10 @@ const CategorySchema = new mongoose.Schema(
     description: String,
     rules: String,
 
-    images: [
-      {
+    image:{
         url: { type: String, required: true },
         publicId: { type: String, required: true },
       },
-    ],
 
     slug: { type: String, lowercase: true, unique: true },
   },

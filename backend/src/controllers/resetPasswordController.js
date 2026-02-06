@@ -19,7 +19,7 @@ export const requestPasswordReset = async (req, res) => {
     isDeleted: false,
   });
 
-  // 🔒 Security: always return same response
+  // user check if present or not 
   if (!user) {
     return res.status(200).json({
       success: true,
@@ -79,7 +79,7 @@ export const resetPassword = async (req, res) => {
     throw new ApiError(400, "Invalid or expired verification code");
   }
 
-  // set new password (hash handled by schema)
+  // set new password 
   user.password = newPassword;
 
   // cleanup reset fields

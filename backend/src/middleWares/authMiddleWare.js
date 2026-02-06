@@ -1,3 +1,4 @@
+// src/moddleWares/authMiddleWare.js
 import jwt from "jsonwebtoken";
 import { User } from "../models/users.model.js";
 import { ApiError } from "../utils/ApiError.js";
