@@ -148,12 +148,12 @@ const EventsPage = () => {
       setLoading(true);
       setError(null);
 
-      // Categories fetch करें
+      // Categories fetch 
       const categoriesResponse = await api.get("/category/get");
-      const categoriesData = categoriesResponse.data.data || [];
+     const categoriesData = categoriesResponse.data.data || [];
       setCategories(categoriesData);
 
-      // Filter options बनाएं
+      // Filter options 
       const filters = [{ id: "all", label: "All", icon: Filter }];
 
       categoriesData.forEach((cat) => {
@@ -175,7 +175,8 @@ const EventsPage = () => {
         setAllEvents(eventsData);
         setFilteredEvents(eventsData);
       } else {
-        const eventsResponse = await api.get(`/events/${categoryId}`);
+        const eventsResponse = await api.get(`/events/category/${categoryId}`);
+       
         const eventsData = eventsResponse.data.data || [];
         setAllEvents(eventsData);
         setFilteredEvents(eventsData);
@@ -753,6 +754,7 @@ const EventsPage = () => {
             Back to Home
           </button>
 
+{/* events show section  */}
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-12">
             <div>
               <h1 className="text-4xl md:text-5xl font-bold mb-2 bg-linear-to-r from-purple-400 via-white to-blue-400 bg-clip-text text-transparent">

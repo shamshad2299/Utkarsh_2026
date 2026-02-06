@@ -118,8 +118,9 @@ export const getEventById = async (req, res) => {
     .populate("category", "name slug")
     .populate("subCategory", "title slug");
 
+   
   if (!event || event.isDeleted) {
-    throw new ApiError(404, "Event not found");
+    throw new ApiError(404, "Either event Deleted or Event not found");
   }
 
   res.status(200).json({
