@@ -21,7 +21,6 @@ import EventsLayout from "./website/EventLayout/EventLayout";
 
 function App() {
  
-
   return (
     <BrowserRouter>
       <Routes>
