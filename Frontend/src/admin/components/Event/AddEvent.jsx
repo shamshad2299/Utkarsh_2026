@@ -172,7 +172,7 @@ const AddEvent = () => {
         data.append('images', image);
       });
       
-      const token = localStorage.getItem('accessToken');
+      const token = localStorage.getItem('adminAccessToken');
       if (!token) {
         throw new Error('No authentication token found');
       }
