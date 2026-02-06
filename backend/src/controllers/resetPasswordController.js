@@ -2,6 +2,8 @@
 import crypto from "crypto";
 import { User } from "../models/users.model.js";
 import { ApiError } from "../utils/ApiError.js";
+import { sendEmail } from "../utils/sendEmail.js";
+import { resetPasswordTemplate } from "../services/requestPasswordTemplete.js";
 
 /* ================= REQUEST PASSWORD RESET ================= */
 export const requestPasswordReset = async (req, res) => {
@@ -41,7 +43,15 @@ export const requestPasswordReset = async (req, res) => {
   await user.save({ validateBeforeSave: false });
 
   // 📧 TODO: replace with email service
-  console.log(`Password reset code for ${user.email}: ${resetCode}`);
+ await sendEmail({
+    to: user.email,
+    subject: "Password Reset OTP | BBD UTKARSH 2026",
+    html: resetPasswordTemplate({
+      name: user.name,
+      otp: resetCode,
+      expiryMinutes: 10,
+    }),
+  });
 
   res.status(200).json({
     success: true,

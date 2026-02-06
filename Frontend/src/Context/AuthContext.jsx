@@ -29,7 +29,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   const requestPassword = async (payload) =>{
-    const res = await api.post("/v1/auth/request-password", payload);
+    const res = await api.post("/v1/auth/request-pass-reset-otp", payload);
     return res.data;
   
 }
