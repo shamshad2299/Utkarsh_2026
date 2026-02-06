@@ -19,6 +19,7 @@ export const createEvent = async (req, res) => {
     registrationDeadline,
     capacity,
     fee,
+    event_rule,
     eventType,
     teamSize,
   } = req.body;
@@ -31,6 +32,7 @@ export const createEvent = async (req, res) => {
     !venueName ||
     !startTime ||
     !endTime ||
+    !event_rule,
     !registrationDeadline ||
     !capacity ||
     !eventType
@@ -204,3 +206,34 @@ export const deleteEvent = async (req, res) => {
     message: "Event deleted successfully",
   });
 };
+/* ================= GET EVENTS BY CATEGORY ================= */
+export const getEventsByCategory = async (req, res) => {
+  const { categoryId } = req.params;
+
+  // ❌ strict validation removed
+  const categoryExists = await Category.findById(categoryId);
+
+  // sirf warning, error nahi
+  if (!categoryExists) {
+    console.warn(
+      `Category deleted but events requested. CategoryId: ${categoryId}`
+    );
+  }
+
+  const events = await Event.find({
+    category: categoryId,
+    isDeleted: false,
+  })
+    .populate("category", "name slug")
+    .populate("subCategory", "title slug")
+    .sort({ startTime: 1 });
+
+  res.status(200).json({
+    success: true,
+    count: events.length,
+    data: events,
+    categoryDeleted: !categoryExists, // 👈 frontend ke liye useful
+  });
+};
+
+

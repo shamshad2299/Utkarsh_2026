@@ -6,6 +6,7 @@ import {
   getEventById,
   updateEvent,
   deleteEvent,
+  getEventsByCategory,
 } from "../controllers/eventController.js";
 
 import adminAuth from "../middleWares/adminAuth.js";
@@ -28,7 +29,9 @@ router.post(
 router.get("/", asyncHandler(getAllEvents));
 
 // Get event by id
+router.get("/:categoryId", getEventsByCategory);
 router.get("/:id", asyncHandler(getEventById));
+
 
 // Update event (Admin)
 router.put(
