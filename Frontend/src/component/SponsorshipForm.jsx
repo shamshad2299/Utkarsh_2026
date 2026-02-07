@@ -58,7 +58,9 @@ const SponsorshipForm = () => {
         amount: "",
       });
     } catch (err) {
-      alert(err?.response?.data?.message || "Failed to submit sponsorship request");
+      alert(
+        err?.response?.data?.message || "Failed to submit sponsorship request"
+      );
     } finally {
       setLoading(false);
     }
@@ -128,7 +130,9 @@ const SponsorshipForm = () => {
                   label="Permanent Address"
                   icon={<MapPin />}
                   value={formData.permanentAddress}
-                  onChange={(e) => handleChange("permanentAddress", e.target.value)}
+                  onChange={(e) =>
+                    handleChange("permanentAddress", e.target.value)
+                  }
                 />
               </div>
             </div>
@@ -236,9 +240,11 @@ const FloatingInput = ({ label, type = "text", icon, value, onChange }) => (
       {icon}
     </div>
 
+    {/* ONLY THIS LABEL PART IS UPDATED */}
     <label
-      className="absolute left-12 top-4 text-gray-400 transition-all
-      peer-placeholder-shown:top-4 peer-placeholder-shown:text-base
+      className="absolute left-12 right-4 top-4 text-gray-400 transition-all
+      leading-tight break-words
+      peer-placeholder-shown:top-4 peer-placeholder-shown:text-sm
       peer-focus:top-1 peer-focus:text-xs peer-focus:text-yellow-400
       peer-not-placeholder-shown:top-1
       peer-not-placeholder-shown:text-xs
@@ -255,7 +261,11 @@ const SponsorCard = ({ title, label, price, active, onClick }) => (
     onClick={onClick}
     className={`
       h-full rounded-2xl border p-6 text-center transition
-      ${active ? "border-yellow-400 bg-black/40 shadow-[0_0_30px_rgba(255,193,7,0.4)]" : "border-white/20 bg-black/30"}
+      ${
+        active
+          ? "border-yellow-400 bg-black/40 shadow-[0_0_30px_rgba(255,193,7,0.4)]"
+          : "border-white/20 bg-black/30"
+      }
       hover:bg-black/40
     `}
   >
