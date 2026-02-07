@@ -104,7 +104,7 @@ export const subcategoryService = {
 
   addSubcategory: async (subcategoryData) => {
     const response = await api.post(
-      "/subCategory/subcategories",
+      "/subCategory/add",
       subcategoryData
     );
     return response.data;
@@ -112,14 +112,14 @@ export const subcategoryService = {
 
   updateSubcategory: async (id, subcategoryData) => {
     const response = await api.patch(
-      `/subCategory/subcategories/${id}`,
+      `/subCategory/${id}`,
       subcategoryData
     );
     return response.data;
   },
 
   deleteSubcategory: async (id) => {
-    const response = await api.delete(`/subCategory/subcategories/${id}`);
+    const response = await api.delete(`/subCategory/${id}`);
     return response.data;
   },
 
