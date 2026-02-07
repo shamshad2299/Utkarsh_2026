@@ -26,7 +26,7 @@ const teamSchema = new mongoose.Schema(
 
     isDeleted: { type: Boolean, default: false, index: true },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 export const Team = mongoose.model("Team", teamSchema);
