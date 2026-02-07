@@ -1,10 +1,7 @@
-// src/controllers/foodStallController.js
 import { FoodStall } from "../models/foodStall.model.js";
 import { ApiError } from "../utils/ApiError.js";
 import { logAudit } from "../utils/auditLogger.js";
 
-
-/* ================= CREATE FOOD STALL REQUEST (USER) ================= */
 export const createFoodStall = async (req, res) => {
   const {
     businessName,
@@ -29,6 +26,11 @@ export const createFoodStall = async (req, res) => {
     throw new ApiError(400, "All fields are required");
   }
 
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) {
+    throw new ApiError(400, "Invalid email format");
+  }
+
   const existing = await FoodStall.findOne({
     email: email.toLowerCase(),
     isDeleted: false,
@@ -36,15 +38,12 @@ export const createFoodStall = async (req, res) => {
   });
 
   if (existing) {
-    throw new ApiError(
-      409,
-      "You already have an active food stall request"
-    );
+    throw new ApiError(409, "You already have an active food stall request");
   }
 
   const stall = await FoodStall.create({
     businessName,
-    email,
+    email: email.toLowerCase(),
     foodItems,
     ownerName,
     phoneNumber,
@@ -52,7 +51,6 @@ export const createFoodStall = async (req, res) => {
     numberOfStalls,
   });
 
-  // AUDIT LOG (USER)
   await logAudit({
     req,
     action: "FOOD_STALL_REQUEST_CREATED",
@@ -68,10 +66,13 @@ export const createFoodStall = async (req, res) => {
   });
 };
 
-/* ================= GET MY FOOD STALL REQUESTS (USER) ================= */
 export const getMyFoodStalls = async (req, res) => {
+  if (!req.user?.email) {
+    throw new ApiError(401, "Unauthorized");
+  }
+
   const stalls = await FoodStall.find({
-    email: req.user.email,
+    email: req.user.email.toLowerCase(),
     isDeleted: false,
   }).sort({ createdAt: -1 });
 
@@ -82,7 +83,6 @@ export const getMyFoodStalls = async (req, res) => {
   });
 };
 
-/* ================= GET ALL FOOD STALLS (ADMIN) ================= */
 export const getAllFoodStalls = async (req, res) => {
   const { status, page = 1, limit = 20 } = req.query;
 
@@ -111,7 +111,6 @@ export const getAllFoodStalls = async (req, res) => {
   });
 };
 
-/* ================= UPDATE FOOD STALL STATUS (ADMIN) ================= */
 export const updateFoodStallStatus = async (req, res) => {
   const { id } = req.params;
   const { status } = req.body;
@@ -133,13 +132,11 @@ export const updateFoodStallStatus = async (req, res) => {
     throw new ApiError(400, `Food stall already ${status}`);
   }
 
-  // capture old state
   const oldData = stall.toObject();
 
   stall.status = status;
   await stall.save();
 
-  // AUDIT LOG (ADMIN)
   await logAudit({
     req,
     action: `FOOD_STALL_${status.toUpperCase()}`,
@@ -156,7 +153,6 @@ export const updateFoodStallStatus = async (req, res) => {
   });
 };
 
-/* ================= DELETE FOOD STALL (ADMIN – SOFT DELETE) ================= */
 export const deleteFoodStall = async (req, res) => {
   const { id } = req.params;
 
@@ -170,13 +166,11 @@ export const deleteFoodStall = async (req, res) => {
     throw new ApiError(400, "Food stall already deleted");
   }
 
-  // capture old state
   const oldData = stall.toObject();
 
   stall.isDeleted = true;
   await stall.save();
 
-  // AUDIT LOG (ADMIN)
   await logAudit({
     req,
     action: "FOOD_STALL_DELETED",
