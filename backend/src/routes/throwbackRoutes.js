@@ -7,7 +7,7 @@ import {
   uploadThrowback,
   getThrowbacks,
   deleteThrowback,
-} from "../controllers/throwback.controller.js";
+} from "../controllers/throwbackController.js";
 
 const router = express.Router();
 

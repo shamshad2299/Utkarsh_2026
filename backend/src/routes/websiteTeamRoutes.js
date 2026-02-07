@@ -8,7 +8,7 @@ import {
   getWebsiteTeamMembers,
   deleteWebsiteTeamMember,
   toggleWebsiteTeamMember,
-} from "../controllers/websiteTeam.controller.js";
+} from "../controllers/websiteTeamController.js";
 
 const router = express.Router();
 
