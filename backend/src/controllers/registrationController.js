@@ -131,7 +131,14 @@ export const getMyRegistrations = async (req, res) => {
     registeredBy: userId,
     isDeleted: false,
   })
-    .populate("eventId", "title startTime venueName")
+    .populate({
+      path: "eventId",
+      select: "title startTime venueName images eventType category fee",
+      populate: {
+        path: "category",
+        select: "name image icon", // jo bhi fields chahiye
+      },
+    })
     .populate("teamId", "teamName");
 
   res.status(200).json({
@@ -140,6 +147,7 @@ export const getMyRegistrations = async (req, res) => {
     data: registrations,
   });
 };
+
 
 /* ================= GET EVENT REGISTRATIONS (ADMIN) ================= */
 export const getEventRegistrations = async (req, res) => {

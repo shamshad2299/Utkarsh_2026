@@ -44,7 +44,7 @@ const EventsSection = () => {
     try {
       setLoading(true);
       const response = await api.get("/events");
-      console.log(response)
+     
       setEvents(response.data.data || []);
     } catch (error) {
       console.error("Error fetching events:", error);

@@ -6,6 +6,11 @@
   letter-spacing: 0;
   text-transform: uppercase;
 }
+.milonga{
+ font-family: "Milonga", serif;
+  line-height: 1;        
+  letter-spacing: 0;
+}
 
 .text2 {
   font-family: "Milonga", serif;
