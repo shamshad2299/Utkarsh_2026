@@ -1,7 +1,6 @@
 import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
-
 import authRoutes from "../src/routes/userRoutes.js";
 import adminRoutes from "../src/routes/adminRoutes.js";
 import categoryRoutes from "../src/routes/categoryRoutes.js";
@@ -13,6 +12,8 @@ import resultRoutes from "../src/routes/resultRoutes.js";
 import foodStallRoutes from "../src/routes/foodStallRoutes.js";
 import sponsorshipRoutes from "../src/routes/sponsorshipRoutes.js";
 import auditLogRoutes from "../src/routes/auditLogRoutes.js";
+import throwbackRoutes from "../src/routes/throwbackRoutes.js";
+import websiteTeamRoutes from "../src/routes/websiteTeamRoutes.js";
 
 import { globalErrorHandler } from "./middleWares/errorMiddleWare.js";
 import { notFoundHandler } from "./middlewares/notFoundMiddleWare.js";
@@ -48,18 +49,17 @@ app.get("/", (req, res) => {
 
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/admin/auth", adminRoutes);
-
 app.use("/api/category", categoryRoutes);
 app.use("/api/subCategory", subCategoryRoutes);
-
 app.use("/api/events", eventRoutes);
 app.use("/api/registrations", registrationRoutes);
 app.use("/api/teams", teamRoutes);
 app.use("/api/results", resultRoutes);
-
+app.use("/api/v1/admin/audit-logs", auditLogRoutes);
 app.use("/api/food-stalls", foodStallRoutes);
 app.use("/api/sponsorships", sponsorshipRoutes);
-
+app.use("/api/throwbacks", throwbackRoutes);
+app.use("/api/website-team", websiteTeamRoutes);
 /* ================= 404 HANDLER ================= */
 app.use(notFoundHandler);
 
