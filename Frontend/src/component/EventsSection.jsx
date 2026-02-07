@@ -44,7 +44,7 @@ const EventsSection = () => {
     try {
       setLoading(true);
       const response = await api.get("/events");
-      console.log(response)
+     
       setEvents(response.data.data || []);
     } catch (error) {
       console.error("Error fetching events:", error);
@@ -88,7 +88,7 @@ const EventsSection = () => {
   };
 
   return (
-    <section className="relative bg-[#080131] text-white px-6 md:px-16 py-28 overflow-hidden border-8">
+    <section className="relative bg-[#080131] text-white px-6 md:px-16 py-28 overflow-hidden border-t-8">
       {/* BACKGROUND GRID */}
       <div
         className="absolute inset-0 opacity-10 pointer-events-none"

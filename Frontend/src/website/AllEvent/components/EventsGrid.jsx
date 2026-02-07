@@ -14,6 +14,10 @@ const EventsGrid = ({
   handleTypeFilterClick,
   setSearchQuery,
   handleViewDetails,
+  handleEnroll,
+  isAuthenticated = false,
+  userRegistrations = [],
+  enrollingEventId = null,
   getCategoryName,
   getSubCategory,
   getImageUrl,
@@ -24,6 +28,26 @@ const EventsGrid = ({
   formatDate,
   formatTime
 }) => {
+  // Check if user is enrolled in an event
+  const isUserEnrolled = (eventId) => {
+    return userRegistrations.some(reg => 
+      reg.eventId?._id === eventId || 
+      reg.eventId === eventId
+    );
+  };
+
+  // Check if registration is open
+  const isRegistrationOpen = (event) => {
+    if (!event.registrationDeadline) return true;
+    return new Date() <= new Date(event.registrationDeadline);
+  };
+
+  // Check if event is full
+  const isEventFull = (event) => {
+    if (!event.capacity) return false;
+    return (event.currentParticipants || 0) >= event.capacity;
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center items-center py-20">
@@ -99,22 +123,35 @@ const EventsGrid = ({
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {filteredEvents.map((event) => (
-        <EventCard
-          key={event._id}
-          event={event}
-          handleViewDetails={handleViewDetails}
-          getCategoryName={getCategoryName}
-          getSubCategory={getSubCategory}
-          getImageUrl={getImageUrl}
-          getEventTypeIcon={getEventTypeIcon}
-          getCategoryIcon={getCategoryIcon}
-          getEventTypeText={getEventTypeText}
-          getCategoryColor={getCategoryColor}
-          formatDate={formatDate}
-          formatTime={formatTime}
-        />
-      ))}
+      {filteredEvents.map((event) => {
+        const enrolled = isUserEnrolled(event._id);
+        const registrationOpen = isRegistrationOpen(event);
+        const eventFull = isEventFull(event);
+        
+        return (
+          <EventCard
+            key={event._id}
+            event={event}
+            handleViewDetails={handleViewDetails}
+            handleEnroll={handleEnroll}
+            isAuthenticated={isAuthenticated}
+            userRegistrations={userRegistrations}
+            getCategoryName={getCategoryName}
+            getSubCategory={getSubCategory}
+            getImageUrl={getImageUrl}
+            getEventTypeIcon={getEventTypeIcon}
+            getCategoryIcon={getCategoryIcon}
+            getEventTypeText={getEventTypeText}
+            getCategoryColor={getCategoryColor}
+            formatDate={formatDate}
+            formatTime={formatTime}
+            isEnrolling={enrollingEventId === event._id}
+            isEnrolled={enrolled}
+            isRegistrationOpen={registrationOpen}
+            isEventFull={eventFull}
+          />
+        );
+      })}
     </div>
   );
 };

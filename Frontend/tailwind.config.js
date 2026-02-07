@@ -10,7 +10,15 @@ export default {
       boxShadow: {
         glow: "0 0 25px rgba(167,139,250,0.4)",
       },
+      fontFamily: {
+        playfair: ["Playfair Display", "serif"],
+        poppins: ["Poppins", "sans-serif"],
+        cormorant: ["Cormorant Garamond", "serif"],
+      },
+      borderRadius: {
+        xl2: "26px",
+      },
     },
   },
   plugins: [],
-}
+};

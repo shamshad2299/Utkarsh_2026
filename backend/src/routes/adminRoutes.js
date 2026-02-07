@@ -10,8 +10,8 @@ import {
   updateUserStatus,
   updateUserDetails,
 } from "../controllers/adminUser.controller.js";
-import { asyncHandler } from "../middleWares/asyncErrorHandlerMiddleWare.js";
-import adminAuth from "../middleWares/adminAuth.js";
+import { asyncHandler } from "../middlewares/asyncErrorHandlerMiddleWare.js";
+import adminAuth from "../middlewares/adminAuth.js";
 import { refreshAdminAccessToken } from "../controllers/refreshTokenController.js";
 
 const router = express.Router();

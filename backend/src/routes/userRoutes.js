@@ -12,13 +12,13 @@ import {
   requestPasswordReset,
   resetPassword,
 } from "../controllers/resetPasswordController.js";
-import adminAuth from "../middleWares/adminAuth.js";
-import { verifyJWT } from "../middleWares/authMiddleWare.js";
+import adminAuth from "../middlewares/adminAuth.js";
+import { verifyJWT } from "../middlewares/authMiddleWare.js";
 import {
   deleteUser,
   getUserById,
 } from "../controllers/adminUser.controller.js";
-import { asyncHandler } from "../middleWares/asyncErrorHandlerMiddleWare.js";
+import { asyncHandler } from "../middlewares/asyncErrorHandlerMiddleWare.js";
 
 const router = express.Router();
 

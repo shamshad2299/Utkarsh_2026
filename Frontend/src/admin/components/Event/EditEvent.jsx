@@ -257,7 +257,7 @@ const EditEvent = () => {
         data.append('images', image);
       });
       
-      const token = localStorage.getItem('accessToken');
+      const token = localStorage.getItem('adminAccessToken');
       if (!token) {
         throw new Error('No authentication token found');
       }
@@ -271,7 +271,7 @@ const EditEvent = () => {
       
       if (response.data.success) {
         alert('Event updated successfully!');
-        navigate('admin/dashboard/events-list'); // Navigate back to events list
+        navigate('/admin/dashboard/events-list'); // Navigate back to events list
       }
       
     } catch (error) {
