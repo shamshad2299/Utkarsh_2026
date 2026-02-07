@@ -17,15 +17,7 @@ const Item = ({ label, to, addTo }) => {
   const navigate = useNavigate();
 
   return (
-    <div
-      className="
-        flex justify-between items-center px-3 py-2 border-b last:border-b-0
-        text-sm font-medium cursor-pointer
-        hover:underline
-        hover:bg-yellow-50
-      "
-    >
-      {/* 🔹 Main navigation */}
+    <div className="flex justify-between items-center px-3 py-2 border-b last:border-b-0 text-sm font-medium cursor-pointer hover:underline hover:bg-yellow-50">
       <NavLink
         to={to}
         className={({ isActive }) =>
@@ -35,14 +27,13 @@ const Item = ({ label, to, addTo }) => {
         {label}
       </NavLink>
 
-      {/* 🔹 Plus button → Add page */}
       {addTo && (
         <button
           onClick={(e) => {
-            e.stopPropagation(); // 🔥 important
+            e.stopPropagation();
             navigate(addTo);
           }}
-          className=" hover:text-green-800 cursor-pointer bg-teal-700 z-10 text-white rounded-full p-1"
+          className="hover:text-green-800 cursor-pointer bg-teal-700 z-10 text-white rounded-full p-1"
           title={`Add ${label}`}
         >
           <Plus size={16} />
@@ -57,14 +48,12 @@ const AdminSidebar = () => {
 
   return (
     <>
-      {/* 🔹 Mobile Top Bar - Only show on mobile */}
       <div className="md:hidden flex items-center justify-between bg-teal-700 text-yellow-300 px-4 py-3">
         <button onClick={() => setOpen(true)}>
           <Menu size={24} />
         </button>
       </div>
 
-      {/* 🔹 Overlay (Mobile Only) */}
       {open && (
         <div
           className="fixed inset-0 bg-black/40 z-40 md:hidden"
@@ -72,24 +61,22 @@ const AdminSidebar = () => {
         />
       )}
 
-      {/* 🔹 Sidebar - No scrolling classes */}
       <aside
         className={`
           fixed z-50 top-0 left-0 h-screen w-72 bg-gray-100 border-r
           transform transition-transform duration-300
+          overflow-y-auto overflow-x-hidden
           ${open ? "translate-x-0" : "-translate-x-full"}
           md:translate-x-0 md:static
         `}
       >
-        {/* Header */}
         <div className="flex items-center justify-between bg-teal-700 text-yellow-300 text-lg font-bold px-4 py-3">
           UTKARSH Administration
-          <button className="md:hidden" onClick={() => setDeleteConfirm(null)}>
+          <button className="md:hidden" onClick={() => setOpen(false)}>
             <X size={20} />
           </button>
         </div>
 
-        {/* Search */}
         <div className="p-3">
           <input
             type="text"
@@ -98,7 +85,6 @@ const AdminSidebar = () => {
           />
         </div>
 
-        {/* Sections */}
         <Section title="Authentication and Authorization">
           <Item label="Groups" to="/admin/dashboard/groups" />
         </Section>
@@ -152,16 +138,22 @@ const AdminSidebar = () => {
             addTo="/admin/dashboard/team-members/add"
           />
 
-          <Item
-            label="Users"
-            to="/admin/dashboard/users"
-            addTo="/admin/dashboard/users/add"
-          />
+          <Item label="Users" to="/admin/dashboard/users" />
 
           <Item
             label="Website teams"
             to="/admin/dashboard/teams"
             addTo="/admin/dashboard/teams/add"
+          />
+
+          <Item
+            label="Sponsorship Requests"
+            to="/admin/dashboard/sponsorship-requests"
+          />
+
+          <Item
+            label="Food Stall Requests"
+            to="/admin/dashboard/foodstall-requests"
           />
         </Section>
       </aside>

@@ -1,74 +1,91 @@
-import React, { useState, useEffect } from "react";
-import {
-  Store,
-  Mail,
-  Utensils,
-  User,
-  Phone,
-  MapPin,
-  Layers,
-  Home,
-} from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { Store, Mail, Utensils, User, Phone, MapPin, Layers, Home } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import foodBg from "../assets/food.png";
+import { publicService } from "../api/axios";
 
 const FoodStallForm = () => {
   const [show, setShow] = useState(false);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+
+  const [formData, setFormData] = useState({
+    businessName: "",
+    email: "",
+    foodItems: "",
+    ownerName: "",
+    phoneNumber: "",
+    permanentAddress: "",
+    numberOfStalls: "",
+  });
+
   const navigate = useNavigate();
 
   useEffect(() => {
     setTimeout(() => setShow(true), 120);
   }, []);
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    setLoading(true);
-
-    setTimeout(() => {
-      setLoading(false);
-      setSuccess(true);
-    }, 1800);
-  };
-
   const handleBackToHome = () => {
     navigate("/");
   };
 
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    setLoading(true);
+    try {
+      await publicService.createFoodStall(formData);
+      setSuccess(true);
+
+      setFormData({
+        businessName: "",
+        email: "",
+        foodItems: "",
+        ownerName: "",
+        phoneNumber: "",
+        permanentAddress: "",
+        numberOfStalls: "",
+      });
+    } catch (err) {
+      alert(err?.response?.data?.message || "Food stall request failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <>
-      
       <div
         className="min-h-screen flex items-center justify-center px-4 bg-cover bg-center"
         style={{
           backgroundImage: `linear-gradient(rgba(0,0,0,0.65), rgba(0,0,0,0.65)), url(${foodBg})`,
         }}
       >
-      
-        <div 
-          className="absolute top-6 left-6 flex items-center gap-2 cursor-pointer z-20 hover:text-yellow-400 transition-colors"
+        <div
+          className="absolute top-6 left-6 flex items-center gap-2 cursor-pointer z-20 hover:text-yellow-400 transition-colors text-white"
           onClick={handleBackToHome}
         >
           <Home size={20} />
           <span className="tracking-widest font-semibold">Home</span>
         </div>
 
-    
         <div
           className={`
             relative w-full max-w-3xl rounded-3xl p-10
-             via-[#39363f] backdrop-blur-2xl
+            via-[#39363f] backdrop-blur-2xl
             border border-white/20
             shadow-[0_0_80px_rgba(139,92,246,0.45)]
             transition-all duration-700
             ${show ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"}
           `}
         >
-          
           <div className="absolute -inset-1 rounded-3xl bg-linear-to-br from-[#4a4a71] to-purple-700/40 blur-2xl -z-10" />
 
-          {/* HEADER */}
           <div className="text-center mb-10">
             <h1 className="text-4xl font-extrabold tracking-wide text-white">
               Food Stall Registration
@@ -78,40 +95,67 @@ const FoodStallForm = () => {
             </p>
           </div>
 
-        
           <form
             onSubmit={handleSubmit}
             className="bg-white/5 border border-white/15 rounded-2xl p-8 space-y-8"
           >
-      
             <div>
               <h3 className="text-lg font-semibold text-yellow-400 mb-6">
                 Business Details
               </h3>
 
               <div className="grid md:grid-cols-2 gap-6">
-                <FloatingInput label="Business Name" icon={<Store />} />
-                <FloatingInput label="Email ID" type="email" icon={<Mail />} />
+                <FloatingInput
+                  label="Business Name"
+                  icon={<Store />}
+                  name="businessName"
+                  value={formData.businessName}
+                  onChange={handleChange}
+                />
+
+                <FloatingInput
+                  label="Email ID"
+                  type="email"
+                  icon={<Mail />}
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                />
+
                 <FloatingInput
                   label="Food Items You Will Serve"
                   icon={<Utensils />}
+                  name="foodItems"
+                  value={formData.foodItems}
+                  onChange={handleChange}
                 />
+
                 <FloatingInput
                   label="Owner / Contact Person Name"
                   icon={<User />}
+                  name="ownerName"
+                  value={formData.ownerName}
+                  onChange={handleChange}
                 />
+
                 <FloatingInput
                   label="Phone Number"
                   icon={<Phone />}
+                  name="phoneNumber"
+                  value={formData.phoneNumber}
+                  onChange={handleChange}
                 />
+
                 <FloatingInput
                   label="Permanent Address"
                   icon={<MapPin />}
+                  name="permanentAddress"
+                  value={formData.permanentAddress}
+                  onChange={handleChange}
                 />
               </div>
             </div>
 
-            
             <div>
               <h3 className="text-lg font-semibold text-yellow-400 mb-4">
                 Stall Requirement
@@ -120,20 +164,22 @@ const FoodStallForm = () => {
               <div className="relative">
                 <select
                   required
+                  name="numberOfStalls"
+                  value={formData.numberOfStalls}
+                  onChange={handleChange}
                   className="w-full bg-black/30 border border-white/20 rounded-xl px-12 py-4 text-white
                   focus:outline-none focus:ring-2 focus:ring-yellow-400"
                 >
                   <option value="">Select Number of Stalls</option>
                   <option value="1">One Stall</option>
                   <option value="2">Two Stalls</option>
-                  <option value="other">More than Two</option>
+                  <option value="3">More than Two</option>
                 </select>
 
                 <Layers className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
               </div>
             </div>
 
-        
             <div className="text-center pt-4">
               <button
                 disabled={loading}
@@ -156,7 +202,6 @@ const FoodStallForm = () => {
         </div>
       </div>
 
-    
       {success && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80">
           <div className="backdrop-blur-xl bg-white/15 border border-yellow-400/40 rounded-3xl p-8 max-w-md text-center text-white shadow-[0_20px_60px_rgba(255,193,7,0.6)] animate-scaleIn">
@@ -176,7 +221,6 @@ const FoodStallForm = () => {
         </div>
       )}
 
-  
       <style>{`
         @keyframes scaleIn {
           from { transform: scale(0.9); opacity: 0; }
@@ -190,12 +234,21 @@ const FoodStallForm = () => {
   );
 };
 
-
-const FloatingInput = ({ label, type = "text", icon }) => (
+const FloatingInput = ({
+  label,
+  type = "text",
+  icon,
+  name,
+  value,
+  onChange,
+}) => (
   <div className="relative">
     <input
       type={type}
       required
+      name={name}
+      value={value}
+      onChange={onChange}
       placeholder=" "
       className="
         peer w-full bg-black/30 border border-white/20 rounded-xl px-12 py-4
@@ -204,8 +257,10 @@ const FloatingInput = ({ label, type = "text", icon }) => (
       "
     />
 
-    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400
-      peer-focus:text-yellow-400">
+    <div
+      className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400
+      peer-focus:text-yellow-400"
+    >
       {icon}
     </div>
 
