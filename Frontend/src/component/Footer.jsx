@@ -37,7 +37,7 @@ const FooterSection = () => {
 
         <div className="absolute inset-0 bg-[#1a0b3d]/80" />
 
-        <div className="relative z-10 w-full px-4 sm:px-8 lg:px-24 pt-24 grid grid-cols-1 md:grid-cols-4 gap-12 md:gap-16">
+        <div className="relative z-10 w-full px-4 sm:px-8 lg:px-24 pt-24 grid grid-cols-1 md:grid-cols-5 gap-12 md:gap-16">
           <div>
             <h4 className="text-white font-semibold text-2xl mb-6">Pages</h4>
 
@@ -94,11 +94,57 @@ const FooterSection = () => {
           </div>
 
           <div>
+  <h4 className="text-white font-semibold text-2xl mb-6">Helpline</h4>
+
+  <ul className="space-y-3 text-base sm:text-lg">
+    <li className="flex items-center gap-4">
+      <span className="w-28 text-gray-300">Police</span>
+      <a
+        href="tel:100"
+        className="text-white font-semibold hover:text-purple-300 transition"
+      >
+        100
+      </a>
+    </li>
+
+    <li className="flex items-center gap-4">
+      <span className="w-28 text-gray-300">Fire</span>
+      <a
+        href="tel:101"
+        className="text-white font-semibold hover:text-purple-300 transition"
+      >
+        101
+      </a>
+    </li>
+
+    <li className="flex items-center gap-4">
+      <span className="w-28 text-gray-300">Ambulance</span>
+      <a
+        href="tel:102"
+        className="text-white font-semibold hover:text-purple-300 transition"
+      >
+        102
+      </a>
+    </li>
+
+    <li className="flex items-center gap-4">
+      <span className="w-28 text-gray-300">Emergency</span>
+      <a
+        href="tel:112"
+        className="text-white font-semibold hover:text-purple-300 transition"
+      >
+        112
+      </a>
+    </li>
+  </ul>
+</div>
+
+          <div>
             <h3 className="text-2xl font-bold text-white mb-4">
               BBD <span className="text-blue-400">GROUP</span>
             </h3>
-            <p className="text-base sm:text-lg mb-1">+91-2225066345</p>
-            <p className="text-base sm:text-lg">hello@logoipsum.com</p>
+            <p className="text-base sm:text-lg mb-1">0522 619 6222</p>
+            <p className="text-base sm:text-lg">info@bbdu.org</p>
           </div>
 
           <div className="md:text-right">
