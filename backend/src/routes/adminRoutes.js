@@ -1,15 +1,7 @@
 // src/routes/adminRoutes.js
 import express from "express";
-import {
-  registerAdmin,
-  loginAdmin,
-  logoutAdmin,
-} from "../controllers/adminController.js";
-import {
-  getUsers,
-  updateUserStatus,
-  updateUserDetails,
-} from "../controllers/adminUser.controller.js";
+import {registerAdmin,loginAdmin,logoutAdmin,} from "../controllers/adminController.js";
+import {getUsers,updateUserStatus,updateUserDetails,} from "../controllers/adminUser.controller.js";
 import { asyncHandler } from "../middlewares/asyncErrorHandlerMiddleWare.js";
 import adminAuth from "../middlewares/adminAuth.js";
 import { refreshAdminAccessToken } from "../controllers/refreshTokenController.js";
@@ -24,21 +16,13 @@ router.post("/logout", adminAuth, asyncHandler(logoutAdmin));
 
 /* ================= ADMIN → USER MANAGEMENT ================= */
 
-// ✅ Static route first
+// Static route first
 router.get("/users", adminAuth, asyncHandler(getUsers));
 
-// ✅ More specific dynamic route first
-router.patch(
-  "/users/:userId/status",
-  adminAuth,
-  asyncHandler(updateUserStatus)
-);
+// More specific dynamic route first
+router.patch("/users/:userId/status", adminAuth, asyncHandler(updateUserStatus));
 
-// ✅ Less specific dynamic route LAST
-router.patch(
-  "/users/:userId",
-  adminAuth,
-  asyncHandler(updateUserDetails)
-);
+// Less specific dynamic route LAST
+router.patch("/users/:userId", adminAuth,asyncHandler(updateUserDetails));
 
 export default router;

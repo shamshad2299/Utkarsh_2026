@@ -15,6 +15,8 @@ import sponsorshipRoutes from "../src/routes/sponsorshipRoutes.js";
 import auditLogRoutes from "../src/routes/auditLogRoutes.js";
 import {globalErrorHandler} from "./middlewares/errorMiddleware.js"
 import { notFoundHandler } from "./middlewares/notFoundMiddleware.js";
+import throwbackRoutes from "../src/routes/throwbackRoutes.js";
+import websiteTeamRoutes from "../src/routes/websiteTeamRoutes.js";
 
 const app = express();
 
@@ -51,7 +53,8 @@ app.use("/api/teams", teamRoutes);
 app.use("/api/results", resultRoutes);
 app.use("/api/food-stalls", foodStallRoutes);
 app.use("/api/sponsorships", sponsorshipRoutes);
-
+app.use("/api/throwbacks", throwbackRoutes);
+app.use("/api/website-team", websiteTeamRoutes);
 /* ================= 404 HANDLER ================= */
 app.use(notFoundHandler);
 

@@ -1,12 +1,5 @@
 import express from "express";
-import {
-  createTeam,
-  addTeamMember,
-  removeTeamMember,
-  getMyTeams,
-  getTeamById,
-  deleteTeam,
-} from "../controllers/teamController.js";
+import {createTeam,addTeamMember,removeTeamMember,getMyTeams,getTeamById,deleteTeam,} from "../controllers/teamController.js";
 import { verifyJWT } from "../middlewares/authMiddleWare.js";
 import { asyncHandler } from "../middlewares/asyncErrorHandlerMiddleWare.js";
 
@@ -22,18 +15,10 @@ router.get("/my", verifyJWT, asyncHandler(getMyTeams));
 // ================= ACTION / NESTED ROUTES =================
 
 // Add member (leader only)
-router.post(
-  "/:teamId/members",
-  verifyJWT,
-  asyncHandler(addTeamMember)
-);
+router.post("/:teamId/members",verifyJWT,asyncHandler(addTeamMember));
 
 // Remove member (leader only)
-router.delete(
-  "/:teamId/members/:memberId",
-  verifyJWT,
-  asyncHandler(removeTeamMember)
-);
+router.delete("/:teamId/members/:memberId",verifyJWT,asyncHandler(removeTeamMember));
 
 // ================= GENERIC ROUTES LAST =================
 
