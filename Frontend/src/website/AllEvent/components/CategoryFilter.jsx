@@ -23,7 +23,7 @@ const CategoryFilter = ({
       </div>
 
       {/* Responsive grid layout - adjusts based on screen size */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-9 gap-3 sm:gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-10 gap-3 sm:gap-4">
         {/* "All" filter */}
         <button
           onClick={() => handleCategoryFilterClick("all")}
