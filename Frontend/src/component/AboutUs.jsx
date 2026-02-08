@@ -1,4 +1,4 @@
-import React from "react";
+
 import aboutImage from "../assets/Frame_122.png";
 
 const AboutUs = () => {
@@ -22,6 +22,7 @@ const AboutUs = () => {
           className="max-w-[80%]  "
         />
       </div>
+      
     </section>
   );
 };

@@ -10,6 +10,7 @@ import Footer from "../component/Footer";
 
 import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
+import Line from "../assets/Vector_63.png"
 
 const Home = () => {
   const location = useLocation();
@@ -38,20 +39,24 @@ const Home = () => {
       </div>
 
       {/* EVENTS */}
-      <section id="events" className="scroll-mt-28">
+      <section id="events" className="scroll-mt-28 relative">
+        <div className="absolute xl:-bottom-65 z-1 right-8 lg:right-5 lg:-bottom-50 md:-bottom-20 max-md:hidden">
+          <img 
+          src={Line} alt="" className="xl:w-350 lg:w-282 md:w-230" />
+        </div>
         <EventsSection />
       </section>
 
-    
-
-      {/* ABOUT */}
-      <section id="about" className="scroll-mt-28">
+ {/* ABOUT */}
+      <section id="about" className="scroll-mt-28 lg:-mt-20 md:-mt-40">
         <AboutUs />
       </section>
-        {/* GALLERY */}
-      <section id="schedule" className="scroll-mt-28 -mt-12">
+      {/* GALLERY */}
+      <section id="schedule" className="scroll-mt-28 ">
         <EventGallerySection />
       </section>
+
+     
 
       {/* EDM (GAP FIX) */}
       <section className="scroll-mt-28 -mt-12">

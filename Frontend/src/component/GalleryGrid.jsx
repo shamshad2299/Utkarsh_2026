@@ -34,71 +34,71 @@ const GalleryGrid = () => {
           <div onClick={() => setSelectedImage(ukr1)} className="cursor-pointer">
             <GalleryItem
               src={ukr1}
-              className="h-80 sm:h-72 md:h-80 lg:h-96 rounded-tr-[40px]"
+              className="h-80 sm:h-72 md:h-80 lg:h-96 rounded-tr-[40px] border-2 border-[#6760DF] outline-2 outline-teal-800"
             />
           </div>
 
-          <div onClick={() => setSelectedImage(ukr2)} className="cursor-pointer">
+          <div onClick={() => setSelectedImage(ukr2)} className="cursor-pointer inverted-radius">
             <GalleryItem
               src={ukr2}
-              className="h-56 sm:h-52 md:h-56 lg:h-64 rounded-tl-[40px]"
+              className="h-56 sm:h-52 md:h-56 lg:h-64 rounded-tl-[40px] border-2 border-[#6760DF] outline-2 outline-teal-800"
             />
           </div>
         </div>
 
-        <div className="flex flex-col gap-6">
+        <div className="flex flex-col gap-6 inverted-radius">
           <div onClick={() => setSelectedImage(ukr3)} className="cursor-pointer">
             <GalleryItem
               src={ukr3}
-              className="h-96 sm:h-80 md:h-96 lg:h-112 rounded-tl-[40px]"
+              className="h-96 sm:h-80 md:h-96 lg:h-112 rounded-tl-[40px] border-2 border-[#6760DF] outline-2 outline-teal-800"
             />
           </div>
 
           <div onClick={() => setSelectedImage(ukr4)} className="cursor-pointer">
             <GalleryItem
               src={ukr4}
-              className="h-72 sm:h-64 md:h-72 lg:h-80 rounded-br-[40px]"
+              className="h-72 sm:h-64 md:h-72 lg:h-80 rounded-br-[40px] border-2 border-[#6760DF] outline-2 outline-teal-800"
             />
           </div>
         </div>
 
         <div className="flex flex-col gap-6 lg:mt-32">
-          <div onClick={() => setSelectedImage(ukr5)} className="cursor-pointer">
+          <div onClick={() => setSelectedImage(ukr5)} className="cursor-pointer ">
             <GalleryItem
               src={ukr5}
-              className="h-56 sm:h-48 md:h-56 lg:h-64 rounded-xl"
+              className="h-56 sm:h-48 md:h-56 lg:h-64 rounded-xl border-2 border-[#6760DF] outline-2 outline-teal-800"
             />
           </div>
 
-          <div onClick={() => setSelectedImage(ukr6)} className="cursor-pointer">
+          <div onClick={() => setSelectedImage(ukr6)} className="cursor-pointer ">
             <GalleryItem
               src={ukr6}
-              className="h-96 sm:h-80 md:h-96 lg:h-112 rounded-xl"
+              className="h-96 sm:h-80 md:h-96 lg:h-112 rounded-xl border-2 border-[#6760DF] outline-2 outline-teal-800"
             />
           </div>
         </div>
 
         <div className="flex flex-col gap-6 lg:mt-4">
-          <div onClick={() => setSelectedImage(ukr7)} className="cursor-pointer">
+          <div onClick={() => setSelectedImage(ukr7)} className="cursor-pointer inverted-radius">
             <GalleryItem
               src={ukr7}
-              className="h-96 sm:h-80 md:h-96 lg:h-112 rounded-tr-[40px]"
+              className="h-96 sm:h-80 md:h-96 lg:h-112 rounded-tr-[40px] border-2 border-[#6760DF] outline-2 outline-teal-800"
             />
           </div>
 
-          <div onClick={() => setSelectedImage(ukr8)} className="cursor-pointer">
+          <div onClick={() => setSelectedImage(ukr8)} className="cursor-pointer ">
             <GalleryItem
               src={ukr8}
-              className="h-96 sm:h-80 md:h-96 lg:h-112 rounded-xl"
+              className="h-96 sm:h-80 md:h-96 lg:h-112 rounded-xl border-2 border-[#6760DF] outline-2 outline-teal-800 "
             />
           </div>
         </div>
 
         <div className="flex flex-col gap-6 lg:mt-24">
-          <div onClick={() => setSelectedImage(ukr9)} className="cursor-pointer">
+          <div onClick={() => setSelectedImage(ukr9)} className="cursor-pointer inverted-radius">
             <GalleryItem
               src={ukr9}
-              className="h-96 sm:h-80 md:h-96 lg:h-112 rounded-tl-[40px]"
+              className="h-96 sm:h-80 md:h-96 lg:h-112 rounded-tl-[40px] border-2 border-[#6760DF] outline-2 outline-teal-800"
             />
           </div>
         </div>

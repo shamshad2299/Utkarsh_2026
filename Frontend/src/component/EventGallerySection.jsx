@@ -30,7 +30,7 @@ const EventGallerySection = () => {
           Throwback
         </h2>
 
-        <p className="text-gray-400 max-w-3xl text-sm md:text-base leading-relaxed">
+        <p className="text-gray-400 max-w-3xl text-sm md:text-base leading-relaxed milonga">
           Experience a thrilling array of events, from mind-bending coding
           competitions to electrifying dance performances, and showcase your
           talents on a stage that embraces innovation.

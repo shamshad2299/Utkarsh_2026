@@ -1,72 +1,76 @@
-import React from 'react';
-import { Users } from 'lucide-react';
+import React from "react";
+import All from "../../../assets/Group_39332.png";
+import Solo from "../../../assets/Group_39330.png";
+import Team from "../../../assets/Group_39329.png";
 
-const EventTypeFilter = ({ 
-  selectedTypeFilter, 
-  handleTypeFilterClick, 
-  typeFilterOptions,
-  getTypeFilterColor 
-}) => {
+const FILTERS = [
+  { id: "all", label: "All types", img: All },
+  { id: "solo", label: "Solo", img: Solo },
+  { id: "team", label: "Team", img: Team },
+];
+
+const EventTypeFilter = ({ selectedTypeFilter, handleTypeFilterClick }) => {
   return (
-    <div className="w-full md:w-auto">
-      <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-        {/* Filter Label and Active Indicator */}
-        <div className="flex items-center gap-3">
-          <Users size={24} className="text-blue-400" />
-          <div className="flex flex-col">
-            <h2 className="text-lg sm:text-xl font-bold text-white">EVENT TYPE</h2>
-            <span className="text-gray-400 text-xs sm:text-sm">
-              Filter by participation
-            </span>
-          </div>
-          {selectedTypeFilter !== 'all' && (
-            <div className="px-3 py-1 bg-blue-500/20 border border-blue-500/30 rounded-full hidden sm:block">
-              <span className="text-sm text-blue-300">
-                {typeFilterOptions.find(f => f.id === selectedTypeFilter)?.label}
-              </span>
-            </div>
-          )}
-        </div>
+    <div className="w-full">
+      <p className="milonga mt-6 sm:mt-10 mb-4 text-lg sm:text-xl">
+        Event Type
+      </p>
 
-        {/* Filter Buttons */}
-        <div className="flex flex-wrap gap-2 sm:gap-3">
-          {typeFilterOptions.map((filter) => {
-            const Icon = filter.icon;
-            const isActive = selectedTypeFilter === filter.id;
+      {/* Cards */}
+      <div className="flex flex-wrap sm:flex-nowrap gap-4 sm:gap-6">
+        {FILTERS.map((filter) => {
+          const isActive = selectedTypeFilter === filter.id;
 
-            return (
-              <button
-                key={filter.id}
-                onClick={() => handleTypeFilterClick(filter.id)}
+          return (
+            <button
+              key={filter.id}
+              onClick={() => handleTypeFilterClick(filter.id)}
+              className={`
+                relative
+                w-[90px] h-[90px]
+                sm:w-[100px] sm:h-[100px]
+                md:w-[120px] md:h-[120px]
+                rounded-2xl
+                flex flex-col items-center justify-center
+                transition-all duration-300
+                ${
+                  isActive
+                    ? "bg-[#cdb7ff] shadow-[0_0_30px_rgba(170,140,255,0.6)]"
+                    : "bg-white hover:scale-[1.03]"
+                }
+              `}
+            >
+              {/* Title */}
+              <span
                 className={`
-                  flex items-center gap-2 px-3 cursor-pointer sm:px-4 py-2 sm:py-2.5 rounded-full transition-all duration-300
+                  mb-2
+                  text-xs sm:text-sm md:text-base
+                  font-semibold
                   ${
-                    isActive
-                      ? `bg-linear-to-r ${getTypeFilterColor(filter.id)} text-white shadow-lg shadow-blue-500/25`
-                      : "bg-white/10 hover:bg-white/20 text-gray-300 hover:text-white"
+                    isActive ? "text-[#4b2ea8]" : "text-[#1e1e1e]"
                   }
-                  border ${isActive ? "border-transparent" : "border-white/10"}
-                  min-w-[80px] sm:min-w-[100px] justify-center hover:scale-105 active:scale-95 flex-1 sm:flex-none
                 `}
               >
-                <Icon size={14} className="sm:size-[16px]" />
-                <span className="font-medium text-xs sm:text-sm whitespace-nowrap">
-                  {filter.label}
-                </span>
-              </button>
-            );
-          })}
-        </div>
+                {filter.label}
+              </span>
+
+              {/* PNG */}
+              <div className="
+                w-[42px] h-[42px]
+                sm:w-[50px] sm:h-[50px]
+                md:w-[60px] md:h-[60px]
+                flex items-center justify-center
+              ">
+                <img
+                  src={filter.img}
+                  alt={filter.label}
+                  className="w-full h-full object-contain"
+                />
+              </div>
+            </button>
+          );
+        })}
       </div>
-      
-      {/* Mobile Active Filter Indicator */}
-      {selectedTypeFilter !== 'all' && (
-        <div className="mt-3 px-3 py-1 bg-blue-500/20 border border-blue-500/30 rounded-full w-fit sm:hidden">
-          <span className="text-sm text-blue-300">
-            Active: {typeFilterOptions.find(f => f.id === selectedTypeFilter)?.label}
-          </span>
-        </div>
-      )}
     </div>
   );
 };

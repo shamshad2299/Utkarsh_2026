@@ -4,6 +4,7 @@ import dividerImg from "../assets/div.png";
 import { useEffect, useState } from "react";
 import { api } from "../api/axios.js";
 import { useNavigate } from "react-router-dom"; // Add this
+import Line from "../assets/line.svg"
 
 const EventsSection = () => {
   const [events, setEvents] = useState([]);
@@ -100,10 +101,15 @@ const EventsSection = () => {
       />
 
       <div className="max-w-7xl mx-auto relative z-10">
+        <div className="absolute lg:-right-12  xl:-right-10 right-10 lg:top-4 md:-right-12 md:top-10 max-md:hidden ">
+          <img 
+          className="w-450 "
+          src={Line} alt="" />
+        </div>
         {/* TOP HEADING */}
-        <div className="flex flex-col md:flex-row md:items-start justify-between mb-16 gap-6 relative">
+        <div className="flex flex-col md:flex-row md:items-start justify-between mb-16 gap-6 relative md:ml-10">
           {/* LEFT TEXT */}
-          <div className="max-w-2xl md:-ml-6">
+          <div className="max-w-2xl ">
             <h2
               className="
                 text-5xl md:text-6xl font-semibold mb-6
@@ -116,7 +122,7 @@ const EventsSection = () => {
               Events List
             </h2>
 
-            <p className="text-gray-400 text-sm md:text-base leading-relaxed mb-6">
+            <p className="text-gray-400 text-sm md:text-base leading-relaxed mb-6 milonga">
               Experience a thrilling array of events, from mind-bending coding
               competitions to electrifying dance performances, and showcase your
               talents on a stage that embraces innovation.
@@ -127,9 +133,9 @@ const EventsSection = () => {
           <div className="relative w-fit">
             <button
               onClick={handleSeeAll} // Changed this
-              className="flex items-center gap-2 bg-white text-black px-7 py-3 rounded-full font-medium hover:bg-gray-200 transition-colors w-fit relative z-20"
+              className="flex items-center gap-2 bg-white text-black px-10 py-3 rounded-2xl font-medium hover:bg-gray-200 transition-colors w-fit relative z-20 text-lg max-md:w-40"
             >
-              See all <ArrowUpRight size={18} />
+              See all <ArrowUpRight size={18}  className="font-bold"/>
             </button>
           </div>
         </div>
@@ -163,12 +169,14 @@ const EventsSection = () => {
         {/* Categories Grid - Display only categories */}
         {!loading && !error && (
           <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 
+                md:ml-12 lg:mt-2 xl:mt-35 md:-mt-10 
+                [direction:rtl]">
               {/* Display all categories */}
-              {categories.slice(0, 8).map((categ, index) => (
+              {categories.slice(0, 9).map((categ, index) => (
                 <div
                   key={categ._id}
-                  className={index % 2 ? "lg:translate-y-2" : ""}
+                  className={index % 2 ? "lg:translate-y-2 [direction:ltr] text-left" : "[direction:ltr] text-left"}
                 >
                   <EventCard
                     title={categ.name}
@@ -179,17 +187,7 @@ const EventsSection = () => {
               ))}
             </div>
 
-            {/* Show "View More Categories" if there are more than 8 */}
-            {categories.length > 8 && (
-              <div className="text-center mt-10">
-                <button 
-                  onClick={() => navigate('/categories')}
-                  className="px-6 py-3 bg-white/10 hover:bg-white/20 text-white rounded-full font-medium transition-colors border border-white/20"
-                >
-                  View More Categories ({categories.length - 8} more)
-                </button>
-              </div>
-            )}
+           
           </>
         )}
       </div>
