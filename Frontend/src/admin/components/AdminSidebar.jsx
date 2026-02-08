@@ -142,8 +142,8 @@ const AdminSidebar = () => {
 
           <Item
             label="Website teams"
-            to="/admin/dashboard/teams"
-            addTo="/admin/dashboard/teams/add"
+            to="/admin/dashboard/website-team"
+            addTo="/admin/dashboard/website-team/add"
           />
 
           <Item

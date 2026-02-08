@@ -1,4 +1,5 @@
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
+import { lazy, Suspense } from "react";
 import AdminLogin from "../pages/AdminLogin";
 import AdminDashboard from "../pages/AdminDashboard";
 import AdminProtectedRoute from "../middlewares/AdminProtectedRoute";
@@ -32,6 +33,8 @@ import Team_Register from "../components/Team_Management/Team_Register";
 import SponsorshipRequests from "../pages/SponsorshipRequests";
 import FoodStallRequests from "../pages/FoodStallRequests";
 
+
+const WebsiteTeamPage = lazy(() =>import("../pages/WebsiteTeamPage"));
 import SoloRegistrations from "../pages/SoloRegistrations";
 import TeamRegistrations from "../pages/TeamRegistrations";
 
@@ -82,6 +85,9 @@ const AdminRoutes = () => {
 
         <Route path="sponsorship-requests" element={<SponsorshipRequests />} />
         <Route path="foodstall-requests" element={<FoodStallRequests />} />
+
+        <Route path="website-team/*" element={<Suspense fallback={<p className="p-6">Loading Website Team...</p>}><WebsiteTeamPage /></Suspense>}/>
+
       </Route>
     </Routes>
   );
