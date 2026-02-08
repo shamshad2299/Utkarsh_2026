@@ -19,12 +19,18 @@ import websiteTeamRoutes from "../src/routes/websiteTeamRoutes.js"
 
 const app = express();
 
-app.use(
-  cors({
-    origin: process.env.CORS_ORIGIN || "http://localhost:5173",
-    credentials: true,
-  })
-);
+app.use(cors({
+  origin: process.env.CORS_ORIGIN,
+  credentials: true,
+  methods: ["GET", "POST", "PUT","PATCH", "DELETE", "OPTIONS"],
+  allowedHeaders: [
+    "Content-Type",
+    "Authorization"
+  ]
+}));
+
+app.options("*", cors());
+
 
 app.use(express.json());
 
