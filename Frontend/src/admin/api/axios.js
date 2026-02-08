@@ -60,7 +60,7 @@ export const subcategoryService = {
 
   addSubcategory: async (subcategoryData) => {
     const response = await api.post(
-      "/subCategory/subcategories",
+      "/subCategory/add",
       subcategoryData
     );
     return response.data;

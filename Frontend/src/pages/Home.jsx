@@ -5,7 +5,7 @@ import EventsSection from "../component/EventsSection";
 import EventGallerySection from "../component/EventGallerySection";
 import AboutUs from "../component/AboutUs";
 import EDM from "../component/edm";
-import TeamSection from "../component/TeamSection";
+import TeamSection from "../component/TeamSectionFolder/TeamSection";
 import Footer from "../component/Footer";
 
 import { useEffect } from "react";
