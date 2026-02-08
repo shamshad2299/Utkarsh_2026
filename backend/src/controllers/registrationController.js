@@ -309,3 +309,53 @@ export const restoreRegistration = async (req, res) => {
     data: registration,
   });
 };
+
+/* ================= GET ALL REGISTRATIONS (ADMIN) ================= */
+export const getAllRegistrationsAdmin = async (req, res) => {
+  const { type } = req.query;
+
+  let filter = { isDeleted: false };
+
+if (type === "solo") {
+  filter.$or = [
+    { teamId: null },
+    { teamId: { $exists: false } }
+  ];
+}
+
+if (type === "team") {
+  filter.teamId = { $ne: null };
+}
+
+
+  const registrations = await Registration.find(filter)
+    .populate({
+      path: "eventId",
+      select: "title fee",
+    })
+    .populate({
+      path: "userId",
+      select: "userId name email mobile_no",
+    })
+    .populate({
+      path: "teamId",
+      populate: [
+        {
+          path: "teamLeader",
+          select: "userId name",
+        },
+        {
+          path: "teamMembers",
+          select: "name",
+        },
+      ],
+    })
+    .sort({ createdAt: -1 });
+
+  res.status(200).json({
+    success: true,
+    count: registrations.length,
+    data: registrations,
+  });
+};
+

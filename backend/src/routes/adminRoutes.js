@@ -13,6 +13,8 @@ import {
 import { asyncHandler } from "../middlewares/asyncErrorHandlerMiddleWare.js";
 import adminAuth from "../middlewares/adminAuth.js";
 import { refreshAdminAccessToken } from "../controllers/refreshTokenController.js";
+import { getAllRegistrationsAdmin } from "../controllers/registrationController.js";
+
 
 const router = express.Router();
 
@@ -39,6 +41,13 @@ router.patch(
   "/users/:userId",
   adminAuth,
   asyncHandler(updateUserDetails)
+);
+/* ================= ADMIN → REGISTRATIONS ================= */
+
+router.get(
+  "/registrations",
+  adminAuth,
+  asyncHandler(getAllRegistrationsAdmin)
 );
 
 export default router;
