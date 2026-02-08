@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 import { User } from "../models/users.model.js";
 import { ApiError } from "../utils/ApiError.js";
 import { logAudit } from "../utils/auditLogger.js";
+import { Registration } from "../models/registerations.model.js";
 
 /* ================= GET USERS (WITH FILTERS) ================= */
 export const getUsers = async (req, res) => {
