@@ -23,7 +23,7 @@ import {
   getCategoryColor,
   getTypeFilterColor,
 } from "../utils/eventUtils";
-import { useAuth } from "../../context/AuthContext"; // Import useAuth
+import { useAuth } from "../../Context/AuthContext"; // Import useAuth
 
 const AllEvents = () => {
   const navigate = useNavigate();
