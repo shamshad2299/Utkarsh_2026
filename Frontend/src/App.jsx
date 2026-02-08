@@ -6,7 +6,6 @@ import Home from "./pages/Home";
 import SponsorshipForm from "./component/SponsorshipForm";
 import FoodStallForm from "./component/FoodStallForm";
 import AboutSection from "./pages/AboutSection";
-
 import LoginPage from "./component/Auth/LoginPage";
 import RegistrationPage from "./component/Auth/RegistrationPage";
 import AdminLogin from "./admin/pages/AdminLogin";
