@@ -5,10 +5,11 @@ import {
   getMyRegistrations,
   getEventRegistrations,
   cancelRegistration,
+  restoreRegistration,
 } from "../controllers/registrationController.js";
-import { verifyJWT } from "../middleWares/authMiddleWare.js";
-import adminAuth from "../middleWares/adminAuth.js";
-import { asyncHandler } from "../middleWares/asyncErrorHandlerMiddleWare.js";
+import { verifyJWT } from "../middlewares/authMiddleWare.js";
+import adminAuth from "../middlewares/adminAuth.js";
+import { asyncHandler } from "../middlewares/asyncErrorHandlerMiddleWare.js";
 
 const router = express.Router();
 
@@ -38,5 +39,6 @@ router.patch(
   verifyJWT,
   asyncHandler(cancelRegistration)
 );
+router.patch("/registrations/:id/restore" , verifyJWT , asyncHandler(restoreRegistration));
 
 export default router;

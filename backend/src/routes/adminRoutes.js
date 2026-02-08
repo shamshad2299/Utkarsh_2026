@@ -10,9 +10,11 @@ import {
   updateUserStatus,
   updateUserDetails,
 } from "../controllers/adminUser.controller.js";
-import { asyncHandler } from "../middleWares/asyncErrorHandlerMiddleWare.js";
-import adminAuth from "../middleWares/adminAuth.js";
+import { asyncHandler } from "../middlewares/asyncErrorHandlerMiddleWare.js";
+import adminAuth from "../middlewares/adminAuth.js";
 import { refreshAdminAccessToken } from "../controllers/refreshTokenController.js";
+import { getAllRegistrationsAdmin } from "../controllers/registrationController.js";
+import { exportRegistrationsExcel } from "../controllers/adminExport.controller.js";
 
 const router = express.Router();
 
@@ -40,5 +42,20 @@ router.patch(
   adminAuth,
   asyncHandler(updateUserDetails)
 );
+
+/* ================= ADMIN → REGISTRATIONS ================= */
+router.get(
+  "/registrations",
+  adminAuth,
+  asyncHandler(getAllRegistrationsAdmin)
+);
+
+/* ================= ADMIN → EXPORT EXCEL ================= */
+router.get(
+  "/export-registrations",
+  adminAuth,
+  asyncHandler(exportRegistrationsExcel)
+);
+
 
 export default router;

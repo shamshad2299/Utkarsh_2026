@@ -131,7 +131,14 @@ export const getMyRegistrations = async (req, res) => {
     registeredBy: userId,
     isDeleted: false,
   })
-    .populate("eventId", "title startTime venueName")
+    .populate({
+      path: "eventId",
+      select: "title startTime venueName images eventType category fee",
+      populate: {
+        path: "category",
+        select: "name image icon", // jo bhi fields chahiye
+      },
+    })
     .populate("teamId", "teamName");
 
   res.status(200).json({
@@ -140,6 +147,7 @@ export const getMyRegistrations = async (req, res) => {
     data: registrations,
   });
 };
+
 
 /* ================= GET EVENT REGISTRATIONS (ADMIN) ================= */
 export const getEventRegistrations = async (req, res) => {
@@ -195,4 +203,159 @@ export const cancelRegistration = async (req, res) => {
     success: true,
     message: "Registration cancelled successfully",
   });
+};/* ================= RESTORE REGISTRATION ================= */
+export const restoreRegistration = async (req, res) => {
+  const { id } = req.params;
+  const userId = req.user._id;
+  const { teamId } = req.body;
+
+  // Find the soft-deleted registration
+  const registration = await Registration.findOne({
+    _id: id,
+    registeredBy: userId, // Use registeredBy instead of userId
+    isDeleted: true,
+  });
+
+  if (!registration) {
+    throw new ApiError(404, "Registration not found or cannot be restored");
+  }
+
+  // Check event details
+  const event = await Event.findById(registration.eventId);
+  if (!event || event.isDeleted) {
+    throw new ApiError(404, "Event not found");
+  }
+
+  // Check registration deadline
+  if (new Date() > new Date(event.registrationDeadline)) {
+    throw new ApiError(400, "Registration deadline has passed");
+  }
+
+  // Check event capacity
+  const activeRegistrations = await Registration.countDocuments({
+    eventId: event._id,
+    isDeleted: false,
+    status: { $ne: "cancelled" },
+  });
+
+  if (activeRegistrations >= event.capacity) {
+    throw new ApiError(400, "Event is now full");
+  }
+
+  // For team events, validate team
+  if (event.eventType !== "solo") {
+    if (!teamId) {
+      throw new ApiError(400, "Team ID is required for team events");
+    }
+
+    const team = await Team.findById(teamId);
+    if (!team || team.isDeleted) {
+      throw new ApiError(404, "Team not found");
+    }
+
+    // Check if user is member of the team
+    const isMember =
+      team.teamLeader.toString() === userId.toString() ||
+      team.teamMembers.some((member) => member.toString() === userId.toString());
+
+    if (!isMember) {
+      throw new ApiError(403, "You are not a member of this team");
+    }
+
+    // Check team size constraints
+    const teamSize = 1 + team.teamMembers.length;
+    if (teamSize < event.teamSize.min || teamSize > event.teamSize.max) {
+      throw new ApiError(
+        400,
+        `Team size must be between ${event.teamSize.min} and ${event.teamSize.max}`
+      );
+    }
+
+    // Check if team is already registered for this event
+    const existingTeamReg = await Registration.findOne({
+      eventId: event._id,
+      teamId,
+      isDeleted: false,
+    });
+
+    if (existingTeamReg) {
+      throw new ApiError(409, "This team is already registered for the event");
+    }
+
+    registration.teamId = teamId;
+  }
+
+  // Capture old data for audit log
+  const oldData = registration.toObject();
+
+  // Restore the registration
+  registration.isDeleted = false;
+  registration.status = "pending";
+  await registration.save();
+
+  // AUDIT LOG
+  await logAudit({
+    req,
+    action: "REGISTRATION_RESTORED",
+    targetCollection: "Registration",
+    targetId: registration._id,
+    oldData,
+    newData: registration,
+  });
+
+  res.status(200).json({
+    success: true,
+    message: "Registration restored successfully",
+    data: registration,
+  });
 };
+
+/* ================= GET ALL REGISTRATIONS (ADMIN) ================= */
+export const getAllRegistrationsAdmin = async (req, res) => {
+  const { type } = req.query;
+
+  let filter = { isDeleted: false };
+
+if (type === "solo") {
+  filter.$or = [
+    { teamId: null },
+    { teamId: { $exists: false } }
+  ];
+}
+
+if (type === "team") {
+  filter.teamId = { $ne: null };
+}
+
+
+  const registrations = await Registration.find(filter)
+    .populate({
+      path: "eventId",
+      select: "title fee",
+    })
+    .populate({
+      path: "userId",
+      select: "userId name email mobile_no",
+    })
+    .populate({
+      path: "teamId",
+      populate: [
+        {
+          path: "teamLeader",
+          select: "userId name",
+        },
+        {
+          path: "teamMembers",
+          select: "name",
+        },
+      ],
+    })
+    .sort({ createdAt: -1 });
+
+  res.status(200).json({
+    success: true,
+    count: registrations.length,
+    data: registrations,
+  });
+};
+

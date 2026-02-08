@@ -1,8 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { Store, Mail, Utensils, User, Phone, MapPin, Layers, Home } from "lucide-react";
+import { Home } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import foodBg from "../assets/food.png";
 import { publicService } from "../api/axios";
+import BackgroundGlow from "./BackgroundGlow";
+import MonumentBottom from "./MonumentBottom";
+import Food1 from "../assets/Food_stall1.png";
+import Food2 from "../assets/Food_stall2.png";
 
 const FoodStallForm = () => {
   const [show, setShow] = useState(false);
@@ -22,12 +25,9 @@ const FoodStallForm = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    setTimeout(() => setShow(true), 120);
+    const t = setTimeout(() => setShow(true), 120);
+    return () => clearTimeout(t);
   }, []);
-
-  const handleBackToHome = () => {
-    navigate("/");
-  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -36,12 +36,10 @@ const FoodStallForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     setLoading(true);
     try {
       await publicService.createFoodStall(formData);
       setSuccess(true);
-
       setFormData({
         businessName: "",
         email: "",
@@ -59,222 +57,219 @@ const FoodStallForm = () => {
   };
 
   return (
-    <>
-      <div
-        className="min-h-screen flex items-center justify-center px-4 bg-cover bg-center"
-        style={{
-          backgroundImage: `linear-gradient(rgba(0,0,0,0.65), rgba(0,0,0,0.65)), url(${foodBg})`,
-        }}
-      >
+    <div className="min-h-[calc(100vh)] relative overflow-hidden">
+      {/* Glow */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        <BackgroundGlow />
+      </div>
+
+      <div className="absolute inset-x-0 bo sm:bottom-0 lg:-bottom-15 -bottom-20">
+        <MonumentBottom />
+      </div>
+
+      {/* Content */}
+      <div className="relative z-10 flex md:mt-10 justify-center px-4 py-6">
+        {/* Home */}
         <div
-          className="absolute top-6 left-6 flex items-center gap-2 cursor-pointer z-20 hover:text-yellow-400 transition-colors text-white"
-          onClick={handleBackToHome}
+          onClick={() => navigate("/")}
+          className="absolute top-4 left-4 flex items-center gap-2 text-white cursor-pointer hover:opacity-80 z-20"
         >
-          <Home size={20} />
-          <span className="tracking-widest font-semibold">Home</span>
+          <Home size={16} />
+          <span className="text-xs tracking-wider">Home</span>
         </div>
 
-        <div
-          className={`
-            relative w-full max-w-3xl rounded-3xl p-10
-            via-[#39363f] backdrop-blur-2xl
-            border border-white/20
-            shadow-[0_0_80px_rgba(139,92,246,0.45)]
-            transition-all duration-700
-            ${show ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"}
-          `}
-        >
-          <div className="absolute -inset-1 rounded-3xl bg-linear-to-br from-[#4a4a71] to-purple-700/40 blur-2xl -z-10" />
-
-          <div className="text-center mb-10">
-            <h1 className="text-4xl font-extrabold tracking-wide text-white">
-              Food Stall Registration
-            </h1>
-            <p className="text-white/70 mt-2">
-              UTKARSH&apos;26 · Virasat Se Vikas Tak
-            </p>
+        {/* Card Container with Images */}
+        <div className="relative w-full max-w-md lg:max-w-2xl">
+          {/* Top Left Image */}
+          <div className="absolute max-md:hidden md:-top-15 md:-left-15  lg:-top-22 lg:-left-20 z-10">
+            <img
+              src={Food1}
+              alt="Food Stall 1"
+              className="w-24 h-24 sm:w-32 sm:h-32 lg:w-50 lg:h-50 object-contain drop-shadow-lg"
+            />
           </div>
 
-          <form
-            onSubmit={handleSubmit}
-            className="bg-white/5 border border-white/15 rounded-2xl p-8 space-y-8"
-          >
-            <div>
-              <h3 className="text-lg font-semibold text-yellow-400 mb-6">
-                Business Details
-              </h3>
+          {/* Bottom Right Image */}
+          <div className="absolute max-md:hidden  md:-bottom-10 md:-right-20 lg:-bottom-10 lg:-right-35 z-10">
+            <img
+              src={Food2}
+              alt="Food Stall 2"
+              className="w-24 h-24 sm:w-32 sm:h-32 lg:w-50 lg:h-50 object-contain drop-shadow-lg"
+            />
+          </div>
 
-              <div className="grid md:grid-cols-2 gap-6">
-                <FloatingInput
+          {/* Card - Wider on large screens */}
+          <div
+            className={`
+              w-full rounded-xl px-12 py-5
+              bg-gradient-to-br from-[#241f4a]/90 via-[#2b255f]/90 to-[#1b1738]/90
+              backdrop-blur-md border border-white/20
+              shadow-[0_10px_40px_rgba(0,0,0,0.8)]
+              transition-all duration-700
+              ${show ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}
+            `}
+          >
+            <div className="text-center mb-4">
+              <h1 className="text-3xl font-semibold text-[#e4e1ff]">
+                Food Stall Form
+              </h1>
+              <p className="text-lg text-[#c9c3ff] milonga mt-2">
+                Business Details
+              </p>
+            </div>
+
+            {/* FORM */}
+            <form onSubmit={handleSubmit} className="space-y-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 gap-x-8">
+                <Input
                   label="Business Name"
-                  icon={<Store />}
                   name="businessName"
                   value={formData.businessName}
                   onChange={handleChange}
+                  placeholder="Enter business name..."
                 />
-
-                <FloatingInput
+                <Input
                   label="Email ID"
                   type="email"
-                  icon={<Mail />}
                   name="email"
                   value={formData.email}
                   onChange={handleChange}
+                  placeholder="Enter email address..."
                 />
-
-                <FloatingInput
+                <Input
                   label="Food Items You Will Serve"
-                  icon={<Utensils />}
                   name="foodItems"
                   value={formData.foodItems}
                   onChange={handleChange}
+                  placeholder="Enter food items..."
                 />
-
-                <FloatingInput
-                  label="Owner / Contact Person Name"
-                  icon={<User />}
+                <Input
+                  label="Owner Name"
                   name="ownerName"
                   value={formData.ownerName}
                   onChange={handleChange}
+                  placeholder="Enter owner name..."
                 />
-
-                <FloatingInput
+                <Input
                   label="Phone Number"
-                  icon={<Phone />}
                   name="phoneNumber"
                   value={formData.phoneNumber}
                   onChange={handleChange}
+                  placeholder="Enter phone number..."
                 />
-
-                <FloatingInput
+                <Input
                   label="Permanent Address"
-                  icon={<MapPin />}
                   name="permanentAddress"
                   value={formData.permanentAddress}
                   onChange={handleChange}
+                  placeholder="Enter permanent address..."
                 />
+
+                <div className="sm:col-span-2">
+                  <Select
+                    label="Number of Stalls"
+                    name="numberOfStalls"
+                    value={formData.numberOfStalls}
+                    onChange={handleChange}
+                    options={[
+                      { value: "", label: "Select number of stalls" },
+                      { value: "1", label: "1 Stall" },
+                      { value: "2", label: "2 Stalls" },
+                      { value: "3", label: "More than 2" },
+                    ]}
+                  />
+                </div>
               </div>
-            </div>
 
-            <div>
-              <h3 className="text-lg font-semibold text-yellow-400 mb-4">
-                Stall Requirement
-              </h3>
-
-              <div className="relative">
-                <select
-                  required
-                  name="numberOfStalls"
-                  value={formData.numberOfStalls}
-                  onChange={handleChange}
-                  className="w-full bg-black/30 border border-white/20 rounded-xl px-12 py-4 text-white
-                  focus:outline-none focus:ring-2 focus:ring-yellow-400"
-                >
-                  <option value="">Select Number of Stalls</option>
-                  <option value="1">One Stall</option>
-                  <option value="2">Two Stalls</option>
-                  <option value="3">More than Two</option>
-                </select>
-
-                <Layers className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
-              </div>
-            </div>
-
-            <div className="text-center pt-4">
               <button
                 disabled={loading}
-                className="px-14 py-4 rounded-full bg-linear-to-r from-yellow-400 to-yellow-300
-                text-black font-bold tracking-wide text-lg flex items-center justify-center gap-3 mx-auto
-                hover:scale-105 transition disabled:opacity-70
-                shadow-[0_10px_35px_rgba(255,193,7,0.6)]"
+                className="w-full mt-3 py-2 rounded-md bg-[#6c63ff] text-white text-sm font-semibold
+                           hover:bg-[#5b54e6] transition disabled:opacity-60"
               >
-                {loading ? (
-                  <>
-                    <span className="w-5 h-5 border-2 border-black border-t-transparent rounded-full animate-spin"></span>
-                    Submitting...
-                  </>
-                ) : (
-                  "Submit Registration"
-                )}
+                {loading ? "Submitting..." : "Submit"}
               </button>
-            </div>
-          </form>
+            </form>
+          </div>
         </div>
       </div>
 
+      {/* Success Modal */}
       {success && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80">
-          <div className="backdrop-blur-xl bg-white/15 border border-yellow-400/40 rounded-3xl p-8 max-w-md text-center text-white shadow-[0_20px_60px_rgba(255,193,7,0.6)] animate-scaleIn">
-            <h2 className="text-2xl font-extrabold mb-2">
-              Registration Successful 🎉
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50">
+          <div className="bg-gradient-to-br from-[#2b255f] to-[#1b1738] border border-white/20 rounded-lg px-6 py-4 text-center text-white w-full max-w-xs">
+            <h2 className="text-base font-semibold mb-1">
+              Registration Successful
             </h2>
-            <p className="text-white/80 mb-6">
+            <p className="text-xs text-white/80 mb-3">
               Our team will contact you shortly.
             </p>
             <button
               onClick={() => setSuccess(false)}
-              className="px-8 py-3 rounded-xl bg-yellow-400 text-black font-semibold hover:bg-yellow-300 transition"
+              className="px-4 py-1.5 rounded-md bg-[#6c63ff] hover:bg-[#5b54e6] text-xs"
             >
               Close
             </button>
           </div>
         </div>
       )}
-
-      <style>{`
-        @keyframes scaleIn {
-          from { transform: scale(0.9); opacity: 0; }
-          to { transform: scale(1); opacity: 1; }
-        }
-        .animate-scaleIn {
-          animation: scaleIn 0.4s ease-out;
-        }
-      `}</style>
-    </>
+    </div>
   );
 };
 
-const FloatingInput = ({
+/* Reusable Input Component with DARKER BORDER */
+const Input = ({
   label,
   type = "text",
-  icon,
   name,
   value,
   onChange,
+  placeholder,
 }) => (
-  <div className="relative">
+  <div className="space-y-0.5">
+    <label className="text-xs text-white poppin">{label}</label>
     <input
       type={type}
-      required
       name={name}
       value={value}
       onChange={onChange}
-      placeholder=" "
-      className="
-        peer w-full bg-black/30 border border-white/20 rounded-xl px-12 py-4
-        text-white placeholder-transparent
-        focus:outline-none focus:ring-2 focus:ring-yellow-400 transition
-      "
+      required
+      placeholder={placeholder}
+      className="w-full px-3 py-3 rounded text-xs bg-[#3a3763]/90 border border-white/40
+                 text-white placeholder:text-white focus:outline-none focus:border-white/60 mt-2 "
     />
+  </div>
+);
 
-    <div
-      className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400
-      peer-focus:text-yellow-400"
-    >
-      {icon}
-    </div>
-
-    <label
+/* Reusable Select Component with DARKER BORDER */
+const Select = ({ label, name, value, onChange, options }) => (
+  <div className="w-full space-y-0.5 mt-1">
+    <label className="text-xs text-[#e5e3ff] block poppin">{label}</label>
+    <select
+      name={name}
+      value={value}
+      onChange={onChange}
+      required
       className="
-        absolute left-12 top-4 text-gray-400 transition-all
-        peer-focus:top-1 peer-focus:text-xs peer-focus:text-yellow-400
-        peer-not-placeholder-shown:top-1
-        peer-not-placeholder-shown:text-xs
-        peer-not-placeholder-shown:text-yellow-300
+        block w-full
+        px-3 py-3
+        rounded text-xs
+        bg-[#3a3763]/90
+        border border-white/40
+        text-white
+        focus:outline-none focus:border-white/60
+        appearance-none
       "
     >
-      {label}
-    </label>
+      {options.map((opt) => (
+        <option
+          key={opt.value}
+          value={opt.value}
+          className="bg-[#3a3763] text-white"
+        >
+          {opt.label}
+        </option>
+      ))}
+    </select>
   </div>
 );
 

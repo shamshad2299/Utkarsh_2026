@@ -4,7 +4,7 @@ import BackgroundGlow from "../component/BackgroundGlow";
 import EventsSection from "../component/EventsSection";
 import EventGallerySection from "../component/EventGallerySection";
 import AboutUs from "../component/AboutUs";
-import EDM from "../component/edm";
+import EDM from "../component/EDM";
 import TeamSection from "../component/TeamSectionFolder/TeamSection";
 import Footer from "../component/Footer";
 
@@ -42,14 +42,15 @@ const Home = () => {
         <EventsSection />
       </section>
 
-      {/* GALLERY */}
-      <section id="schedule" className="scroll-mt-28 -mt-12">
-        <EventGallerySection />
-      </section>
+    
 
       {/* ABOUT */}
       <section id="about" className="scroll-mt-28">
         <AboutUs />
+      </section>
+        {/* GALLERY */}
+      <section id="schedule" className="scroll-mt-28 -mt-12">
+        <EventGallerySection />
       </section>
 
       {/* EDM (GAP FIX) */}

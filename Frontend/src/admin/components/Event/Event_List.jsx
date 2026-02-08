@@ -249,7 +249,7 @@ const EventList = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-purple-50">
+      <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-gray-50 to-purple-50">
         <div className="text-center">
           <Loader2 className="w-12 h-12 text-purple-600 animate-spin mx-auto mb-4" />
           <p className="text-gray-600">Loading events...</p>
@@ -259,7 +259,7 @@ const EventList = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-purple-50 p-4 md:p-6">
+    <div className="min-h-screen bg-linear-to-br from-gray-50 to-purple-50 p-4 md:p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
@@ -640,7 +640,7 @@ const EventList = () => {
                   <button
                     onClick={() => setPage(page - 1)}
                     disabled={page === 1}
-                    className="px-3 py-1 border border-gray-300 rounded-lg text-sm hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="px-3 py-1 border border-gray-300 rounded-lg text-sm hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed text-black cursor-pointer"
                   >
                     Previous
                   </button>
@@ -661,10 +661,10 @@ const EventList = () => {
                       <button
                         key={pageNum}
                         onClick={() => setPage(pageNum)}
-                        className={`px-3 py-1 border rounded-lg text-sm ${
+                        className={`px-3 py-1 border rounded-lg text-sm cursor-pointer ${
                           page === pageNum
-                            ? "bg-purple-600 text-white border-purple-600"
-                            : "border-gray-300 hover:bg-gray-50"
+                            ? "bg-purple-600 text-black border-purple-600"
+                            : "border-gray-300 hover:bg-gray-50  text-black"
                         }`}
                       >
                         {pageNum}
@@ -675,7 +675,7 @@ const EventList = () => {
                   <button
                     onClick={() => setPage(page + 1)}
                     disabled={page === totalPages}
-                    className="px-3 py-1 border border-gray-300 rounded-lg text-sm hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="px-3 py-1 border border-gray-300 rounded-lg text-sm hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed text-black cursor-pointer"
                   >
                     Next
                   </button>
@@ -689,9 +689,9 @@ const EventList = () => {
         {/* Event Details Modal */}
         {selectedEvent && (
           <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-50">
-            <div className="bg-gradient-to-br from-white to-gray-50 rounded-3xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden border border-gray-200">
-              {/* Header with gradient */}
-              <div className="bg-gradient-to-r from-purple-600 to-blue-600 p-6">
+            <div className="bg-linear-to-br from-white to-gray-50 rounded-3xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden border border-gray-200">
+              {/* Header with linear */}
+              <div className="bg-linear-to-r from-purple-600 to-blue-600 p-6">
                 <div className="flex items-center justify-between">
                   <div>
                     <h3 className="text-2xl font-bold text-white">
@@ -756,7 +756,7 @@ const EventList = () => {
                     </div>
                   </div>
 
-                  <div className="bg-gradient-to-r from-gray-50 to-white p-5 rounded-2xl border border-gray-200 shadow-sm">
+                  <div className="bg-linear-to-r from-gray-50 to-white p-5 rounded-2xl border border-gray-200 shadow-sm">
                     <p className="text-gray-700 leading-relaxed">
                       {selectedEvent.description}
                     </p>
@@ -804,7 +804,7 @@ const EventList = () => {
                               alt={`Event Image ${index + 1}`}
                               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                             />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                            <div className="absolute inset-0 bg-linear-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                               <div className="absolute bottom-4 left-4 text-white">
                                 <p className="font-semibold">
                                   Image {index + 1}
@@ -823,8 +823,8 @@ const EventList = () => {
                       {/* Scroll indicators */}
                       {selectedEvent.images.length > 3 && (
                         <>
-                          <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-white to-transparent pointer-events-none"></div>
-                          <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white to-transparent pointer-events-none"></div>
+                          <div className="absolute left-0 top-0 bottom-0 w-8 bg-linear-to-r from-white to-transparent pointer-events-none"></div>
+                          <div className="absolute right-0 top-0 bottom-0 w-8 bg-linear-to-l from-white to-transparent pointer-events-none"></div>
                         </>
                       )}
                     </div>
@@ -1086,10 +1086,10 @@ const EventList = () => {
                   >
                     Close Details
                   </button>
-                  <button className="px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-xl hover:from-purple-700 hover:to-blue-700 transition-all font-medium flex-1 shadow-md hover:shadow-lg">
+                  <button className="px-6 py-3 bg-linear-to-r from-purple-600 to-blue-600 text-white rounded-xl hover:from-purple-700 hover:to-blue-700 transition-all font-medium flex-1 shadow-md hover:shadow-lg">
                     Edit Event
                   </button>
-                  <button className="px-6 py-3 bg-gradient-to-r from-red-500 to-pink-500 text-white rounded-xl hover:from-red-600 hover:to-pink-600 transition-all font-medium flex-1 shadow-md hover:shadow-lg">
+                  <button className="px-6 py-3 bg-linear-to-r from-red-500 to-pink-500 text-white rounded-xl hover:from-red-600 hover:to-pink-600 transition-all font-medium flex-1 shadow-md hover:shadow-lg">
                     Export Data
                   </button>
                 </div>

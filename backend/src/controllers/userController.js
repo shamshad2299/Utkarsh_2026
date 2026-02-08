@@ -6,7 +6,7 @@ import { Counter } from "../models/counter.model.js";
 import jwt from "jsonwebtoken";
 import { ApiError } from "../utils/ApiError.js";
 import { getNextSequence } from "../utils/getNextSequence.js";
-import { verifyJWT } from "../middleWares/authMiddleWare.js";
+import { verifyJWT } from "../middlewares/authMiddleWare.js";
 
 
 
