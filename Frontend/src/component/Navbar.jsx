@@ -14,6 +14,17 @@ const Navbar = () => {
   const isLoggedIn = !!user;
 
   const handleNavClick = (item) => {
+    // ✅ HOME FIX
+    if (item === "Home") {
+      if (location.pathname === "/") {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      } else {
+        navigate("/");
+      }
+      setIsMenuOpen(false);
+      return;
+    }
+
     if (item === "Rulebook") {
       window.open(rulebookPdf, "_blank");
       setIsMenuOpen(false);
@@ -68,6 +79,7 @@ const Navbar = () => {
   };
 
   const navItems = [
+    "Home",
     "Events",
     "About",
     "Schedule",

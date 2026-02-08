@@ -2,7 +2,7 @@ const HeroTitle = () => {
   return (
     <div className="w-full max-w-5xl flex flex-col px-4 sm:px-6 lg:px-8 overflow-visible -mt-10 sm:-mt-14 md:-mt-16">
       <p
-         className="text-lg sm:text-3xl md:text-4xl text-purple-200 tracking-wide leading-none mb-1"
+        className="-mt-1 sm:-mt-4 text-lg sm:text-3xl md:text-4xl text-purple-200 tracking-wide leading-none mb-1"
         style={{ fontFamily: "Milonga" }}
       >
         Virasat se vikas tak
