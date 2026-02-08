@@ -173,7 +173,7 @@ const EventsSidebar = () => {
   return (
     <div className="relative">
       {/* Fixed Sidebar Container */}
-      <div className="fixed top-0 left-0 h-screen w-80 border-r border-white/10 bg-gradient-to-b from-[#eadbff] to-[#b692ff] overflow-hidden z-40 max-md:hidden rounded-tr-3xl rounded-br-3xl border-2 border-dashed border-black/30">
+      <div className="fixed top-0 left-0 h-screen w-80 border-r border-white/10 bg-white overflow-hidden z-40 max-md:hidden rounded-tr-3xl rounded-br-3xl border-2 border-dashed border-black/30">
         {/* Scrollable Content Area */}
         <div className="h-full flex flex-col">
           {/* Header - Fixed */}

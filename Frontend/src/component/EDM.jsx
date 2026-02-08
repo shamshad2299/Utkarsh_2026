@@ -23,7 +23,7 @@ const EdmPage = () => {
         <img
           src={edmImage}
           alt="EDM"
-          className="w-full max-w-[1100px] md:max-w-[900px] lg:max-w-[850px]"
+          className="w-full max-w-6xl"
         />
       </div>
     </section>

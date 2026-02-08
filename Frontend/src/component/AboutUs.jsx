@@ -1,5 +1,5 @@
 import React from "react";
-import aboutImage from "../assets/about.png";
+import aboutImage from "../assets/Frame_122.png";
 
 const AboutUs = () => {
   return (
@@ -15,11 +15,11 @@ const AboutUs = () => {
         }}
       />
 
-      <div className="relative z-10 flex items-center justify-center w-full">
+      <div className="relative z-10 flex items-center justify-center w-auto">
         <img
           src={aboutImage}
           alt="About Us"
-          className="max-w-[90%] md:max-w-[70%] lg:max-w-[60%]"
+          className="max-w-[80%]  "
         />
       </div>
     </section>

@@ -486,6 +486,7 @@ const EventDetailModal = ({
                   onClick={handleCloseModal}
                   className="flex-1 px-4 sm:px-6 py-2.5 sm:py-3 bg-white/80 hover:bg-white text-[#2b123f] rounded-xl font-semibold text-sm sm:text-base lg:text-lg transition-all duration-300 border-2 border-black/30 hover:border-[#4b1b7a] hover:scale-[1.02] milonga"
                 >
+                
                   Close
                 </button>
               </div>

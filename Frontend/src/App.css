@@ -11,6 +11,10 @@
   line-height: 1;        
   letter-spacing: 0;
 }
+.poppin{
+  font-family: "Poppins", sans-serif;
+  font-weight:lighter;
+}
 
 .text2 {
   font-family: "Milonga", serif;
