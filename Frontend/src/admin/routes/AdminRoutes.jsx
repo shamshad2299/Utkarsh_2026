@@ -1,4 +1,5 @@
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
+import { lazy, Suspense } from "react";
 import AdminLogin from "../pages/AdminLogin";
 import AdminDashboard from "../pages/AdminDashboard";
 import AdminProtectedRoute from "../middlewares/AdminProtectedRoute";
@@ -31,6 +32,12 @@ import Team_Register from "../components/Team_Management/Team_Register";
 
 import SponsorshipRequests from "../pages/SponsorshipRequests";
 import FoodStallRequests from "../pages/FoodStallRequests";
+
+
+const WebsiteTeamPage = lazy(() =>import("../pages/WebsiteTeamPage"));
+import SoloRegistrations from "../pages/SoloRegistrations";
+import TeamRegistrations from "../pages/TeamRegistrations";
+
 
 const AdminRoutes = () => {
   return (
@@ -67,10 +74,10 @@ const AdminRoutes = () => {
         <Route path="events/add" element={<AddEvent />} />
         <Route path="edit-event/:id" element={<EditEvent />} />
 
-        <Route path="solo-registrations" element={<Add_Solo_Registration />} />
+        <Route path="solo-registrations" element={<SoloRegistrations />} />
         <Route path="solo-registrations/add" element={<Solo_Registration />} />
 
-        <Route path="team-registrations" element={<Accommodation />} />
+        <Route path="team-registrations" element={<TeamRegistrations />} />
         <Route path="team-registrations/add" element={<Team_Register />} />
 
         <Route path="team-members" element={<Accommodation />} />
@@ -78,6 +85,9 @@ const AdminRoutes = () => {
 
         <Route path="sponsorship-requests" element={<SponsorshipRequests />} />
         <Route path="foodstall-requests" element={<FoodStallRequests />} />
+
+        <Route path="website-team/*" element={<Suspense fallback={<p className="p-6">Loading Website Team...</p>}><WebsiteTeamPage /></Suspense>}/>
+
       </Route>
     </Routes>
   );

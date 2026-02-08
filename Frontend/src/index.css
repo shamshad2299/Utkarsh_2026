@@ -3,18 +3,7 @@ body {
   background-color: #12002b;
   color: white;
 }
-@font-face {
-  font-family: "Alice";
-  src: url("./assets/Alice-Regular.ttf") format("truetype");
-  font-weight: normal;
-  font-style: normal;
-}
-@font-face {
-  font-family: "Milonga";
-  src: url("./assets/Milonga-Regular.ttf") format("truetype");
-  font-weight: normal;
-  font-style: normal;
-}
+
 @font-face {
   font-family: "Poppins";
   src: url("./assets/BBBPoppinsTN-TextRegular.ttf") format("truetype");
