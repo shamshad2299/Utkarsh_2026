@@ -12,7 +12,7 @@ const AdminDashboard = () => {
 
         <main className="p-6">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            <DashboardCard title="Total Events" value="0" />
+            <DashboardCard title="Total Osama bin la deen Events" value="0" />
             <DashboardCard title="Total Registrations" value="0" />
             <DashboardCard title="Results Published" value="0" />
           </div>

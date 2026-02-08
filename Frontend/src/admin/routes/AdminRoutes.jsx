@@ -32,6 +32,10 @@ import Team_Register from "../components/Team_Management/Team_Register";
 import SponsorshipRequests from "../pages/SponsorshipRequests";
 import FoodStallRequests from "../pages/FoodStallRequests";
 
+import SoloRegistrations from "../pages/SoloRegistrations";
+import TeamRegistrations from "../pages/TeamRegistrations";
+
+
 const AdminRoutes = () => {
   return (
     <Routes>
@@ -67,10 +71,10 @@ const AdminRoutes = () => {
         <Route path="events/add" element={<AddEvent />} />
         <Route path="edit-event/:id" element={<EditEvent />} />
 
-        <Route path="solo-registrations" element={<Add_Solo_Registration />} />
+        <Route path="solo-registrations" element={<SoloRegistrations />} />
         <Route path="solo-registrations/add" element={<Solo_Registration />} />
 
-        <Route path="team-registrations" element={<Accommodation />} />
+        <Route path="team-registrations" element={<TeamRegistrations />} />
         <Route path="team-registrations/add" element={<Team_Register />} />
 
         <Route path="team-members" element={<Accommodation />} />
