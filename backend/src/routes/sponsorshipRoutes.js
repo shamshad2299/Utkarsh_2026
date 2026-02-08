@@ -7,7 +7,7 @@ import {
   deleteSponsorship,
 } from "../controllers/sponsorshipController.js";
 
-import { verifyJWT } from "../middleWares/authMiddleWare.js";
+import { verifyJWT } from "../middlewares/authMiddleWare.js";
 import adminAuth from "../middlewares/adminAuth.js";
 import { asyncHandler } from "../middlewares/asyncErrorHandlerMiddleWare.js";
 
