@@ -1,9 +1,7 @@
-// src/controllers/sponsorshipController.js
 import { Sponsorship } from "../models/sponsorship.model.js";
 import { ApiError } from "../utils/ApiError.js";
 import { logAudit } from "../utils/auditLogger.js";
 
-/* ================= CREATE SPONSORSHIP REQUEST (USER) ================= */
 export const createSponsorship = async (req, res) => {
   const {
     businessName,
@@ -35,31 +33,17 @@ export const createSponsorship = async (req, res) => {
     throw new ApiError(400, "Invalid email format");
   }
 
-  const existing = await Sponsorship.findOne({
-    email: email.toLowerCase(),
-    isDeleted: false,
-    status: { $in: ["pending", "approved"] },
-  });
-
-  if (existing) {
-    throw new ApiError(
-      409,
-      "You already have an active sponsorship request"
-    );
-  }
-
   const sponsorship = await Sponsorship.create({
-    businessName,
-    email,
-    businessType,
-    ownerName,
-    phoneNumber,
-    permanentAddress,
+    businessName: businessName.trim(),
+    email: email.toLowerCase().trim(),
+    businessType: businessType.trim(),
+    ownerName: ownerName.trim(),
+    phoneNumber: phoneNumber.trim(),
+    permanentAddress: permanentAddress.trim(),
     sponsorshipCategory,
-    amount,
+    amount: Number(amount),
   });
 
-  // AUDIT LOG (USER)
   await logAudit({
     req,
     action: "SPONSORSHIP_REQUEST_CREATED",
@@ -75,10 +59,13 @@ export const createSponsorship = async (req, res) => {
   });
 };
 
-/* ================= GET MY SPONSORSHIPS (USER) ================= */
 export const getMySponsorships = async (req, res) => {
+  if (!req.user?.email) {
+    throw new ApiError(401, "Unauthorized");
+  }
+
   const sponsorships = await Sponsorship.find({
-    email: req.user.email,
+    email: req.user.email.toLowerCase(),
     isDeleted: false,
   }).sort({ createdAt: -1 });
 
@@ -89,7 +76,6 @@ export const getMySponsorships = async (req, res) => {
   });
 };
 
-/* ================= GET ALL SPONSORSHIPS (ADMIN) ================= */
 export const getAllSponsorships = async (req, res) => {
   const { status, page = 1, limit = 20 } = req.query;
 
@@ -118,12 +104,11 @@ export const getAllSponsorships = async (req, res) => {
   });
 };
 
-/* ================= UPDATE SPONSORSHIP STATUS (ADMIN) ================= */
-    export const updateSponsorshipStatus = async (req, res) => {
+export const updateSponsorshipStatus = async (req, res) => {
   const { id } = req.params;
   const { status } = req.body;
 
-  if (!["approved", "rejected"].includes(status)) {
+  if (!["approved", "rejected", "pending"].includes(status)) {
     throw new ApiError(400, "Invalid status");
   }
 
@@ -140,13 +125,11 @@ export const getAllSponsorships = async (req, res) => {
     throw new ApiError(400, `Sponsorship already ${status}`);
   }
 
-  // capture old state
   const oldData = sponsorship.toObject();
 
   sponsorship.status = status;
   await sponsorship.save();
 
-  // AUDIT LOG (ADMIN)
   await logAudit({
     req,
     action: `SPONSORSHIP_${status.toUpperCase()}`,
@@ -163,34 +146,30 @@ export const getAllSponsorships = async (req, res) => {
   });
 };
 
-/* ================= DELETE SPONSORSHIP (ADMIN – SOFT DELETE) ================= */
 export const deleteSponsorship = async (req, res) => {
   const { id } = req.params;
 
-  const sponsorship = await Sponsorship.findById(id);
+  const sponsorship = await Sponsorship.findOne({
+    _id: id,
+    isDeleted: false,
+  });
 
   if (!sponsorship) {
     throw new ApiError(404, "Sponsorship not found");
   }
 
-  if (sponsorship.isDeleted) {
-    throw new ApiError(400, "Sponsorship already deleted");
-  }
-
-  // capture old state
   const oldData = sponsorship.toObject();
 
   sponsorship.isDeleted = true;
   await sponsorship.save();
 
-  // AUDIT LOG (ADMIN)
   await logAudit({
     req,
     action: "SPONSORSHIP_DELETED",
     targetCollection: "Sponsorship",
-    targetId: sponsorship._id,
+    targetId: id,
     oldData,
-    newData: sponsorship,
+    newData: null,
   });
 
   res.status(200).json({

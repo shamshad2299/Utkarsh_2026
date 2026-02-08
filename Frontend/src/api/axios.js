@@ -6,6 +6,9 @@ const PUBLIC_URLS = [
   "/v1/auth/forgot-password",
   "/v1/auth/reset-password",
   "/v1/auth/refresh-token",
+
+  "/v1/sponsorship",
+  "/v1/foodstall",
 ];
 
 let isRefreshing = false;
@@ -37,13 +40,13 @@ api.interceptors.request.use((config) => {
 
 // handle 401 + refresh token
 api.interceptors.response.use(
-  res => res,
+  (res) => res,
   async (error) => {
     const originalRequest = error.config;
 
     if (!originalRequest) return Promise.reject(error);
 
-    const isPublic = PUBLIC_URLS.some(url =>
+    const isPublic = PUBLIC_URLS.some((url) =>
       originalRequest.url.includes(url)
     );
 
@@ -73,7 +76,6 @@ api.interceptors.response.use(
 
         processQueue(null, data.accessToken);
         return api(originalRequest);
-
       } catch (err) {
         processQueue(err, null);
         localStorage.clear();
@@ -87,3 +89,17 @@ api.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+
+/* ================= PUBLIC SERVICE ================= */
+
+export const publicService = {
+  createSponsorship: async (payload) => {
+    const response = await api.post("/sponsorships", payload);
+    return response.data;
+  },
+
+  createFoodStall: async (payload) => {
+    const response = await api.post("/food-stalls", payload);
+    return response.data;
+  },
+};

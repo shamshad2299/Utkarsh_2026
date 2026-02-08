@@ -1,4 +1,3 @@
-// src/routes/sponsorshipRoutes.js
 import express from "express";
 import {
   createSponsorship,
@@ -7,39 +6,21 @@ import {
   updateSponsorshipStatus,
   deleteSponsorship,
 } from "../controllers/sponsorshipController.js";
-import { verifyJWT } from "../middlewares/authMiddleWare.js";
-import adminAuth from "../middlewares/adminAuth.js";
-import { asyncHandler } from "../middlewares/asyncErrorHandlerMiddleWare.js";
+
+import { verifyJWT } from "../middleWares/authMiddleWare.js";
+import adminAuth from "../middleWares/adminAuth.js";
+import { asyncHandler } from "../middleWares/asyncErrorHandlerMiddleWare.js";
 
 const router = express.Router();
 
-/* ================= SPONSORSHIP ================= */
+router.post("/", asyncHandler(createSponsorship));
 
-// ================= USER ROUTES (STATIC FIRST) =================
-
-// Create sponsorship request
-router.post("/", verifyJWT, asyncHandler(createSponsorship));
-
-// Get logged-in user's sponsorships
 router.get("/my", verifyJWT, asyncHandler(getMySponsorships));
 
-// ================= ADMIN ROUTES =================
-
-// Get all sponsorships
 router.get("/", adminAuth, asyncHandler(getAllSponsorships));
 
-// More specific dynamic route first
-router.patch(
-  "/:id/status",
-  adminAuth,
-  asyncHandler(updateSponsorshipStatus)
-);
+router.patch("/:id/status", adminAuth, asyncHandler(updateSponsorshipStatus));
 
-// Generic dynamic route LAST
-router.delete(
-  "/:id",
-  adminAuth,
-  asyncHandler(deleteSponsorship)
-);
+router.delete("/:id", adminAuth, asyncHandler(deleteSponsorship));
 
 export default router;

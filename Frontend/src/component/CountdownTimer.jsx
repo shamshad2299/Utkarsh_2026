@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 
 const CountdownTimer = () => {
-  
   const targetDate = new Date("2026-02-26T00:00:00").getTime();
 
   const [timeLeft, setTimeLeft] = useState({
@@ -22,9 +21,7 @@ const CountdownTimer = () => {
       }
 
       const days = Math.floor(difference / (1000 * 60 * 60 * 24));
-      const hours = Math.floor(
-        (difference / (1000 * 60 * 60)) % 24
-      );
+      const hours = Math.floor((difference / (1000 * 60 * 60)) % 24);
       const minutes = Math.floor((difference / (1000 * 60)) % 60);
       const seconds = Math.floor((difference / 1000) % 60);
 
@@ -50,9 +47,11 @@ const CountdownTimer = () => {
           flex items-center justify-center
           rounded-2xl shadow-xl
         "
+        style={{ fontFamily: "Milonga" }}
       >
         {value}
       </div>
+
       <span className="text-xs md:text-sm uppercase tracking-widest text-gray-300">
         {label}
       </span>
@@ -63,10 +62,13 @@ const CountdownTimer = () => {
     <div className="flex items-center gap-2 md:gap-4">
       <Box value={timeLeft.days} label="Days" />
       <span className="text-3xl md:text-4xl font-bold">:</span>
+
       <Box value={timeLeft.hours} label="Hours" />
       <span className="text-3xl md:text-4xl font-bold">:</span>
+
       <Box value={timeLeft.minutes} label="Minutes" />
       <span className="text-3xl md:text-4xl font-bold">:</span>
+
       <Box value={timeLeft.seconds} label="Seconds" />
     </div>
   );
