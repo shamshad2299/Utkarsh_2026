@@ -88,7 +88,7 @@ const EventsSection = () => {
   };
 
   return (
-    <section className="relative bg-[#080131] text-white px-6 md:px-16 py-28 overflow-hidden border-t-8">
+    <section className="relative bg-[#080131] text-white px-6 md:px-16 py-28 overflow-hidden ">
       {/* BACKGROUND GRID */}
       <div
         className="absolute inset-0 opacity-10 pointer-events-none"

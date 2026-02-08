@@ -42,14 +42,15 @@ const Home = () => {
         <EventsSection />
       </section>
 
-      {/* GALLERY */}
-      <section id="schedule" className="scroll-mt-28 -mt-12">
-        <EventGallerySection />
-      </section>
+    
 
       {/* ABOUT */}
       <section id="about" className="scroll-mt-28">
         <AboutUs />
+      </section>
+        {/* GALLERY */}
+      <section id="schedule" className="scroll-mt-28 -mt-12">
+        <EventGallerySection />
       </section>
 
       {/* EDM (GAP FIX) */}

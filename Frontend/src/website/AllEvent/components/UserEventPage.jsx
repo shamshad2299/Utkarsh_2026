@@ -95,14 +95,13 @@ const UserRegisteredEvents = () => {
           Authorization: `Bearer ${token}`,
         },
       });
-      
+
       // Get registrations array safely
       const registrationsData = response.data?.data || [];
       setRegistrations(registrationsData);
-      
+
       // Calculate stats from registrations
       calculateStats(registrationsData);
-      
     } catch (error) {
       console.error("Error fetching registrations:", error);
 
@@ -123,21 +122,24 @@ const UserRegisteredEvents = () => {
     const now = new Date();
 
     const upcoming = registrations.filter(
-      (reg) => new Date(reg?.eventId?.startTime) >= now
+      (reg) => new Date(reg?.eventId?.startTime) >= now,
     ).length;
-    
+
     const past = registrations.filter(
-      (reg) => new Date(reg?.eventId?.startTime) < now
+      (reg) => new Date(reg?.eventId?.startTime) < now,
     ).length;
-    
+
     const solo = registrations.filter(
-      (reg) => reg?.eventId?.eventType === "solo" || 
-              (reg?.teamId === null && reg?.team === null)
+      (reg) =>
+        reg?.eventId?.eventType === "solo" ||
+        (reg?.teamId === null && reg?.team === null),
     ).length;
-    
+
     const team = registrations.filter(
-      (reg) => reg?.eventId?.eventType !== "solo" || 
-              (reg?.teamId !== null || reg?.team !== null)
+      (reg) =>
+        reg?.eventId?.eventType !== "solo" ||
+        reg?.teamId !== null ||
+        reg?.team !== null,
     ).length;
 
     setStats({
@@ -163,12 +165,15 @@ const UserRegisteredEvents = () => {
     // Type filter
     let matchesType = true;
     if (filter === "solo") {
-      matchesType = event.eventType === "solo" || 
-                   (registration?.teamId === null && registration?.team === null);
+      matchesType =
+        event.eventType === "solo" ||
+        (registration?.teamId === null && registration?.team === null);
     }
     if (filter === "team") {
-      matchesType = event.eventType !== "solo" || 
-                   (registration?.teamId !== null || registration?.team !== null);
+      matchesType =
+        event.eventType !== "solo" ||
+        registration?.teamId !== null ||
+        registration?.team !== null;
     }
 
     // Date filter
@@ -184,16 +189,20 @@ const UserRegisteredEvents = () => {
 
   // Get event status
   const getEventStatus = (event) => {
-    if (!event || !event.startTime) return { text: "Unknown", color: "gray", icon: AlertCircle };
-    
+    if (!event || !event.startTime)
+      return { text: "Unknown", color: "gray", icon: AlertCircle };
+
     const now = new Date();
     const eventDate = new Date(event.startTime);
     const regDeadline = new Date(event.registrationDeadline);
 
-    if (now > eventDate) return { text: "Completed", color: "gray", icon: CheckCircle };
-    if (now > regDeadline) return { text: "Registration Closed", color: "red", icon: AlertCircle };
-    if (eventDate > now) return { text: "Upcoming", color: "green", icon: Calendar };
-    
+    if (now > eventDate)
+      return { text: "Completed", color: "gray", icon: CheckCircle };
+    if (now > regDeadline)
+      return { text: "Registration Closed", color: "red", icon: AlertCircle };
+    if (eventDate > now)
+      return { text: "Upcoming", color: "green", icon: Calendar };
+
     return { text: "Ongoing", color: "blue", icon: Clock };
   };
 
@@ -237,7 +246,11 @@ const UserRegisteredEvents = () => {
 
   // Handle unregister/withdraw
   const handleUnregister = async (registrationId) => {
-    if (!window.confirm("Are you sure you want to unregister from this event? This action cannot be undone.")) {
+    if (
+      !window.confirm(
+        "Are you sure you want to unregister from this event? This action cannot be undone.",
+      )
+    ) {
       return;
     }
 
@@ -252,9 +265,9 @@ const UserRegisteredEvents = () => {
 
       // Remove from local state
       setRegistrations((prev) =>
-        prev.filter((reg) => reg._id !== registrationId)
+        prev.filter((reg) => reg._id !== registrationId),
       );
-      
+
       // Recalculate stats
       calculateStats(registrations.filter((reg) => reg._id !== registrationId));
 
@@ -262,7 +275,7 @@ const UserRegisteredEvents = () => {
     } catch (error) {
       console.error("Error unregistering:", error);
       const errorMsg = error.response?.data?.message || "Failed to unregister";
-      
+
       if (errorMsg.includes("deadline")) {
         alert("Cannot unregister: Registration deadline has passed");
       } else if (errorMsg.includes("checked in")) {
@@ -315,7 +328,9 @@ const UserRegisteredEvents = () => {
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col items-center justify-center h-64">
             <Loader2 className="w-12 h-12 text-[#7c3aed] animate-spin mb-4" />
-            <p className="text-[#2d1b69]/80">Loading your registered events...</p>
+            <p className="text-[#2d1b69]/80">
+              Loading your registered events...
+            </p>
           </div>
         </div>
       </div>
@@ -323,7 +338,7 @@ const UserRegisteredEvents = () => {
   }
 
   return (
-    <div className="min-h-screen bg-linear-to-b from-[#575060] to-[#d5caeb] text-[#2d1b69] p-4 md:p-8">
+    <div className="min-h-screen bg-white text-[#2d1b69] p-4 md:p-8">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
@@ -353,55 +368,59 @@ const UserRegisteredEvents = () => {
           {/* Stats Cards */}
           <div className="grid grid-cols-2 md:grid-cols-5 gap-3 md:gap-4 mb-8">
             {[
-              { 
-                label: "Total", 
-                value: stats.total, 
-                icon: CalendarDays, 
+              {
+                label: "Total",
+                value: stats.total,
+                icon: CalendarDays,
                 bg: "bg-linear-to-br from-purple-100 to-purple-200",
                 border: "border-purple-200",
-                text: "text-purple-700"
+                text: "text-purple-700",
               },
-              { 
-                label: "Upcoming", 
-                value: stats.upcoming, 
-                icon: Clock, 
+              {
+                label: "Upcoming",
+                value: stats.upcoming,
+                icon: Clock,
                 bg: "bg-linear-to-br from-emerald-100 to-emerald-200",
                 border: "border-emerald-200",
-                text: "text-emerald-700"
+                text: "text-emerald-700",
               },
-              { 
-                label: "Completed", 
-                value: stats.past, 
-                icon: Award, 
+              {
+                label: "Completed",
+                value: stats.past,
+                icon: Award,
                 bg: "bg-linear-to-br from-blue-100 to-blue-200",
                 border: "border-blue-200",
-                text: "text-blue-700"
+                text: "text-blue-700",
               },
-              { 
-                label: "Solo", 
-                value: stats.solo, 
-                icon: User, 
+              {
+                label: "Solo",
+                value: stats.solo,
+                icon: User,
                 bg: "bg-linear-to-br from-amber-100 to-amber-200",
                 border: "border-amber-200",
-                text: "text-amber-700"
+                text: "text-amber-700",
               },
-              { 
-                label: "Team", 
-                value: stats.team, 
-                icon: Users, 
+              {
+                label: "Team",
+                value: stats.team,
+                icon: Users,
                 bg: "bg-linear-to-br from-cyan-100 to-cyan-200",
                 border: "border-cyan-200",
-                text: "text-cyan-700"
+                text: "text-cyan-700",
               },
             ].map((stat) => (
-              <div 
-                key={stat.label} 
+              <div
+                key={stat.label}
                 className={`rounded-2xl ${stat.bg} border ${stat.border} p-4 shadow-sm hover:shadow-md transition-shadow`}
               >
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-xs font-medium text-[#2d1b69]/70">{stat.label}</p>
-                    <p className={`text-2xl font-bold ${stat.text}`}>{stat.value}</p>
+                    <p className="text-xs font-medium text-[#2d1b69]/70">
+                      {stat.label}
+                    </p>
+                    <p className={`text-2xl font-bold ${stat.text}`}>
+                      {stat.value}
+                    </p>
                   </div>
                   <div className={`p-2 rounded-lg ${stat.text}/20`}>
                     <stat.icon className={`w-6 h-6 ${stat.text}`} />
@@ -452,7 +471,7 @@ const UserRegisteredEvents = () => {
 
         {/* Content */}
         {error ? (
-          <div className="text-center py-12 bg-white/50 backdrop-blur-sm rounded-2xl border border-[#7c3aed]/30">
+          <div className="text-center py-12  bg-white/50 backdrop-blur-sm rounded-2xl border border-[#7c3aed]/30">
             <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
             <p className="text-red-600">{error}</p>
             <button
@@ -463,7 +482,7 @@ const UserRegisteredEvents = () => {
             </button>
           </div>
         ) : filteredRegistrations.length === 0 ? (
-          <div className="text-center py-12 border-2 border-dashed border-[#7c3aed]/30 rounded-2xl bg-white/50 backdrop-blur-sm">
+          <div className="text-center py-12  border-2 border-dashed border-[#7c3aed]/30 rounded-2xl bg-white/50 backdrop-blur-sm">
             {searchTerm || filter !== "all" ? (
               <>
                 <Search className="w-16 h-16 text-[#7c3aed]/30 mx-auto mb-4" />
@@ -505,7 +524,7 @@ const UserRegisteredEvents = () => {
             )}
           </div>
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6 ">
             {filteredRegistrations.map((registration) => {
               const event = registration?.eventId;
               if (!event) return null;
@@ -520,18 +539,30 @@ const UserRegisteredEvents = () => {
                 event.eventType,
               );
               const imageUrl = getImageUrl(event.images);
-              
+
               // Check if unregister is allowed
               const now = new Date();
               const eventDate = new Date(event.startTime);
-              const canUnregister = now < eventDate && 
-                                  registration.status !== "cancelled" &&
-                                  !registration.checkedIn;
+              const canUnregister =
+                now < eventDate &&
+                registration.status !== "cancelled" &&
+                !registration.checkedIn;
 
               return (
                 <div
                   key={registration._id}
-                  className="bg-white/80 backdrop-blur-sm rounded-2xl border-2 border-[#7c3aed]/20 overflow-hidden hover:border-[#7c3aed]/40 hover:shadow-xl transition-all group cursor-pointer"
+                  className="
+    bg-linear-to-br 
+    from-[#cfd9f1] via-[#807cb3] to-[#84b823]
+    backdrop-blur-xl
+    rounded-2xl
+    border border-violet-500/30
+    shadow-[0_0_30px_rgba(124,58,237,0.25)]
+    hover:shadow-[0_0_45px_rgba(124,58,237,0.45)]
+    hover:border-violet-400/60
+    transition-all duration-300
+    group cursor-pointer
+  "
                   onClick={() => handleViewDetails(event)}
                 >
                   {/* Event Image */}
@@ -544,7 +575,7 @@ const UserRegisteredEvents = () => {
                       />
                     ) : (
                       <div className="w-full h-full bg-linear-to-r from-[#7c3aed]/20 to-[#8b5cf6]/20 flex items-center justify-center">
-                        <Calendar className="w-16 h-16 text-[#7c3aed]/40" />
+                        <Calendar className="w-16 h-16 " />
                       </div>
                     )}
                     {/* Category Badge */}
@@ -566,12 +597,12 @@ const UserRegisteredEvents = () => {
                           registrationStatus.color === "green"
                             ? "bg-green-500/90 text-white"
                             : registrationStatus.color === "yellow"
-                            ? "bg-yellow-500/90 text-white"
-                            : registrationStatus.color === "orange"
-                            ? "bg-orange-500/90 text-white"
-                            : registrationStatus.color === "red"
-                            ? "bg-red-500/90 text-white"
-                            : "bg-blue-500/90 text-white"
+                              ? "bg-yellow-500/90 text-white"
+                              : registrationStatus.color === "orange"
+                                ? "bg-orange-500/90 text-white"
+                                : registrationStatus.color === "red"
+                                  ? "bg-red-500/90 text-white"
+                                  : "bg-blue-500/90 text-white"
                         }`}
                       >
                         {registrationStatus.text}
@@ -583,7 +614,7 @@ const UserRegisteredEvents = () => {
                   <div className="p-5">
                     {/* Event Type Badge */}
                     <div className="mb-3">
-                      <span className="px-2.5 py-1 bg-[#7c3aed]/10 text-[#7c3aed] rounded-full text-xs font-semibold">
+                      <span className="px-2.5 py-1 bg-[#7c3aed]/10  rounded-full text-xs font-semibold">
                         {eventTypeText}
                       </span>
                     </div>

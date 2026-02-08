@@ -5,6 +5,7 @@ import {
   getMyRegistrations,
   getEventRegistrations,
   cancelRegistration,
+  restoreRegistration,
 } from "../controllers/registrationController.js";
 import { verifyJWT } from "../middlewares/authMiddleWare.js";
 import adminAuth from "../middlewares/adminAuth.js";
@@ -38,5 +39,6 @@ router.patch(
   verifyJWT,
   asyncHandler(cancelRegistration)
 );
+router.patch("/registrations/:id/restore" , verifyJWT , asyncHandler(restoreRegistration));
 
 export default router;

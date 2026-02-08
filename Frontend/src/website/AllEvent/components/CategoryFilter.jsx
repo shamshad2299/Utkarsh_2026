@@ -10,7 +10,7 @@ const CategoryFilter = ({
   const categoryFilters = filterOptions.filter(f => f.id !== "all");
 
   return (
-    <div className="w-full px-3 sm:px-4 py-4 sm:py-6 bg-linear-to-r from-[#0b0633] to-[#140a4f] rounded-xl sm:rounded-2xl">
+    <div className="w-full  py-4 sm:py-6  rounded-xl sm:rounded-2xl">
       
       {/* Heading with icon */}
       <div className="flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6">

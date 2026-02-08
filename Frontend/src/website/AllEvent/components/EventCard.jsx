@@ -95,11 +95,11 @@ const EventCard = ({
     : "No description available";
 
   return (
-    <div className="w-full max-w-[360px] sm:max-w-[400px] md:max-w-[420px] rounded-[20px] sm:rounded-[26px] p-[2px] bg-gradient-to-b from-[#C8ABFE] to-[#b18cff] shadow-lg sm:shadow-2xl hover:shadow-xl sm:hover:shadow-2xl transition-shadow duration-300 outline-6">
+    <div className="w-full max-w-90 sm:max-w-100 md:max-w-105 rounded-[20px] sm:rounded-[26px] p-0.5 bg-linear-to-b from-[#C8ABFE] to-[#b18cff] shadow-lg sm:shadow-2xl hover:shadow-xl sm:hover:shadow-2xl transition-shadow duration-300 outline-6 mx-4">
       {/* dashed border */}
-      <div className="h-full w-full rounded-[18px] sm:rounded-[24px] border-2 border-dashed border-black/60 bg-gradient-to-b from-[#C8ABFE] to-[#b692ff] p-3 sm:p-4 md:p-5 font-sans">
+      <div className="h-full w-full rounded-[18px] sm:rounded-3xl border-2 border-dashed border-black/60 bg-linear-to-b from-[#C8ABFE] to-[#b692ff] p-3 sm:p-4 md:p-5 font-sans">
         {/* Top white box with image */}
-        <div className="bg-white rounded-[14px] sm:rounded-[18px] p-2 sm:p-3 h-[120px] sm:h-[140px] md:h-[160px] relative overflow-hidden">
+        <div className="bg-white rounded-[14px] sm:rounded-[18px] p-2 sm:p-3 h-30 sm:h-35 md:h-40 relative overflow-hidden">
           {/* Solo/Team Badge - Top left corner */}
           <span className="absolute top-2 sm:top-3 left-2 sm:left-3 bg-black text-white text-[10px] sm:text-xs font-medium px-2 sm:px-3 py-1 rounded-full poppin z-50">
             {eventTypeText}
