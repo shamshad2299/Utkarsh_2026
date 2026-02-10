@@ -12,10 +12,6 @@ import {
   ArrowUpRight,
 } from "lucide-react";
 
-
-
-
-
 const AboutSection = () => {
   const highlights = [
     {
@@ -42,7 +38,7 @@ const AboutSection = () => {
 
   const quickStats = [
     { label: "Fest Days", value: "3" },
-    { label: "Events", value: "30+" },
+    { label: "Events", value: "90+  " },
     { label: "Participants", value: "5000+" },
     { label: "Teams", value: "200+" },
   ];
@@ -64,6 +60,20 @@ const AboutSection = () => {
       desc: "Meet students, teams and communities from different domains.",
     },
   ];
+
+  // ✅ 3D Card Style (Same for all cards)
+  const card3D =
+    "relative rounded-3xl border border-white/10 bg-white/5 backdrop-blur-2xl p-6 " +
+    "shadow-[0_25px_60px_rgba(0,0,0,0.45),0_0_40px_rgba(139,92,246,0.12)] " +
+    "hover:shadow-[0_35px_85px_rgba(0,0,0,0.55),0_0_60px_rgba(139,92,246,0.18)] " +
+    "hover:-translate-y-2 transition-all duration-300";
+
+  // ✅ Small card style (Quick stats / Day cards)
+  const smallCard3D =
+    "relative rounded-3xl border border-white/10 bg-white/5 p-6 " +
+    "shadow-[0_20px_50px_rgba(0,0,0,0.42),0_0_35px_rgba(139,92,246,0.10)] " +
+    "hover:shadow-[0_30px_70px_rgba(0,0,0,0.55),0_0_55px_rgba(139,92,246,0.16)] " +
+    "hover:-translate-y-2 transition-all duration-300";
 
   return (
     <div className="relative min-h-screen w-full overflow-hidden text-white">
@@ -127,7 +137,11 @@ const AboutSection = () => {
             </div>
 
             <div className="w-full lg:w-[520px]">
-              <div className="rounded-[28px] border border-white/10 bg-white/5 backdrop-blur-2xl shadow-[0_0_60px_rgba(139,92,246,0.15)] overflow-hidden">
+              <div
+                className="rounded-[28px] border border-white/10 bg-white/5 backdrop-blur-2xl 
+                shadow-[0_35px_90px_rgba(0,0,0,0.55),0_0_70px_rgba(139,92,246,0.18)]
+                overflow-hidden hover:-translate-y-2 transition-all duration-300"
+              >
                 <div className="w-full h-[260px] sm:h-[320px]">
                   <img
                     src={aboutImage}
@@ -148,7 +162,9 @@ const AboutSection = () => {
                     {quickStats.map((s, i) => (
                       <div
                         key={i}
-                        className="rounded-2xl border border-white/10 bg-white/5 p-4"
+                        className="rounded-2xl border border-white/10 bg-white/5 p-4
+                        shadow-[0_18px_45px_rgba(0,0,0,0.45),0_0_30px_rgba(139,92,246,0.10)]
+                        hover:-translate-y-1.5 transition-all duration-300"
                       >
                         <p className="text-2xl font-extrabold text-white">
                           {s.value}
@@ -181,12 +197,7 @@ const AboutSection = () => {
 
             <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {highlights.map((h, i) => (
-                <div
-                  key={i}
-                  className="rounded-3xl border border-white/10 bg-white/5 backdrop-blur-2xl p-6
-                  shadow-[0_0_40px_rgba(139,92,246,0.10)]
-                  hover:border-purple-500/40 transition"
-                >
+                <div key={i} className={card3D}>
                   <div className="w-12 h-12 rounded-2xl bg-white/10 border border-white/10 flex items-center justify-center text-purple-200">
                     {h.icon}
                   </div>
@@ -198,6 +209,9 @@ const AboutSection = () => {
                   <p className="mt-2 text-sm text-gray-300 leading-relaxed">
                     {h.desc}
                   </p>
+
+                  {/* subtle 3D shine */}
+                  <div className="pointer-events-none absolute inset-0 rounded-3xl bg-linear-to-br from-white/10 via-transparent to-transparent opacity-40" />
                 </div>
               ))}
             </div>
@@ -215,12 +229,7 @@ const AboutSection = () => {
 
             <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
               {whyJoin.map((w, i) => (
-                <div
-                  key={i}
-                  className="rounded-3xl border border-white/10 bg-white/5 backdrop-blur-2xl p-6
-                  shadow-[0_0_40px_rgba(139,92,246,0.10)]
-                  hover:border-purple-500/40 transition"
-                >
+                <div key={i} className={card3D}>
                   <div className="w-11 h-11 rounded-2xl bg-white/10 border border-white/10 flex items-center justify-center text-purple-200">
                     {w.icon}
                   </div>
@@ -232,13 +241,20 @@ const AboutSection = () => {
                   <p className="mt-2 text-sm text-gray-300 leading-relaxed">
                     {w.desc}
                   </p>
+
+                  {/* subtle 3D shine */}
+                  <div className="pointer-events-none absolute inset-0 rounded-3xl bg-linear-to-br from-white/10 via-transparent to-transparent opacity-40" />
                 </div>
               ))}
             </div>
           </div>
 
           <div className="mt-16">
-            <div className="rounded-[32px] border border-white/10 bg-white/5 backdrop-blur-2xl p-7 sm:p-10 shadow-[0_0_70px_rgba(139,92,246,0.12)]">
+            <div
+              className="rounded-[32px] border border-white/10 bg-white/5 backdrop-blur-2xl p-7 sm:p-10 
+              shadow-[0_40px_100px_rgba(0,0,0,0.55),0_0_80px_rgba(139,92,246,0.18)]
+              hover:-translate-y-2 transition-all duration-300"
+            >
               <h2
                 className="text-3xl sm:text-4xl font-semibold"
                 style={{ fontFamily: "Poppins" }}
@@ -252,7 +268,7 @@ const AboutSection = () => {
               </p>
 
               <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="rounded-3xl border border-white/10 bg-white/5 p-6">
+                <div className={smallCard3D}>
                   <p className="text-xs tracking-widest uppercase text-purple-200">
                     Day 1
                   </p>
@@ -264,7 +280,7 @@ const AboutSection = () => {
                   </p>
                 </div>
 
-                <div className="rounded-3xl border border-white/10 bg-white/5 p-6">
+                <div className={smallCard3D}>
                   <p className="text-xs tracking-widest uppercase text-purple-200">
                     Day 2
                   </p>
@@ -276,7 +292,7 @@ const AboutSection = () => {
                   </p>
                 </div>
 
-                <div className="rounded-3xl border border-white/10 bg-white/5 p-6">
+                <div className={smallCard3D}>
                   <p className="text-xs tracking-widest uppercase text-purple-200">
                     Day 3
                   </p>
@@ -293,7 +309,8 @@ const AboutSection = () => {
 
           <div className="mt-16 text-center">
             <p className="text-gray-300 text-sm sm:text-base">
-              UTKARSH&apos;26 is not just a fest — it&apos;s a memory you will carry forever.
+              UTKARSH&apos;26 is not just a fest — it&apos;s a memory you will
+              carry forever.
             </p>
 
             <p
