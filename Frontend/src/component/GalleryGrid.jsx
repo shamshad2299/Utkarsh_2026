@@ -1,15 +1,15 @@
 import { useEffect, useState } from "react";
 import GalleryItem from "./GalleryItem";
 
-import ukr1 from "../assets/ukr1.jpg";
-import ukr2 from "../assets/ukr2.jpg";
-import ukr3 from "../assets/ukr3.jpg";
-import ukr4 from "../assets/ukr4.jpg";
-import ukr5 from "../assets/ukr5.jpg";
-import ukr6 from "../assets/ukr6.jpg";
-import ukr7 from "../assets/ukr7.jpg";
-import ukr8 from "../assets/ukr8.jpg";
-import ukr9 from "../assets/ukr9.jpg";
+import ukr1 from "../assets/ukr1.webp";
+import ukr2 from "../assets/ukr2.webp";
+import ukr3 from "../assets/ukr3.webp";
+import ukr4 from "../assets/ukr4.webp";
+import ukr5 from "../assets/ukr5.webp";
+import ukr6 from "../assets/ukr6.webp";
+import ukr7 from "../assets/ukr7.webp";
+import ukr8 from "../assets/ukr8.webp";
+import ukr9 from "../assets/ukr9.webp";
 
 const GalleryGrid = () => {
   const [selectedImage, setSelectedImage] = useState(null);

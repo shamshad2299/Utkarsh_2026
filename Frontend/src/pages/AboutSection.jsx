@@ -1,5 +1,5 @@
 import React from "react";
-import aboutImage from "../assets/about.png";
+import aboutImage from "../assets/About_39300.webp";
 import {
   Sparkles,
   Trophy,

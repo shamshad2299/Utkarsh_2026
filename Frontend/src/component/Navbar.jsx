@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import utkarshLogo from "../assets/utkarsh_logo_new.png";
+import React, { useState } from "react";
+import utkarshLogo from "../assets/utkarsh_logo_new.webp";
 import bbdLogo from "../assets/bbd-logo.png";
 import rulebookPdf from "../assets/newrulebook.pdf";
 import schedulePdf from "../assets/sch.pdf";
