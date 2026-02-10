@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import utkarshLogo from "../assets/utkarsh_logo_new.webp";
 import bbdLogo from "../assets/bbd-logo.png";
 import rulebookPdf from "../assets/newrulebook.pdf";
