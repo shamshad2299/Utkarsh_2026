@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import utkarshLogo from "../assets/utkarsh_logo_new.png";
+import utkarshLogo from "../assets/utkarsh_logo_new.webp";
 import bbdLogo from "../assets/bbd-logo.png";
 import rulebookPdf from "../assets/rulebook.pdf";
 import { Link, useNavigate, useLocation } from "react-router-dom";
