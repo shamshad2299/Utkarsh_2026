@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { ArrowLeft } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import regImage from "../../assets/reg.png";
+import regImage from "../../assets/reg.webp";
 import { useAuth } from "../../Context/AuthContext";
 
 const RegistrationPage = ({
