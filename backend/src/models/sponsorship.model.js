@@ -12,7 +12,7 @@ const sponsorshipSchema = new mongoose.Schema(
 
     sponsorshipCategory: {
       type: String,
-      enum: ["associate", "event", "other"],
+      enum: ["powered_by", "co_powered_by", "associate", "other"],
       required: true,
     },
 
