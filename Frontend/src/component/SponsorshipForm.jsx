@@ -72,24 +72,62 @@ const SponsorshipForm = () => {
         className="min-h-screen flex items-center justify-center px-4 bg-cover bg-center"
         style={{
           backgroundImage: `linear-gradient(rgba(0,0,0,0.75), rgba(0,0,0,0.75)), url(${sponBg})`,
+          paddingTop: "clamp(110px, 9vw, 170px)",
+          paddingBottom: "clamp(40px, 6vw, 80px)",
         }}
       >
-        <div className="w-full max-w-4xl backdrop-blur-2xl bg-white/10 border border-white/20 rounded-3xl shadow-[0_0_80px_rgba(255,255,255,0.15)] p-10 text-white">
-          <div className="text-center mb-12">
-            <h2 className="text-4xl font-bold tracking-wide">UTKARSH 2026</h2>
-            <p className="text-gray-300 mt-2 text-lg">Sponsorship Form</p>
+        <div
+          className="w-full backdrop-blur-2xl bg-white/10 border border-white/20 rounded-3xl shadow-[0_0_80px_rgba(255,255,255,0.15)] text-white"
+          style={{
+            maxWidth: "clamp(320px, 92vw, 900px)",
+            padding: "clamp(18px, 3.2vw, 40px)",
+          }}
+        >
+          <div
+            className="text-center"
+            style={{ marginBottom: "clamp(26px, 4vw, 48px)" }}
+          >
+            <h2
+              className="font-bold tracking-wide"
+              style={{ fontSize: "clamp(26px, 4vw, 40px)" }}
+            >
+              UTKARSH 2026
+            </h2>
+
+            <p
+              className="text-gray-300 mt-2"
+              style={{ fontSize: "clamp(14px, 2vw, 18px)" }}
+            >
+              Sponsorship Form
+            </p>
           </div>
 
           <form
             onSubmit={handleSubmit}
-            className="bg-white/5 border border-white/15 rounded-2xl p-8 space-y-10"
+            className="bg-white/5 border border-white/15 rounded-2xl space-y-10"
+            style={{
+              padding: "clamp(16px, 2.6vw, 32px)",
+            }}
           >
+            {/* BUSINESS DETAILS */}
             <div>
-              <h3 className="text-lg font-semibold mb-6 text-yellow-400">
+              <h3
+                className="font-semibold text-yellow-400"
+                style={{
+                  fontSize: "clamp(14px, 1.8vw, 18px)",
+                  marginBottom: "clamp(16px, 2.5vw, 24px)",
+                }}
+              >
                 Business Details
               </h3>
 
-              <div className="grid md:grid-cols-2 gap-6">
+              <div
+                className="grid"
+                style={{
+                  gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
+                  gap: "clamp(14px, 2vw, 24px)",
+                }}
+              >
                 <FloatingInput
                   label="Name of Business"
                   icon={<Briefcase />}
@@ -137,26 +175,47 @@ const SponsorshipForm = () => {
               </div>
             </div>
 
+            {/* SPONSOR CATEGORY */}
             <div>
-              <h3 className="text-lg font-semibold mb-6 text-yellow-400">
+              <h3
+                className="font-semibold text-yellow-400"
+                style={{
+                  fontSize: "clamp(14px, 1.8vw, 18px)",
+                  marginBottom: "clamp(16px, 2.5vw, 24px)",
+                }}
+              >
                 Sponsorship Category
               </h3>
 
-              <div className="grid md:grid-cols-3 gap-6">
+              <div
+                className="grid"
+                style={{
+                  gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+                  gap: "clamp(14px, 2vw, 24px)",
+                }}
+              >
                 <SponsorCard
-                  title="associate"
-                  label="Associate Sponsor"
-                  price="₹5,00,000"
-                  active={formData.sponsorshipCategory === "associate"}
-                  onClick={() => handleCategorySelect("associate", 500000)}
+                  title="powered_by"
+                  label="Powered By Sponsor"
+                  price="₹4,00,000"
+                  active={formData.sponsorshipCategory === "powered_by"}
+                  onClick={() => handleCategorySelect("powered_by", 400000)}
                 />
 
                 <SponsorCard
-                  title="event"
-                  label="Event Sponsor"
+                  title="co_powered_by"
+                  label="Co-Powered By"
                   price="₹2,00,000"
-                  active={formData.sponsorshipCategory === "event"}
-                  onClick={() => handleCategorySelect("event", 200000)}
+                  active={formData.sponsorshipCategory === "co_powered_by"}
+                  onClick={() => handleCategorySelect("co_powered_by", 200000)}
+                />
+
+                <SponsorCard
+                  title="associate"
+                  label="Associate Sponsor"
+                  price="₹1,00,000"
+                  active={formData.sponsorshipCategory === "associate"}
+                  onClick={() => handleCategorySelect("associate", 100000)}
                 />
 
                 <SponsorCard
@@ -169,18 +228,30 @@ const SponsorshipForm = () => {
               </div>
 
               {!formData.sponsorshipCategory && (
-                <p className="text-sm text-red-300 mt-4">
+                <p
+                  className="text-red-300"
+                  style={{
+                    fontSize: "clamp(12px, 1.4vw, 14px)",
+                    marginTop: "clamp(10px, 1.6vw, 16px)",
+                  }}
+                >
                   Please select a sponsorship category.
                 </p>
               )}
             </div>
 
-            <div className="text-center pt-4">
+            {/* SUBMIT */}
+            <div className="text-center pt-2">
               <button
-                disabled={loading}
-                className="px-14 py-3 rounded-full bg-gradient-to-r from-yellow-400 to-yellow-300 
-                text-black font-semibold text-lg flex items-center justify-center gap-3 mx-auto
-                hover:scale-105 transition disabled:opacity-70"
+                disabled={loading || !formData.sponsorshipCategory}
+                className="rounded-full bg-gradient-to-r from-yellow-400 to-yellow-300 text-black font-semibold flex items-center justify-center gap-3 mx-auto hover:scale-105 transition disabled:opacity-70"
+                style={{
+                  paddingLeft: "clamp(22px, 4vw, 56px)",
+                  paddingRight: "clamp(22px, 4vw, 56px)",
+                  paddingTop: "clamp(10px, 1.8vw, 14px)",
+                  paddingBottom: "clamp(10px, 1.8vw, 14px)",
+                  fontSize: "clamp(14px, 1.9vw, 18px)",
+                }}
               >
                 {loading ? (
                   <>
@@ -196,20 +267,48 @@ const SponsorshipForm = () => {
         </div>
       </div>
 
+      {/* SUCCESS MODAL */}
       {success && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80">
-          <div className="backdrop-blur-xl bg-white/15 border border-white/30 rounded-2xl p-8 max-w-md text-center text-white shadow-2xl">
-            <h3 className="text-2xl font-bold text-yellow-400 mb-3">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 px-4">
+          <div
+            className="backdrop-blur-xl bg-white/15 border border-white/30 rounded-2xl text-center text-white shadow-2xl w-full"
+            style={{
+              maxWidth: "clamp(300px, 92vw, 420px)",
+              padding: "clamp(18px, 3vw, 32px)",
+            }}
+          >
+            <h3
+              className="font-bold text-yellow-400"
+              style={{
+                fontSize: "clamp(18px, 2.8vw, 26px)",
+                marginBottom: "clamp(10px, 1.5vw, 14px)",
+              }}
+            >
               Request Submitted Successfully 🎉
             </h3>
-            <p className="text-gray-200 mb-6">
+
+            <p
+              className="text-gray-200"
+              style={{
+                fontSize: "clamp(13px, 1.8vw, 16px)",
+                marginBottom: "clamp(16px, 2.5vw, 24px)",
+              }}
+            >
               Thank you for your interest in <b>UTKARSH 2026</b>.
               <br />
               Our team will contact you shortly.
             </p>
+
             <button
               onClick={() => setSuccess(false)}
-              className="px-8 py-2 rounded-full bg-yellow-400 text-black font-semibold hover:bg-yellow-300"
+              className="rounded-full bg-yellow-400 text-black font-semibold hover:bg-yellow-300"
+              style={{
+                paddingLeft: "clamp(18px, 3vw, 32px)",
+                paddingRight: "clamp(18px, 3vw, 32px)",
+                paddingTop: "clamp(8px, 1.5vw, 10px)",
+                paddingBottom: "clamp(8px, 1.5vw, 10px)",
+                fontSize: "clamp(13px, 1.8vw, 16px)",
+              }}
             >
               Close
             </button>
@@ -221,34 +320,43 @@ const SponsorshipForm = () => {
 };
 
 const FloatingInput = ({ label, type = "text", icon, value, onChange }) => (
-  <div className="relative">
+  <div className="relative w-full">
     <input
       type={type}
       required
       placeholder=" "
       value={value}
       onChange={onChange}
-      className="peer w-full bg-black/30 border border-white/20 rounded-xl px-12 py-4
-      text-white placeholder-transparent
-      focus:outline-none focus:ring-2 focus:ring-yellow-400 transition"
+      className="peer w-full bg-black/30 border border-white/20 rounded-xl text-white placeholder-transparent focus:outline-none focus:ring-2 focus:ring-yellow-400 transition"
+      style={{
+        paddingLeft: "clamp(44px, 4vw, 52px)",
+        paddingRight: "clamp(14px, 2vw, 18px)",
+        paddingTop: "clamp(12px, 2vw, 16px)",
+        paddingBottom: "clamp(12px, 2vw, 16px)",
+        fontSize: "clamp(14px, 1.8vw, 16px)",
+      }}
     />
 
     <div
-      className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400
-    peer-focus:text-yellow-400 peer-not-placeholder-shown:text-yellow-400"
+      className="absolute text-gray-400 peer-focus:text-yellow-400 peer-not-placeholder-shown:text-yellow-400"
+      style={{
+        left: "clamp(14px, 1.8vw, 16px)",
+        top: "50%",
+        transform: "translateY(-50%)",
+      }}
     >
       {icon}
     </div>
 
-    {/* ONLY THIS LABEL PART IS UPDATED */}
     <label
-      className="absolute left-12 right-4 top-4 text-gray-400 transition-all
-      leading-tight break-words
-      peer-placeholder-shown:top-4 peer-placeholder-shown:text-sm
-      peer-focus:top-1 peer-focus:text-xs peer-focus:text-yellow-400
-      peer-not-placeholder-shown:top-1
-      peer-not-placeholder-shown:text-xs
-      peer-not-placeholder-shown:text-yellow-400"
+      className="absolute text-gray-400 transition-all leading-tight break-words
+      peer-placeholder-shown:text-sm peer-focus:text-xs peer-focus:text-yellow-400
+      peer-not-placeholder-shown:text-xs peer-not-placeholder-shown:text-yellow-400"
+      style={{
+        left: "clamp(44px, 4vw, 52px)",
+        right: "clamp(10px, 1.4vw, 16px)",
+        top: "clamp(12px, 2vw, 16px)",
+      }}
     >
       {label}
     </label>
@@ -259,19 +367,35 @@ const SponsorCard = ({ title, label, price, active, onClick }) => (
   <button
     type="button"
     onClick={onClick}
-    className={`
-      h-full rounded-2xl border p-6 text-center transition
-      ${
-        active
-          ? "border-yellow-400 bg-black/40 shadow-[0_0_30px_rgba(255,193,7,0.4)]"
-          : "border-white/20 bg-black/30"
-      }
-      hover:bg-black/40
-    `}
+    className={`h-full rounded-2xl border text-center transition hover:bg-black/40 ${
+      active
+        ? "border-yellow-400 bg-black/40 shadow-[0_0_30px_rgba(255,193,7,0.4)]"
+        : "border-white/20 bg-black/30"
+    }`}
+    style={{
+      padding: "clamp(16px, 2.4vw, 24px)",
+    }}
   >
-    <h4 className="text-lg font-semibold">{label}</h4>
-    <p className="text-yellow-400 text-xl font-bold mt-2">{price}</p>
-    <p className="text-xs text-gray-300 mt-2">Value: {title}</p>
+    <h4
+      className="font-semibold"
+      style={{ fontSize: "clamp(14px, 1.8vw, 18px)" }}
+    >
+      {label}
+    </h4>
+
+    <p
+      className="text-yellow-400 font-bold mt-2"
+      style={{ fontSize: "clamp(18px, 2.4vw, 22px)" }}
+    >
+      {price}
+    </p>
+
+    <p
+      className="text-gray-300 mt-2"
+      style={{ fontSize: "clamp(11px, 1.4vw, 12px)" }}
+    >
+      Value: {title}
+    </p>
   </button>
 );
 

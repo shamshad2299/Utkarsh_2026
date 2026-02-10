@@ -37,37 +37,64 @@ const CountdownTimer = () => {
   }, [targetDate]);
 
   const Box = ({ value, label }) => (
-    <div className="flex flex-col items-center gap-1">
+    <div
+      className="flex flex-col items-center"
+      style={{ gap: "clamp(4px, 0.7vw, 8px)" }}
+    >
       <div
-        className="
-          bg-white text-[#050214]
-          text-3xl md:text-5xl
-          font-bold
-          w-16 h-16 md:w-24 md:h-24
-          flex items-center justify-center
-          rounded-2xl shadow-xl
-        "
-        style={{ fontFamily: "Milonga" }}
+        className="bg-white text-[#050214] font-bold flex items-center justify-center rounded-2xl shadow-xl"
+        style={{
+          fontFamily: "Milonga",
+          width: "clamp(52px, 6.5vw, 96px)",
+          height: "clamp(52px, 6.5vw, 96px)",
+          fontSize: "clamp(22px, 3.2vw, 52px)",
+        }}
       >
         {value}
       </div>
 
-      <span className="text-xs md:text-sm uppercase tracking-widest text-gray-300">
+      <span
+        className="uppercase tracking-widest text-gray-300"
+        style={{
+          fontSize: "clamp(10px, 1.1vw, 14px)",
+        }}
+      >
         {label}
       </span>
     </div>
   );
 
   return (
-    <div className="flex items-center gap-2 md:gap-4">
+    <div
+      className="flex items-center justify-center"
+      style={{ gap: "clamp(8px, 1.6vw, 16px)" }}
+    >
       <Box value={timeLeft.days} label="Days" />
-      <span className="text-3xl md:text-4xl font-bold">:</span>
+
+      <span
+        className="font-bold text-white"
+        style={{ fontSize: "clamp(18px, 2.8vw, 40px)" }}
+      >
+        :
+      </span>
 
       <Box value={timeLeft.hours} label="Hours" />
-      <span className="text-3xl md:text-4xl font-bold">:</span>
+
+      <span
+        className="font-bold text-white"
+        style={{ fontSize: "clamp(18px, 2.8vw, 40px)" }}
+      >
+        :
+      </span>
 
       <Box value={timeLeft.minutes} label="Minutes" />
-      <span className="text-3xl md:text-4xl font-bold">:</span>
+
+      <span
+        className="font-bold text-white"
+        style={{ fontSize: "clamp(18px, 2.8vw, 40px)" }}
+      >
+        :
+      </span>
 
       <Box value={timeLeft.seconds} label="Seconds" />
     </div>
