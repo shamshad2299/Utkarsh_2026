@@ -103,6 +103,8 @@ export const getAllEvents = async (req, res) => {
     .populate("subCategory", "title slug")
     .sort({ startTime: 1 });
 
+     res.set("Cache-Control", "public, max-age=600");
+
   res.status(200).json({
     success: true,
     count: events.length,

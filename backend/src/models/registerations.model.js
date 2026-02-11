@@ -53,12 +53,26 @@ const registrationSchema = new mongoose.Schema(
 
 registrationSchema.index(
   { eventId: 1, userId: 1 },
-  { unique: true, partialFilterExpression: { userId: { $exists: true } } }
+  { 
+    unique: true, 
+    partialFilterExpression: { 
+      userId: { $exists: true },
+      isDeleted: false
+    } 
+  }
 );
+
 
 registrationSchema.index(
   { eventId: 1, teamId: 1 },
-  { unique: true, partialFilterExpression: { teamId: { $exists: true } } }
+  { 
+    unique: true, 
+    partialFilterExpression: { 
+      teamId: { $exists: true },
+      isDeleted: false
+    } 
+  }
 );
+
 
 export const Registration = mongoose.model("Registration", registrationSchema);

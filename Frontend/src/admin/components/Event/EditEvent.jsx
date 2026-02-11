@@ -1,878 +1,955 @@
-import React, { useState, useEffect } from 'react';
-import { 
-  Save, 
-  Upload, 
-  X, 
-  Calendar, 
-  Users, 
-  DollarSign, 
+import React, { useState, useEffect, useCallback, useMemo } from "react";
+import {
+  Save,
+  Upload,
+  X,
+  Calendar,
+  Users,
+  DollarSign,
   MapPin,
   Clock,
   Tag,
   Loader2,
   ArrowLeft,
   Image as ImageIcon,
-  AlertCircle
-} from 'lucide-react';
+  AlertCircle,
+} from "lucide-react";
 import api from "../../api/axios.js";
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate } from "react-router-dom";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+
+// Constants
+const INITIAL_FORM_STATE = {
+  title: "",
+  description: "",
+  venueName: "",
+  startTime: "",
+  endTime: "",
+  registrationDeadline: "",
+  capacity: "",
+  fee: 0,
+  eventType: "solo",
+};
+
+const INITIAL_TEAM_SIZE = { min: 1, max: 1 };
+
+const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
+const MAX_IMAGE_SIZE = 10 * 1024 * 1024; // 10MB
+const MAX_IMAGES = 5;
 
 const EditEvent = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [categories, setCategories] = useState([]);
-  const [subCategories, setSubCategories] = useState([]);
-  const [selectedCategory, setSelectedCategory] = useState('');
-  const [selectedSubCategory, setSelectedSubCategory] = useState('');
+  const queryClient = useQueryClient();
+
+  // State
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const [selectedSubCategory, setSelectedSubCategory] = useState("");
   const [newImages, setNewImages] = useState([]);
   const [imagePreviews, setImagePreviews] = useState([]);
   const [existingImages, setExistingImages] = useState([]);
-  const [teamSize, setTeamSize] = useState({ min: 1, max: 1 });
+  const [teamSize, setTeamSize] = useState(INITIAL_TEAM_SIZE);
   const [errors, setErrors] = useState({});
+  const [formData, setFormData] = useState(INITIAL_FORM_STATE);
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
 
-  const [formData, setFormData] = useState({
-    title: '',
-    description: '',
-    venueName: '',
-    startTime: '',
-    endTime: '',
-    registrationDeadline: '',
-    capacity: '',
-    fee: 0,
-    eventType: 'solo',
+  // Queries
+  const { data: categories = [], isLoading: categoriesLoading } = useQuery({
+    queryKey: ["categories"],
+    queryFn: async () => {
+      const response = await api.get("/category/get");
+      return response.data.data || [];
+    },
+    staleTime: 5 * 60 * 1000,
   });
 
-  useEffect(() => {
-    if (id) {
-      fetchEventDetails();
-      fetchCategories();
-    }
-  }, [id]);
+  // Fix: Properly fetch subcategories with enabled flag
+  const { 
+    data: subCategories = [], 
+    isLoading: subCategoriesLoading,
+    refetch: refetchSubCategories
+  } = useQuery({
+    queryKey: ["subCategories", selectedCategory],
+    queryFn: async () => {
+      if (!selectedCategory) {
+        return [];
+      }
+      
+      try {
+        const response = await api.get(`/subCategory/get-by-categ/${selectedCategory}`);
+        return response.data.data || [];
+      } catch (error) {
+        console.error("Error fetching subcategories:", error);
+        return [];
+      }
+    },
+    enabled: false, // Disable automatic fetching, we'll trigger it manually
+    staleTime: 2 * 60 * 1000,
+  });
 
+  // Force refetch when selectedCategory changes and has a value
   useEffect(() => {
     if (selectedCategory) {
-      fetchSubCategories(selectedCategory);
+      refetchSubCategories();
     } else {
-      setSubCategories([]);
+      setSelectedSubCategory("");
     }
-  }, [selectedCategory]);
+  }, [selectedCategory, refetchSubCategories]);
 
-  const fetchEventDetails = async () => {
-    try {
-      setLoading(true);
-      const token = localStorage.getItem('accessToken');
+  const { data: event, isLoading: eventLoading } = useQuery({
+    queryKey: ["event", id],
+    queryFn: async () => {
+      const token = localStorage.getItem("accessToken");
       const response = await api.get(`/events/${id}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
+        headers: { Authorization: `Bearer ${token}` },
       });
-      
-      const event = response.data.data;
-      
-      // Populate form data
+      return response.data.data;
+    },
+    enabled: !!id,
+    staleTime: 0,
+  });
+
+  // Update form when event data is loaded
+  useEffect(() => {
+    if (event) {
+      // Set form data
       setFormData({
-        title: event.title || '',
-        description: event.description || '',
-        venueName: event.venueName || '',
-        startTime: event.startTime ? new Date(event.startTime).toISOString().slice(0, 16) : '',
-        endTime: event.endTime ? new Date(event.endTime).toISOString().slice(0, 16) : '',
-        registrationDeadline: event.registrationDeadline ? new Date(event.registrationDeadline).toISOString().slice(0, 16) : '',
-        capacity: event.capacity || '',
+        title: event.title || "",
+        description: event.description || "",
+        venueName: event.venueName || "",
+        startTime: formatDateTimeForInput(event.startTime),
+        endTime: formatDateTimeForInput(event.endTime),
+        registrationDeadline: formatDateTimeForInput(event.registrationDeadline),
+        capacity: event.capacity || "",
         fee: event.fee || 0,
-        eventType: event.eventType || 'solo',
+        eventType: event.eventType || "solo",
       });
 
       // Set category and subcategory
-      setSelectedCategory(event.category?._id || '');
-      setSelectedSubCategory(event.subCategory?._id || '');
-
+      setSelectedCategory(event.category?._id || "");
+      setSelectedSubCategory(event.subCategory?._id || "");
+      
       // Set existing images
       setExistingImages(event.images || []);
-
+      
       // Set team size
-      if (event.teamSize) {
-        setTeamSize({
-          min: event.teamSize.min || 1,
-          max: event.teamSize.max || 1
-        });
-      }
+      setTeamSize({
+        min: event.teamSize?.min || 1,
+        max: event.teamSize?.max || 1,
+      });
 
-    } catch (error) {
-      console.error('Error fetching event details:', error);
-      alert('Failed to load event details');
-    } finally {
-      setLoading(false);
+      setIsInitialLoad(false);
     }
-  };
+  }, [event]);
 
-  const fetchCategories = async () => {
-    try {
-      const response = await api.get('/category/get');
-      setCategories(response.data.data || []);
-    } catch (error) {
-      console.error('Error fetching categories:', error);
-    }
-  };
+  // Mutation
+  const updateEventMutation = useMutation({
+    mutationFn: ({ id, formData }) => api.put(`/events/${id}`, formData),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["events"] });
+      queryClient.invalidateQueries({ queryKey: ["event", id] });
+      alert("Event updated successfully!");
+      navigate("/admin/dashboard/events-list");
+    },
+    onError: (error) => {
+      const message = error.response?.data?.message || "Failed to update event";
+      alert(message);
+      console.error("Update error:", error);
+    },
+  });
 
-  const fetchSubCategories = async (categoryId) => {
-    try {
-      const response = await api.get(`/subCategory/get-by-categ/${categoryId}`);
-      setSubCategories(response.data.data || []);
-    } catch (error) {
-      console.error('Error fetching subcategories:', error);
-    }
-  };
+  // Cleanup image previews on unmount
+  useEffect(() => {
+    return () => {
+      imagePreviews.forEach((preview) => {
+        URL.revokeObjectURL(preview.preview);
+      });
+    };
+  }, []);
 
-  const handleInputChange = (e) => {
+  // Helper functions
+  const formatDateTimeForInput = useCallback((dateString) => {
+    if (!dateString) return "";
+    const date = new Date(dateString);
+    return date.toISOString().slice(0, 16);
+  }, []);
+
+  // Handlers
+  const handleInputChange = useCallback((e) => {
     const { name, value } = e.target;
-    
-    // Clear error for this field
-    setErrors(prev => ({ ...prev, [name]: '' }));
-    
-    if (name === 'eventType') {
-      let newTeamSize = { min: 1, max: 1 };
-      if (value === 'duo') {
-        newTeamSize = { min: 2, max: 2 };
+
+    setErrors((prev) => ({ ...prev, [name]: "" }));
+
+    setFormData((prev) => {
+      const newFormData = { ...prev, [name]: value };
+
+      if (name === "eventType") {
+        if (value === "duo") {
+          setTeamSize({ min: 2, max: 2 });
+        } else if (value === "solo") {
+          setTeamSize(INITIAL_TEAM_SIZE);
+        }
       }
-      setTeamSize(newTeamSize);
-    }
-    
-    setFormData({
-      ...formData,
-      [name]: value
+
+      return newFormData;
     });
-  };
+  }, []);
 
-  const handleTeamSizeChange = (field, value) => {
-    const val = parseInt(value) || 1;
-    setTeamSize(prev => ({
-      ...prev,
-      [field]: val
-    }));
-  };
+  const handleTeamSizeChange = useCallback((field, value) => {
+    const numValue = Math.max(1, parseInt(value) || 1);
+    setTeamSize((prev) => ({ ...prev, [field]: numValue }));
+    setErrors((prev) => ({ ...prev, teamSize: "" }));
+  }, []);
 
-  const handleImageUpload = (e) => {
+  const handleImageUpload = useCallback((e) => {
     const files = Array.from(e.target.files);
     
-    // Validate file types and sizes
-    const validFiles = files.filter(file => {
-      const isValidType = ['image/jpeg', 'image/png', 'image/webp'].includes(file.type);
-      const isValidSize = file.size <= 10 * 1024 * 1024; // 10MB
-      
-      if (!isValidType) {
-        setErrors(prev => ({ 
-          ...prev, 
-          images: 'Only JPG, PNG, and WEBP files are allowed' 
-        }));
-      }
-      
-      if (!isValidSize) {
-        setErrors(prev => ({ 
-          ...prev, 
-          images: 'File size must be less than 10MB' 
-        }));
-      }
-      
-      return isValidType && isValidSize;
-    });
-    
-    const previews = validFiles.map(file => ({
-      file,
-      preview: URL.createObjectURL(file)
-    }));
-    
-    setNewImages(prev => [...prev, ...validFiles]);
-    setImagePreviews(prev => [...prev, ...previews]);
-  };
-
-  const removeNewImage = (index) => {
-    setNewImages(prev => prev.filter((_, i) => i !== index));
-    setImagePreviews(prev => {
-      const newPreviews = prev.filter((_, i) => i !== index);
-      URL.revokeObjectURL(prev[index].preview);
-      return newPreviews;
-    });
-  };
-
-  const removeExistingImage = (index) => {
-    setExistingImages(prev => prev.filter((_, i) => i !== index));
-  };
-
-  const validateForm = () => {
-    const newErrors = {};
-    
-    if (!formData.title.trim()) newErrors.title = 'Title is required';
-    if (!selectedCategory) newErrors.category = 'Category is required';
-    if (!selectedSubCategory) newErrors.subCategory = 'Sub-category is required';
-    if (!formData.description.trim()) newErrors.description = 'Description is required';
-    if (!formData.venueName.trim()) newErrors.venueName = 'Venue is required';
-    if (!formData.startTime) newErrors.startTime = 'Start time is required';
-    if (!formData.endTime) newErrors.endTime = 'End time is required';
-    if (!formData.registrationDeadline) newErrors.registrationDeadline = 'Registration deadline is required';
-    if (!formData.capacity || formData.capacity < 1) newErrors.capacity = 'Valid capacity is required';
-    
-    if (formData.startTime && formData.endTime) {
-      if (new Date(formData.endTime) <= new Date(formData.startTime)) {
-        newErrors.endTime = 'End time must be after start time';
-      }
-    }
-    
-    if (teamSize.min > teamSize.max) {
-      newErrors.teamSize = 'Minimum team size cannot be greater than maximum';
-    }
-    
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    
-    if (!validateForm()) {
+    if (existingImages.length + newImages.length + files.length > MAX_IMAGES) {
+      setErrors((prev) => ({
+        ...prev,
+        images: `You can only have up to ${MAX_IMAGES} images total`,
+      }));
       return;
     }
-    
-    try {
-      setSaving(true);
-      
-      const data = new FormData();
-      
-      // Add form fields
-      data.append('title', formData.title);
-      data.append('description', formData.description);
-      data.append('venueName', formData.venueName);
-      data.append('startTime', formData.startTime);
-      data.append('endTime', formData.endTime);
-      data.append('registrationDeadline', formData.registrationDeadline);
-      data.append('capacity', formData.capacity);
-      data.append('fee', formData.fee);
-      data.append('eventType', formData.eventType);
-      data.append('teamSize', JSON.stringify(teamSize));
-      
-      // Add new images
-      newImages.forEach((image, index) => {
-        data.append('images', image);
-      });
-      
-      const token = localStorage.getItem('adminAccessToken');
-      if (!token) {
-        throw new Error('No authentication token found');
-      }
-      
-      const response = await api.put(`/events/${id}`, data, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'multipart/form-data'
-        }
-      });
-      
-      if (response.data.success) {
-        alert('Event updated successfully!');
-        navigate('/admin/dashboard/events-list'); // Navigate back to events list
-      }
-      
-    } catch (error) {
-      console.error('Error updating event:', error);
-      alert(error.response?.data?.message || 'Failed to update event');
-    } finally {
-      setSaving(false);
-    }
-  };
 
-  const resetForm = () => {
-    fetchEventDetails(); // Reset to original values
+    const validFiles = files.filter((file) => {
+      if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
+        setErrors((prev) => ({
+          ...prev,
+          images: "Only JPG, PNG, and WEBP files are allowed",
+        }));
+        return false;
+      }
+
+      if (file.size > MAX_IMAGE_SIZE) {
+        setErrors((prev) => ({
+          ...prev,
+          images: "File size must be less than 10MB",
+        }));
+        return false;
+      }
+
+      return true;
+    });
+
+    if (validFiles.length === 0) return;
+
+    const previews = validFiles.map((file) => ({
+      file,
+      preview: URL.createObjectURL(file),
+    }));
+
+    setNewImages((prev) => [...prev, ...validFiles]);
+    setImagePreviews((prev) => [...prev, ...previews]);
+    setErrors((prev) => ({ ...prev, images: "" }));
+    
+    e.target.value = '';
+  }, [existingImages.length, newImages.length]);
+
+  const removeNewImage = useCallback((index) => {
+    setNewImages((prev) => prev.filter((_, i) => i !== index));
+    setImagePreviews((prev) => {
+      URL.revokeObjectURL(prev[index].preview);
+      return prev.filter((_, i) => i !== index);
+    });
+  }, []);
+
+  const removeExistingImage = useCallback((index) => {
+    setExistingImages((prev) => prev.filter((_, i) => i !== index));
+  }, []);
+
+  const resetForm = useCallback(() => {
+    if (event) {
+      setFormData({
+        title: event.title || "",
+        description: event.description || "",
+        venueName: event.venueName || "",
+        startTime: formatDateTimeForInput(event.startTime),
+        endTime: formatDateTimeForInput(event.endTime),
+        registrationDeadline: formatDateTimeForInput(event.registrationDeadline),
+        capacity: event.capacity || "",
+        fee: event.fee || 0,
+        eventType: event.eventType || "solo",
+      });
+
+      setSelectedCategory(event.category?._id || "");
+      setSelectedSubCategory(event.subCategory?._id || "");
+      setExistingImages(event.images || []);
+      setTeamSize({
+        min: event.teamSize?.min || 1,
+        max: event.teamSize?.max || 1,
+      });
+    }
+
+    imagePreviews.forEach((preview) => {
+      URL.revokeObjectURL(preview.preview);
+    });
     setNewImages([]);
     setImagePreviews([]);
     setErrors({});
-  };
+  }, [event, imagePreviews, formatDateTimeForInput]);
 
-  const formatDateTimeForInput = (dateString) => {
-    if (!dateString) return '';
-    const date = new Date(dateString);
-    return date.toISOString().slice(0, 16);
-  };
+  const validateForm = useCallback(() => {
+    const newErrors = {};
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-purple-50">
-        <div className="text-center">
-          <Loader2 className="w-12 h-12 text-purple-600 animate-spin mx-auto mb-4" />
-          <p className="text-gray-600">Loading event details...</p>
-        </div>
-      </div>
-    );
+    if (!formData.title?.trim()) newErrors.title = "Title is required";
+    if (!selectedCategory) newErrors.category = "Category is required";
+    if (!selectedSubCategory) newErrors.subCategory = "Sub-category is required";
+    if (!formData.description?.trim()) newErrors.description = "Description is required";
+    if (!formData.venueName?.trim()) newErrors.venueName = "Venue is required";
+    if (!formData.startTime) newErrors.startTime = "Start time is required";
+    if (!formData.endTime) newErrors.endTime = "End time is required";
+    if (!formData.registrationDeadline) newErrors.registrationDeadline = "Registration deadline is required";
+
+    const capacity = parseInt(formData.capacity);
+    if (!capacity || capacity < 1) {
+      newErrors.capacity = "Valid capacity is required";
+    }
+
+    if (formData.startTime && formData.endTime) {
+      if (new Date(formData.endTime) <= new Date(formData.startTime)) {
+        newErrors.endTime = "End time must be after start time";
+      }
+    }
+
+    if (formData.registrationDeadline && formData.startTime) {
+      if (new Date(formData.registrationDeadline) >= new Date(formData.startTime)) {
+        newErrors.registrationDeadline = "Registration deadline must be before start time";
+      }
+    }
+
+    if (formData.eventType === "team") {
+      if (teamSize.min > teamSize.max) {
+        newErrors.teamSize = "Minimum team size cannot be greater than maximum";
+      }
+      if (teamSize.min < 1) {
+        newErrors.teamSize = "Team size must be at least 1";
+      }
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  }, [formData, selectedCategory, selectedSubCategory, teamSize]);
+
+  const handleSubmit = useCallback((e) => {
+    e.preventDefault();
+
+    if (!validateForm()) {
+      const firstError = document.querySelector('[class*="border-red-300"]');
+      firstError?.scrollIntoView({ behavior: "smooth", block: "center" });
+      return;
+    }
+
+    const data = new FormData();
+
+    Object.entries(formData).forEach(([key, value]) => {
+      if (value !== undefined && value !== null) {
+        data.append(key, value.toString());
+      }
+    });
+
+    data.append("category", selectedCategory);
+    data.append("subCategory", selectedSubCategory);
+    data.append("teamSize", JSON.stringify(teamSize));
+    
+    // Send remaining existing image IDs
+    const existingImageIds = existingImages.map(img => img._id || img).filter(Boolean);
+    data.append("existingImageIds", JSON.stringify(existingImageIds));
+
+    // Append new image files
+    newImages.forEach((image) => {
+      data.append("images", image);
+    });
+
+    updateEventMutation.mutate({ id, formData: data });
+  }, [formData, selectedCategory, selectedSubCategory, teamSize, existingImages, newImages, id, validateForm]);
+
+  // Memoized values
+  const isTeamEvent = useMemo(() => formData.eventType === "team", [formData.eventType]);
+  const isLoading = useMemo(() => eventLoading || categoriesLoading || isInitialLoad, [eventLoading, categoriesLoading, isInitialLoad]);
+  const isSubmitting = useMemo(() => updateEventMutation.isPending, [updateEventMutation.isPending]);
+  const totalImages = useMemo(() => existingImages.length + newImages.length, [existingImages, newImages]);
+
+  if (isLoading) {
+    return <LoadingScreen />;
   }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-purple-50 p-4 md:p-6">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
-        <div className="mb-8">
-          <button
-            onClick={() => navigate(-1)}
-            className="flex items-center gap-2 text-gray-600 hover:text-gray-800 mb-4"
-          >
-            <ArrowLeft className="w-5 h-5" />
-            Back to Events
-          </button>
-          
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-2">
-                Edit Event
-              </h1>
-              <p className="text-gray-600">
-                Update the details for "{formData.title}"
-              </p>
-            </div>
-            
-            <div className="bg-purple-100 text-purple-800 px-4 py-2 rounded-lg">
-              <p className="text-sm font-medium">Event ID: {id?.slice(-8).toUpperCase()}</p>
-            </div>
-          </div>
-        </div>
+        <Header 
+          title={formData.title} 
+          eventId={id} 
+          onBack={() => navigate(-1)} 
+        />
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-6" noValidate>
           {/* Basic Information Card */}
-          <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-lg text-black">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="p-2 bg-purple-600 rounded-lg">
-                <Tag className="w-5 h-5 text-white" />
-              </div>
-              <h2 className="text-xl font-bold text-gray-800">Basic Information</h2>
-            </div>
-            
+          <Card icon={Tag} bgColor="bg-purple-600" title="Basic Information">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Title */}
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">
-                  Event Title *
-                </label>
-                <input
-                  type="text"
-                  name="title"
-                  value={formData.title}
-                  onChange={handleInputChange}
-                  className={`w-full px-4 py-3 border rounded-xl placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent ${
-                    errors.title ? 'border-red-300 bg-red-50' : 'border-gray-300 bg-gray-50'
-                  }`}
-                  placeholder="Enter event title"
-                />
-                {errors.title && (
-                  <p className="text-sm text-red-600 flex items-center gap-1">
-                    <AlertCircle className="w-4 h-4" />
-                    {errors.title}
-                  </p>
-                )}
-              </div>
+              <InputField
+                label="Event Title *"
+                name="title"
+                value={formData.title}
+                onChange={handleInputChange}
+                placeholder="Enter event title"
+                error={errors.title}
+              />
 
-              {/* Category */}
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">
-                  Category *
-                </label>
-                <select
-                  value={selectedCategory}
-                  onChange={(e) => setSelectedCategory(e.target.value)}
-                  className={`w-full px-4 py-3 border rounded-xl placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent ${
-                    errors.category ? 'border-red-300 bg-red-50' : 'border-gray-300 bg-gray-50'
-                  }`}
-                >
-                  <option value="">Select Category</option>
-                  {categories.map((category) => (
-                    <option key={category._id} value={category._id}>
-                      {category.name}
-                    </option>
-                  ))}
-                </select>
-                {errors.category && (
-                  <p className="text-sm text-red-600 flex items-center gap-1">
-                    <AlertCircle className="w-4 h-4" />
-                    {errors.category}
-                  </p>
-                )}
-              </div>
+              <SelectField
+                label="Category *"
+                value={selectedCategory}
+                onChange={setSelectedCategory}
+                options={categories}
+                optionLabel="name"
+                optionValue="_id"
+                placeholder="Select Category"
+                error={errors.category}
+                loading={categoriesLoading}
+              />
 
-              {/* Sub-category */}
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">
-                  Sub-category *
-                </label>
-                <select
-                  value={selectedSubCategory}
-                  onChange={(e) => setSelectedSubCategory(e.target.value)}
-                  className={`w-full px-4 py-3 border rounded-xl placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent ${
-                    errors.subCategory ? 'border-red-300 bg-red-50' : 'border-gray-300 bg-gray-50'
-                  }`}
-                  disabled={!selectedCategory}
-                >
-                  <option value="">Select Sub-category</option>
-                  {subCategories.map((subCat) => (
-                    <option key={subCat._id} value={subCat._id}>
-                      {subCat?.title}
-                    </option>
-                  ))}
-                </select>
-                {errors.subCategory && (
-                  <p className="text-sm text-red-600 flex items-center gap-1">
-                    <AlertCircle className="w-4 h-4" />
-                    {errors.subCategory}
-                  </p>
-                )}
-              </div>
+              <SelectField
+                label="Sub-category *"
+                value={selectedSubCategory}
+                onChange={setSelectedSubCategory}
+                options={subCategories}
+                optionLabel="title"
+                optionValue="_id"
+                placeholder="Select Sub-category"
+                error={errors.subCategory}
+                disabled={!selectedCategory}
+                loading={subCategoriesLoading && selectedCategory ? true : false}
+              />
 
-              {/* Event Type */}
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">
-                  Event Type *
-                </label>
-                <select
-                  name="eventType"
-                  value={formData.eventType}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-xl placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                >
-                  <option value="solo">Solo</option>
-                  <option value="duo">Duo</option>
-                  <option value="team">Team</option>
-                </select>
-              </div>
+              <SelectField
+                label="Event Type *"
+                name="eventType"
+                value={formData.eventType}
+                onChange={handleInputChange}
+                options={[
+                  { value: "solo", label: "Solo" },
+                  { value: "duo", label: "Duo" },
+                  { value: "team", label: "Team" },
+                ]}
+                optionLabel="label"
+                optionValue="value"
+              />
 
-              {/* Team Size (only for team events) */}
-              {formData.eventType === 'team' && (
+              {isTeamEvent && (
                 <>
-                  <div className="space-y-2">
-                    <label className="block text-sm font-medium text-gray-700">
-                      Min Team Size
-                    </label>
-                    <input
-                      type="number"
-                      min="1"
-                      value={teamSize.min}
-                      onChange={(e) => handleTeamSizeChange('min', e.target.value)}
-                      className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-xl placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="block text-sm font-medium text-gray-700">
-                      Max Team Size
-                    </label>
-                    <input
-                      type="number"
-                      min={teamSize.min}
-                      value={teamSize.max}
-                      onChange={(e) => handleTeamSizeChange('max', e.target.value)}
-                      className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-xl placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                    />
-                  </div>
+                  <InputField
+                    label="Min Team Size"
+                    type="number"
+                    min="1"
+                    value={teamSize.min}
+                    onChange={(e) => handleTeamSizeChange("min", e.target.value)}
+                  />
+                  <InputField
+                    label="Max Team Size"
+                    type="number"
+                    min={teamSize.min}
+                    value={teamSize.max}
+                    onChange={(e) => handleTeamSizeChange("max", e.target.value)}
+                  />
                   {errors.teamSize && (
                     <div className="col-span-2">
-                      <p className="text-sm text-red-600 flex items-center gap-1">
-                        <AlertCircle className="w-4 h-4" />
-                        {errors.teamSize}
-                      </p>
+                      <ErrorMessage message={errors.teamSize} />
                     </div>
                   )}
                 </>
               )}
             </div>
 
-            {/* Description */}
-            <div className="mt-6 space-y-2">
-              <label className="block text-sm font-medium text-gray-700">
-                Description *
-              </label>
-              <textarea
+            <div className="mt-6">
+              <TextAreaField
+                label="Description *"
                 name="description"
                 value={formData.description}
                 onChange={handleInputChange}
-                rows={4}
-                className={`w-full px-4 py-3 border rounded-xl placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none ${
-                  errors.description ? 'border-red-300 bg-red-50' : 'border-gray-300 bg-gray-50'
-                }`}
                 placeholder="Enter event description..."
+                rows={4}
+                error={errors.description}
               />
-              {errors.description && (
-                <p className="text-sm text-red-600 flex items-center gap-1">
-                  <AlertCircle className="w-4 h-4" />
-                  {errors.description}
-                </p>
-              )}
             </div>
-          </div>
-
+          </Card>
 
           {/* Date & Time Card */}
-          <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-lg">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="p-2 bg-blue-600 rounded-lg">
-                <Calendar className="w-5 h-5 text-white" />
-              </div>
-              <h2 className="text-xl font-bold text-gray-800">Date & Time</h2>
-            </div>
-            
+          <Card icon={Calendar} bgColor="bg-blue-600" title="Date & Time">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {/* Start Time */}
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">
-                  Start Time *
-                </label>
-                <div className="relative">
-                  <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-500" />
-                  <input
-                    type="datetime-local"
-                    name="startTime"
-                    value={formData.startTime}
-                    onChange={handleInputChange}
-                    className={`w-full pl-12 pr-4 py-3 border rounded-xl text-black placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                      errors.startTime ? 'border-red-300 bg-red-50' : 'border-gray-300 bg-gray-50'
-                    }`}
-                  />
-                </div>
-                {errors.startTime && (
-                  <p className="text-sm text-red-600 flex items-center gap-1">
-                    <AlertCircle className="w-4 h-4" />
-                    {errors.startTime}
-                  </p>
-                )}
-              </div>
-
-              {/* End Time */}
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">
-                  End Time *
-                </label>
-                <div className="relative">
-                  <Clock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-500" />
-                  <input
-                    type="datetime-local"
-                    name="endTime"
-                    value={formData.endTime}
-                    onChange={handleInputChange}
-                    className={`w-full pl-12 pr-4 py-3 border rounded-xl text-black placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                      errors.endTime ? 'border-red-300 bg-red-50' : 'border-gray-300 bg-gray-50'
-                    }`}
-                  />
-                </div>
-                {errors.endTime && (
-                  <p className="text-sm text-red-600 flex items-center gap-1">
-                    <AlertCircle className="w-4 h-4" />
-                    {errors.endTime}
-                  </p>
-                )}
-              </div>
-
-              {/* Registration Deadline */}
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">
-                  Registration Deadline *
-                </label>
-                <div className="relative">
-                  <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-500" />
-                  <input
-                    type="datetime-local"
-                    name="registrationDeadline"
-                    value={formData.registrationDeadline}
-                    onChange={handleInputChange}
-                    className={`w-full pl-12 pr-4 py-3 border rounded-xl text-black placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                      errors.registrationDeadline ? 'border-red-300 bg-red-50' : 'border-gray-300 bg-gray-50'
-                    }`}
-                  />
-                </div>
-                {errors.registrationDeadline && (
-                  <p className="text-sm text-red-600 flex items-center gap-1">
-                    <AlertCircle className="w-4 h-4" />
-                    {errors.registrationDeadline}
-                  </p>
-                )}
-              </div>
+              <DateTimeField
+                label="Start Time *"
+                name="startTime"
+                value={formData.startTime}
+                onChange={handleInputChange}
+                icon={Calendar}
+                error={errors.startTime}
+              />
+              <DateTimeField
+                label="End Time *"
+                name="endTime"
+                value={formData.endTime}
+                onChange={handleInputChange}
+                icon={Clock}
+                error={errors.endTime}
+              />
+              <DateTimeField
+                label="Registration Deadline *"
+                name="registrationDeadline"
+                value={formData.registrationDeadline}
+                onChange={handleInputChange}
+                icon={Calendar}
+                error={errors.registrationDeadline}
+              />
             </div>
-          </div>
+          </Card>
 
           {/* Venue & Capacity Card */}
-          <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-lg">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="p-2 bg-green-600 rounded-lg">
-                <MapPin className="w-5 h-5 text-white" />
-              </div>
-              <h2 className="text-xl font-bold text-gray-800">Venue & Capacity</h2>
-            </div>
-            
+          <Card icon={MapPin} bgColor="bg-green-600" title="Venue & Capacity">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Venue */}
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">
-                  Venue Name *
-                </label>
-                <div className="relative">
-                  <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-500" />
-                  <input
-                    type="text"
-                    name="venueName"
-                    value={formData.venueName}
-                    onChange={handleInputChange}
-                    className={`w-full pl-12 pr-4 py-3 text-black border rounded-xl placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent ${
-                      errors.venueName ? 'border-red-300 bg-red-50' : 'border-gray-300 bg-gray-50'
-                    }`}
-                    placeholder="Enter venue name"
-                  />
-                </div>
-                {errors.venueName && (
-                  <p className="text-sm text-red-600 flex items-center gap-1">
-                    <AlertCircle className="w-4 h-4" />
-                    {errors.venueName}
-                  </p>
-                )}
-              </div>
-
-              {/* Capacity */}
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">
-                  Capacity *
-                </label>
-                <div className="relative">
-                  <Users className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-500" />
-                  <input
-                    type="number"
-                    name="capacity"
-                    min="1"
-                    value={formData.capacity}
-                    onChange={handleInputChange}
-                    className={`w-full pl-12 pr-4 py-3 text-black border rounded-xl placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent ${
-                      errors.capacity ? 'border-red-300 bg-red-50' : 'border-gray-300 bg-gray-50'
-                    }`}
-                    placeholder="Maximum participants"
-                  />
-                </div>
-                {errors.capacity && (
-                  <p className="text-sm text-red-600 flex items-center gap-1">
-                    <AlertCircle className="w-4 h-4" />
-                    {errors.capacity}
-                  </p>
-                )}
-              </div>
+              <InputField
+                label="Venue Name *"
+                name="venueName"
+                value={formData.venueName}
+                onChange={handleInputChange}
+                placeholder="Enter venue name"
+                icon={MapPin}
+                error={errors.venueName}
+              />
+              <InputField
+                label="Capacity *"
+                name="capacity"
+                type="number"
+                min="1"
+                value={formData.capacity}
+                onChange={handleInputChange}
+                placeholder="Maximum participants"
+                icon={Users}
+                error={errors.capacity}
+              />
             </div>
-          </div>
+          </Card>
 
           {/* Fee Card */}
-          <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-lg">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="p-2 bg-yellow-600 rounded-lg">
-                <DollarSign className="w-5 h-5 text-white" />
-              </div>
-              <h2 className="text-xl font-bold text-gray-800">Registration Fee</h2>
-            </div>
-            
+          <Card icon={DollarSign} bgColor="bg-yellow-600" title="Registration Fee">
             <div className="max-w-xs">
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">
-                  Registration Fee (₹)
-                </label>
-                <div className="relative">
-                  <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-500" />
-                  <input
-                    type="number"
-                    name="fee"
-                    min="0"
-                    step="0.01"
-                    value={formData.fee}
-                    onChange={handleInputChange}
-                    className="w-full pl-12 pr-4 py-3 text-black bg-gray-50 border border-gray-300 rounded-xl placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
-                    placeholder="0.00"
-                  />
-                  <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500">
-                    ₹
-                  </span>
-                </div>
-                <p className="text-sm text-gray-500 mt-1">
-                  Set to 0 for free events
-                </p>
-              </div>
+              <InputField
+                label="Registration Fee (₹)"
+                name="fee"
+                type="number"
+                min="0"
+                step="0.01"
+                value={formData.fee}
+                onChange={handleInputChange}
+                placeholder="0.00"
+                icon={DollarSign}
+                suffix="₹"
+                helperText="Set to 0 for free events"
+              />
             </div>
-          </div>
+          </Card>
 
           {/* Images Upload Card */}
-          <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-lg">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="p-2 bg-pink-600 rounded-lg">
-                <Upload className="w-5 h-5 text-white" />
-              </div>
-              <h2 className="text-xl font-bold text-gray-800">Event Images</h2>
-            </div>
-            
-            <div className="space-y-6">
-              {/* Warning about image replacement */}
-              <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4">
-                <div className="flex items-start gap-3">
-                  <AlertCircle className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
-                  <div>
-                    <p className="font-medium text-yellow-800">Important Note</p>
-                    <p className="text-sm text-yellow-700 mt-1">
-                      Uploading new images will replace all existing event images. Please upload all images you want to keep.
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Existing Images */}
-              {existingImages.length > 0 && (
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                    <ImageIcon className="w-5 h-5" />
-                    Current Images ({existingImages.length})
-                  </h3>
-                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                    {existingImages.map((image, index) => (
-                      <div
-                        key={index}
-                        className="relative group rounded-xl overflow-hidden border border-gray-200"
-                      >
-                        <img
-                          src={image.url}
-                          alt={`Existing ${index + 1}`}
-                          className="w-full h-40 object-cover"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
-                          <div className="absolute bottom-2 left-2 text-white text-xs">
-                            Will be removed
-                          </div>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => removeExistingImage(index)}
-                          className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                          title="Remove Image"
-                        >
-                          <X className="w-4 h-4" />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Upload New Images */}
-              <div>
-                <h3 className="text-lg font-semibold text-gray-800 mb-4">
-                  Upload New Images
-                </h3>
-                
-                {/* Upload Area */}
-                <div className="border-2 border-dashed border-gray-300 rounded-2xl p-8 text-center hover:border-purple-500 transition-colors bg-gray-50">
-                  <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-600 mb-2">
-                    Drop images here or click to upload
-                  </p>
-                  <p className="text-sm text-gray-500 mb-4">
-                    PNG, JPG, WEBP up to 10MB
-                  </p>
-                  <input
-                    type="file"
-                    id="image-upload"
-                    multiple
-                    accept="image/*"
-                    onChange={handleImageUpload}
-                    className="hidden"
-                  />
-                  <label
-                    htmlFor="image-upload"
-                    className="inline-block px-6 py-2 bg-purple-600 text-white rounded-lg cursor-pointer hover:bg-purple-700 transition"
-                  >
-                    Select Images
-                  </label>
-                </div>
-
-                {/* New Image Previews */}
-                {imagePreviews.length > 0 && (
-                  <div className="mt-6">
-                    <h4 className="text-md font-medium text-gray-800 mb-4">
-                      New Images ({imagePreviews.length})
-                    </h4>
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                      {imagePreviews.map((preview, index) => (
-                        <div
-                          key={index}
-                          className="relative group rounded-xl overflow-hidden border border-gray-200"
-                        >
-                          <img
-                            src={preview.preview}
-                            alt={`Preview ${index + 1}`}
-                            className="w-full h-40 object-cover"
-                          />
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
-                            <div className="absolute bottom-2 left-2 text-white text-xs">
-                              New image
-                            </div>
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() => removeNewImage(index)}
-                            className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                            title="Remove Image"
-                          >
-                            <X className="w-4 h-4" />
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Image Upload Error */}
-                {errors.images && (
-                  <p className="text-sm text-red-600 flex items-center gap-1 mt-2">
-                    <AlertCircle className="w-4 h-4" />
-                    {errors.images}
-                  </p>
-                )}
-              </div>
-            </div>
-          </div>
+          <Card icon={Upload} bgColor="bg-pink-600" title="Event Images">
+            <ImageSection
+              existingImages={existingImages}
+              newImages={newImages}
+              imagePreviews={imagePreviews}
+              totalImages={totalImages}
+              maxImages={MAX_IMAGES}
+              onRemoveExisting={removeExistingImage}
+              onRemoveNew={removeNewImage}
+              onUpload={handleImageUpload}
+              error={errors.images}
+            />
+          </Card>
 
           {/* Action Buttons */}
-          <div className="flex flex-col sm:flex-row gap-4 pt-6 border-t border-gray-200">
-            <button
-              type="button"
-              onClick={() => navigate(-1)}
-              className="px-8 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition font-medium flex items-center justify-center gap-2"
-            >
-              <ArrowLeft className="w-5 h-5" />
-              Cancel
-            </button>
-            
-            <button
-              type="button"
-              onClick={resetForm}
-              className="px-8 py-3 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition border border-gray-300 font-medium"
-            >
-              Reset Changes
-            </button>
-            
-            <button
-              type="submit"
-              disabled={saving}
-              className="flex-1 px-8 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-xl font-semibold hover:from-purple-700 hover:to-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-            >
-              {saving ? (
-                <>
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                  Updating Event...
-                </>
-              ) : (
-                <>
-                  <Save className="w-5 h-5" />
-                  Update Event
-                </>
-              )}
-            </button>
-          </div>
+          <ActionButtons
+            onCancel={() => navigate(-1)}
+            onReset={resetForm}
+            isSubmitting={isSubmitting}
+          />
         </form>
       </div>
     </div>
   );
 };
+
+// Sub-components
+const LoadingScreen = () => (
+  <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-purple-50">
+    <div className="text-center">
+      <Loader2 className="w-12 h-12 text-purple-600 animate-spin mx-auto mb-4" />
+      <p className="text-gray-600">Loading event details...</p>
+    </div>
+  </div>
+);
+
+const Header = ({ title, eventId, onBack }) => (
+  <div className="mb-8">
+    <button
+      onClick={onBack}
+      className="flex items-center gap-2 text-gray-600 hover:text-gray-800 mb-4 transition-colors"
+      type="button"
+    >
+      <ArrowLeft className="w-5 h-5" />
+      Back to Events
+    </button>
+
+    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div>
+        <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-2">
+          Edit Event
+        </h1>
+        <p className="text-gray-600">
+          Update the details for "{title || 'Event'}"
+        </p>
+      </div>
+
+      <div className="bg-purple-100 text-purple-800 px-4 py-2 rounded-lg self-start">
+        <p className="text-sm font-medium">
+          Event ID: {eventId?.slice(-8).toUpperCase()}
+        </p>
+      </div>
+    </div>
+  </div>
+);
+
+const Card = ({ icon: Icon, bgColor, title, children }) => (
+  <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-lg hover:shadow-xl transition-shadow">
+    <div className="flex items-center gap-3 mb-6">
+      <div className={`p-2 ${bgColor} rounded-lg`}>
+        <Icon className="w-5 h-5 text-white" />
+      </div>
+      <h2 className="text-xl font-bold text-gray-800">{title}</h2>
+    </div>
+    {children}
+  </div>
+);
+
+const InputField = ({
+  label,
+  icon: Icon,
+  error,
+  helperText,
+  suffix,
+  className = "",
+  ...props
+}) => (
+  <div className="space-y-2">
+    <label className="block text-sm font-medium text-gray-700">{label}</label>
+    <div className="relative">
+      {Icon && (
+        <Icon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-500" />
+      )}
+      <input
+        {...props}
+        className={`w-full ${Icon ? 'pl-12' : 'px-4'} pr-4 py-3 border rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition ${
+          error
+            ? "border-red-300 bg-red-50"
+            : "border-gray-300 bg-gray-50"
+        } ${className}`}
+      />
+      {suffix && (
+        <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500">
+          {suffix}
+        </span>
+      )}
+    </div>
+    {error && <ErrorMessage message={error} />}
+    {helperText && <p className="text-sm text-gray-500 mt-1">{helperText}</p>}
+  </div>
+);
+
+const TextAreaField = ({ label, error, ...props }) => (
+  <div className="space-y-2">
+    <label className="block text-sm font-medium text-gray-700">{label}</label>
+    <textarea
+      {...props}
+      className={`w-full px-4 py-3 border rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none transition ${
+        error
+          ? "border-red-300 bg-red-50"
+          : "border-gray-300 bg-gray-50"
+      }`}
+    />
+    {error && <ErrorMessage message={error} />}
+  </div>
+);
+
+const SelectField = ({
+  label,
+  value,
+  onChange,
+  options,
+  optionLabel,
+  optionValue,
+  placeholder,
+  error,
+  disabled,
+  loading,
+  name,
+}) => (
+  <div className="space-y-2">
+    <label className="block text-sm font-medium text-gray-700">{label}</label>
+    <div className="relative">
+      <select
+        name={name}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className={`w-full px-4 py-3 border rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent appearance-none transition ${
+          error
+            ? "border-red-300 bg-red-50"
+            : "border-gray-300 bg-gray-50"
+        } ${disabled || loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+        disabled={disabled || loading}
+      >
+        <option value="">{placeholder || "Select"}</option>
+        {options.map((option) => (
+          <option key={option[optionValue]} value={option[optionValue]}>
+            {option[optionLabel]}
+          </option>
+        ))}
+      </select>
+      <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
+        {loading ? (
+          <Loader2 className="w-4 h-4 text-purple-600 animate-spin" />
+        ) : (
+          <div className="w-4 h-4" />
+        )}
+      </div>
+    </div>
+    {error && <ErrorMessage message={error} />}
+  </div>
+);
+
+const DateTimeField = ({ label, icon: Icon, error, ...props }) => (
+  <div className="space-y-2">
+    <label className="block text-sm font-medium text-gray-700">{label}</label>
+    <div className="relative">
+      <Icon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-500" />
+      <input
+        {...props}
+        type="datetime-local"
+        className={`w-full pl-12 pr-4 py-3 border rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition ${
+          error
+            ? "border-red-300 bg-red-50"
+            : "border-gray-300 bg-gray-50"
+        }`}
+      />
+    </div>
+    {error && <ErrorMessage message={error} />}
+  </div>
+);
+
+const ErrorMessage = ({ message }) => (
+  <p className="text-sm text-red-600 flex items-center gap-1 mt-1">
+    <AlertCircle className="w-4 h-4 flex-shrink-0" />
+    <span>{message}</span>
+  </p>
+);
+
+const ImageSection = ({
+  existingImages,
+  newImages,
+  imagePreviews,
+  totalImages,
+  maxImages,
+  onRemoveExisting,
+  onRemoveNew,
+  onUpload,
+  error,
+}) => (
+  <div className="space-y-6">
+    {/* Info Banner */}
+    <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4">
+      <div className="flex items-start gap-3">
+        <AlertCircle className="w-5 h-5 text-yellow-600 shrink-0 mt-0.5" />
+        <div>
+          <p className="font-medium text-yellow-800">Image Management</p>
+          <p className="text-sm text-yellow-700 mt-1">
+            You can have up to {maxImages} images total. 
+            {totalImages > 0 && ` Currently: ${totalImages}/${maxImages} images.`}
+            Removing existing images and uploading new ones will update the gallery.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    {/* Existing Images */}
+    {existingImages.length > 0 && (
+      <div>
+        <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+          <ImageIcon className="w-5 h-5" />
+          Current Images ({existingImages.length})
+        </h3>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          {existingImages.map((image, index) => (
+            <ImageCard
+              key={index}
+              src={image.url}
+              alt={`Existing ${index + 1}`}
+              onRemove={() => onRemoveExisting(index)}
+              overlayText="Will be removed"
+              overlayColor="from-red-600/80"
+            />
+          ))}
+        </div>
+      </div>
+    )}
+
+    {/* New Images Upload */}
+    <div>
+      <h3 className="text-lg font-semibold text-gray-800 mb-4">
+        Upload New Images
+        {newImages.length > 0 && ` (${newImages.length} selected)`}
+      </h3>
+
+      <UploadArea onUpload={onUpload} totalImages={totalImages} maxImages={maxImages} />
+
+      {/* New Image Previews */}
+      {imagePreviews.length > 0 && (
+        <div className="mt-6">
+          <h4 className="text-md font-medium text-gray-800 mb-4">
+            New Images ({imagePreviews.length})
+          </h4>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {imagePreviews.map((preview, index) => (
+              <ImageCard
+                key={index}
+                src={preview.preview}
+                alt={`Preview ${index + 1}`}
+                onRemove={() => onRemoveNew(index)}
+                overlayText="New image"
+                overlayColor="from-green-600/80"
+                isNew
+              />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Error Message */}
+      {error && <ErrorMessage message={error} />}
+    </div>
+  </div>
+);
+
+const UploadArea = ({ onUpload, totalImages, maxImages }) => {
+  const isFull = totalImages >= maxImages;
+
+  return (
+    <div className={`border-2 border-dashed rounded-2xl p-8 text-center transition ${
+      isFull
+        ? 'border-gray-200 bg-gray-100 opacity-60 cursor-not-allowed'
+        : 'border-gray-300 hover:border-purple-500 bg-gray-50'
+    }`}>
+      <Upload className={`w-12 h-12 mx-auto mb-4 ${
+        isFull ? 'text-gray-400' : 'text-gray-400'
+      }`} />
+      <p className={`mb-2 ${isFull ? 'text-gray-500' : 'text-gray-600'}`}>
+        {isFull 
+          ? `Maximum ${maxImages} images reached` 
+          : 'Drop images here or click to upload'
+        }
+      </p>
+      <p className="text-sm text-gray-500 mb-4">
+        PNG, JPG, WEBP up to 10MB
+      </p>
+      {!isFull && (
+        <>
+          <input
+            type="file"
+            id="image-upload"
+            multiple
+            accept="image/*"
+            onChange={onUpload}
+            className="hidden"
+          />
+          <label
+            htmlFor="image-upload"
+            className="inline-block px-6 py-2 bg-purple-600 text-white rounded-lg cursor-pointer hover:bg-purple-700 transition"
+          >
+            Select Images
+          </label>
+        </>
+      )}
+    </div>
+  );
+};
+
+const ImageCard = ({ src, alt, onRemove, overlayText, overlayColor = "from-black/60", isNew = false }) => (
+  <div className="relative group rounded-xl overflow-hidden border border-gray-200 shadow-sm hover:shadow-md transition">
+    <img
+      src={src}
+      alt={alt}
+      className="w-full h-40 object-cover group-hover:scale-105 transition-transform duration-300"
+      loading="lazy"
+    />
+    <div className={`absolute inset-0 bg-gradient-to-t ${overlayColor} to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300`}>
+      <div className="absolute bottom-2 left-2 text-white text-xs font-medium">
+        {overlayText}
+      </div>
+    </div>
+    <button
+      type="button"
+      onClick={onRemove}
+      className={`absolute top-2 right-2 p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 ${
+        isNew 
+          ? 'bg-green-500 hover:bg-green-600' 
+          : 'bg-red-500 hover:bg-red-600'
+      } text-white shadow-lg hover:scale-110`}
+      title="Remove Image"
+    >
+      <X className="w-4 h-4" />
+    </button>
+    {isNew && (
+      <span className="absolute top-2 left-2 px-2 py-1 bg-green-500 text-white text-xs rounded-full">
+        New
+      </span>
+    )}
+  </div>
+);
+
+const ActionButtons = ({ onCancel, onReset, isSubmitting }) => (
+  <div className="flex flex-col sm:flex-row gap-4 pt-6 border-t border-gray-200">
+    <button
+      type="button"
+      onClick={onCancel}
+      disabled={isSubmitting}
+      className="px-8 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition font-medium flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+    >
+      <ArrowLeft className="w-5 h-5" />
+      Cancel
+    </button>
+
+    <button
+      type="button"
+      onClick={onReset}
+      disabled={isSubmitting}
+      className="px-8 py-3 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition border border-gray-300 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+    >
+      Reset Changes
+    </button>
+
+    <button
+      type="submit"
+      disabled={isSubmitting}
+      className="flex-1 px-8 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-xl font-semibold hover:from-purple-700 hover:to-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-md hover:shadow-lg"
+    >
+      {isSubmitting ? (
+        <>
+          <Loader2 className="w-5 h-5 animate-spin" />
+          Updating Event...
+        </>
+      ) : (
+        <>
+          <Save className="w-5 h-5" />
+          Update Event
+        </>
+      )}
+    </button>
+  </div>
+);
 
 export default EditEvent;

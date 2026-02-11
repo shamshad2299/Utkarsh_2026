@@ -168,7 +168,8 @@ export const getEventRegistrations = async (req, res) => {
   });
 };
 
-/* ================= CANCEL REGISTRATION ================= */
+
+/* ================= CANCEL REGISTRATION (SOFT DELETE) ================= */
 export const cancelRegistration = async (req, res) => {
   const { id } = req.params;
   const userId = req.user._id;
@@ -182,14 +183,33 @@ export const cancelRegistration = async (req, res) => {
     throw new ApiError(403, "Not authorized to cancel this registration");
   }
 
-  // capture old state
+  // Check if already cancelled
+  if (registration.status === "cancelled") {
+    throw new ApiError(400, "Registration is already cancelled");
+  }
+
+  // Check if checked in
+  if (registration.checkedIn) {
+    throw new ApiError(400, "Cannot unregister: You have already checked in for this event");
+  }
+
+  // Check event start time
+  const event = await Event.findById(registration.eventId);
+  if (event && new Date() > new Date(event.startTime)) {
+    throw new ApiError(400, "Cannot unregister: Event has already started");
+  }
+
+  // Capture old state
   const oldData = registration.toObject();
 
+  // Soft delete - mark as deleted and cancelled
   registration.status = "cancelled";
   registration.isDeleted = true;
+  registration.cancelledAt = new Date();
+  registration.cancelledBy = userId;
   await registration.save();
 
-  // AUDIT LOG (USER)
+  // AUDIT LOG
   await logAudit({
     req,
     action: "REGISTRATION_CANCELLED",
@@ -201,9 +221,12 @@ export const cancelRegistration = async (req, res) => {
 
   res.status(200).json({
     success: true,
-    message: "Registration cancelled successfully",
+    message: "Registration cancelled successfully. You can re-enroll anytime!",
+    data: registration,
   });
-};/* ================= RESTORE REGISTRATION ================= */
+};
+
+/* ================= RESTORE REGISTRATION (RE-ENROLL) ================= */
 export const restoreRegistration = async (req, res) => {
   const { id } = req.params;
   const userId = req.user._id;
@@ -212,8 +235,9 @@ export const restoreRegistration = async (req, res) => {
   // Find the soft-deleted registration
   const registration = await Registration.findOne({
     _id: id,
-    registeredBy: userId, // Use registeredBy instead of userId
+    registeredBy: userId,
     isDeleted: true,
+    status: "cancelled",
   });
 
   if (!registration) {
@@ -290,7 +314,11 @@ export const restoreRegistration = async (req, res) => {
 
   // Restore the registration
   registration.isDeleted = false;
-  registration.status = "pending";
+  registration.status = "confirmed";
+  registration.cancelledAt = null;
+  registration.cancelledBy = null;
+  registration.restoredAt = new Date();
+  registration.restoredBy = userId;
   await registration.save();
 
   // AUDIT LOG
@@ -305,7 +333,7 @@ export const restoreRegistration = async (req, res) => {
 
   res.status(200).json({
     success: true,
-    message: "Registration restored successfully",
+    message: "🎉 Registration restored successfully! Welcome back to the event!",
     data: registration,
   });
 };
