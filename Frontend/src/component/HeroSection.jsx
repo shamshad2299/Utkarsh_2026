@@ -7,32 +7,47 @@ const HeroSection = ({ onRegister }) => {
 
   return (
     <main
-      className="flex-1 flex flex-col justify-center relative z-10 px-4 sm:px-8 lg:px-12"
+      className="flex-1 flex flex-col justify-center relative z-10 px-4 sm:px-8 lg:px-12 -mt-10 sm:-mt-14 md:-mt-16"
       style={{
         paddingTop: "clamp(120px, 9vw, 170px)",
         paddingBottom: "clamp(170px, 16vw, 230px)",
       }}
     >
       <div
-        className="w-full flex flex-col md:flex-row justify-between items-center md:items-center"
+        className="w-full flex flex-col md:flex-row justify-between items-center md:items-center "
         style={{ gap: "clamp(22px, 4vw, 40px)" }}
       >
-        <div className="w-full md:w-auto text-center md:text-left">
+        <div className="w-full md:w-auto flex-1 flex-col items-center md:items-end min-h-[220px] sm:min-h-[260px]">
           <HeroTitle />
         </div>
-
         <div
-          className="w-full md:w-auto flex flex-col items-center md:items-end min-h-[220px] sm:min-h-[260px]"
+          className="
+            relative
+            w-full md:w-auto
+            flex flex-col
+            items-center md:items-end
+            justify-between
+            min-h-[220px] sm:min-h-[260px] 
+          "
           style={{ gap: "clamp(18px, 3vw, 48px)" }}
         >
-          <CountdownTimer />
 
-          {!token ? (
-            <RegisterButton onClick={onRegister} />
-          ) : (
-            <div style={{ width: "clamp(240px, 28vw, 340px)", height: "80px" }} />
-          )}
+          {/* Countdown */}
+          <div className="md:absolute md:top-0 md:right-0">
+            <CountdownTimer />
+          </div>
+
+          {/* Register Button */}
+          <div className="md:absolute md:bottom-0 md:right-0 mt-auto md:mt-0 mb-10 md:mb-0">
+            {!token ? (
+              <RegisterButton onClick={onRegister} />
+            ) : (
+              <div style={{ width: "clamp(240px, 28vw, 340px)", height: "80px" }} />
+            )}
+          </div>
+
         </div>
+
       </div>
     </main>
   );
