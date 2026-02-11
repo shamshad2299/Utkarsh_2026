@@ -47,7 +47,7 @@ const ProfileModal = ({ isOpen, onClose, authUser, registrations, loadingRegistr
         {/* Close Button */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 z-10 p-2 bg-white/20 text-white rounded-full hover:bg-white/30 transition-colors"
+          className="absolute top-10 right-10 bg-blue-950 z-10 p-2  text-white rounded-full hover:bg-white/30 transition-colors"
         >
           <X className="w-5 h-5" />
         </button>
@@ -68,7 +68,7 @@ const ProfileModal = ({ isOpen, onClose, authUser, registrations, loadingRegistr
                   <h2 className="text-3xl font-serif text-[#4b4b7a] mb-1 text-center">
                     {authUser.name || "User"}
                   </h2>
-                  <p className="text-[#6b6b8a] text-sm mb-6 text-center">
+                  <p className="text-[#babad2] text-sm mb-6 text-center">
                     {authUser.userId ||
                       `UTK26-${(authUser._id || "").slice(-5).toUpperCase()}`}
                   </p>
@@ -193,7 +193,7 @@ const ProfileModal = ({ isOpen, onClose, authUser, registrations, loadingRegistr
                                 )}
                               </div>
                             </div>
-                            <span className={`text-xs px-2 py-1 rounded-full ${
+                            <span className={`text-xs px-2 py-1 rounded-full max-sm:hidden ${
                               registration.status === 'confirmed' 
                                 ? 'bg-green-100 text-green-800'
                                 : registration.status === 'pending'

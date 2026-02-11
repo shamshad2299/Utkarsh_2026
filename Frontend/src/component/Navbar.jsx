@@ -135,7 +135,7 @@ const Navbar = () => {
                 <button
                   key={item}
                   onClick={() => handleNavClick(item)}
-                  className="text-base xl:text-lg font-medium text-white hover:text-purple-400 transition whitespace-nowrap"
+                  className="text-base xl:text-lg font-medium text-white hover:text-purple-400 transition whitespace-nowrap cursor-pointer"
                 >
                   {item}
                 </button>

@@ -1,4 +1,4 @@
-import aboutImage from "../assets/Frame_122.png";
+import aboutImage from "../assets/about2.webp";
 
 const AboutUs = () => {
   return (

@@ -170,7 +170,7 @@ const EventsSection = () => {
           <>
            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 
                 md:ml-12 lg:mt-2 xl:mt-35 md:-mt-10 
-                [direction:rtl]">
+                [direction:rtl] ">
               {/* Display all categories */}
               {categories.slice(0, 9).map((categ, index) => (
                 <div
