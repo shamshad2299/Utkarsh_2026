@@ -1,13 +1,23 @@
 import { ArrowUpRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
-const RegisterButton = ({ onClick }) => {
+const RegisterButton = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
+
+  const handleClick = () => {
+    if (user) {
+      navigate("/register");
+    } else {
+      navigate("/login");
+    }
+  };
 
   return (
     <button
-      onClick={() => navigate("/register")}
-      className="flex items-center justify-between bg-white rounded-full shadow-xl hover:scale-105 transition-transform active:scale-95 cursor-pointer"
+      onClick={handleClick}
+      className="flex items-center justify-between bg-white rounded-2xl shadow-xl hover:scale-105 transition-transform active:scale-95 cursor-pointer"
       style={{
         paddingLeft: "clamp(18px, 3vw, 40px)",
         paddingRight: "clamp(12px, 1.6vw, 16px)",
@@ -27,16 +37,13 @@ const RegisterButton = ({ onClick }) => {
       </span>
 
       <div
-        className="bg-[#5a2d82] text-white rounded-full flex items-center justify-center"
+        className="bg-[#5a2d82] text-white rounded-full flex items-center justify-center overflow-hidden"
         style={{
           width: "clamp(44px, 5.2vw, 64px)",
           height: "clamp(44px, 5.2vw, 64px)",
         }}
       >
-        <ArrowUpRight
-          size={Math.min(30, Math.max(20, window.innerWidth * 0.018))}
-          strokeWidth={2.5}
-        />
+        <ArrowUpRight className="w-3/5 h-3/5" strokeWidth={2.5} />
       </div>
     </button>
   );

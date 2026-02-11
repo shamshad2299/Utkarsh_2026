@@ -40,6 +40,7 @@ const TeamCard = ({ member }) => {
         w-[255px]
         h-[390px]
         overflow-hidden
+        border border-dashed border-purple-900
       "
     >
       {/* ===== ROLE HEADER ===== */}
@@ -73,7 +74,7 @@ const TeamCard = ({ member }) => {
       </div>
 
       {/* ===== DETAILS ===== */}
-      <div className="px-6 mt-4 space-y-0.5 flex-1 items-center">
+      <div className="px-6 mt-4 space-y-0.1 flex-1 items-center">
         <DottedRow label="Name" value={name} />
         <DottedRow label="College" value={college} />
         <DottedRow label="Course" value={course} />
@@ -95,7 +96,7 @@ const TeamCard = ({ member }) => {
               <Linkedin size={22} className="text-white" />
             </a>
           ) : (
-            <div className="flex items-center justify-center w-9 h-9 bg-black border rounded-sm text-white">
+            <div className="flex items-center justify-center w-9 h-9 bg-black border rounded-sm hover:scale-105 transition">
               <Linkedin size={22} />
             </div>
           )}

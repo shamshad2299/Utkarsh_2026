@@ -3,7 +3,7 @@ import EventCard from "./EventCard";
 import dividerImg from "../assets/div.png";
 import { useEffect, useState } from "react";
 import { api } from "../api/axios.js";
-import { useNavigate } from "react-router-dom"; // Add this
+import { useNavigate } from "react-router-dom"; 
 import Line from "../assets/line.svg"
 
 const EventsSection = () => {
@@ -13,7 +13,7 @@ const EventsSection = () => {
   const [error, setError] = useState(null);
   const [selectedCategory, setSelectedCategory] = useState("all");
   
-  const navigate = useNavigate(); // Add this for navigation
+  const navigate = useNavigate(); 
 
   useEffect(() => {
     fetchCategories();
@@ -31,8 +31,7 @@ const EventsSection = () => {
     try {
       const response = await api.get("/category/get");
       setCategories(response.data.data || []);
-      //console.log(response);
-      // Fetch all events initially
+
       fetchAllEvents();
     } catch (error) {
       console.error("Error fetching categories:", error);
@@ -75,7 +74,7 @@ const EventsSection = () => {
     
   };
 
-  // Add this new function to handle category click
+  // this is handling category
   const handleCategoryClick = (categ) => {
     // Navigate to events page with category ID
     navigate(`/events?filter=${categ?._id}`);
@@ -129,10 +128,10 @@ const EventsSection = () => {
             </p>
           </div>
 
-          {/* RIGHT BUTTON - Changed to navigate to all events page */}
+          {/* RIGHT BUTTON */}
           <div className="relative w-fit">
             <button
-              onClick={handleSeeAll} // Changed this
+              onClick={handleSeeAll} 
               className="flex items-center gap-2 bg-white text-black px-10 py-3 rounded-2xl font-medium hover:bg-gray-200 transition-colors w-fit relative z-20 text-lg max-md:w-40"
             >
               See all <ArrowUpRight size={18}  className="font-bold"/>
@@ -166,7 +165,7 @@ const EventsSection = () => {
           </div>
         )}
 
-        {/* Categories Grid - Display only categories */}
+        {/* Categories Grid */}
         {!loading && !error && (
           <>
            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 
@@ -180,7 +179,7 @@ const EventsSection = () => {
                 >
                   <EventCard
                     title={categ.name}
-                    onClick={() => handleCategoryClick(categ)} // Changed this
+                    onClick={() => handleCategoryClick(categ)} 
                     isActive={selectedCategory === categ._id}
                   />
                 </div>
