@@ -15,6 +15,7 @@ import ProfileDashboard from "./pages/ProfileDashboard";
 import AllEvents from "./website/AllEvent/AllEvents";
 import EventsLayout from "./website/EventLayout/EventLayout";
 import UserRegisteredEvents from "./website/AllEvent/components/UserEventPage";
+import EventDetail from "./pages/EventDetail";
 
 function App() {
   return (
@@ -29,12 +30,13 @@ function App() {
           <Route path="sponsorship_form" element={<SponsorshipForm />} />
           <Route path="food_stall_form" element={<FoodStallForm />} />
           <Route path="my-registrations" element={<UserRegisteredEvents/>}/>
+           <Route path="/:eventId" element={<EventDetail/>}/>
 
           {/* event filter routing  */}
           <Route path="events" element={<EventsLayout />}>
             <Route index element={<AllEvents />} />
-        
-            
+           
+  
           </Route>
         </Route>
 

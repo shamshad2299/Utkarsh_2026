@@ -101,7 +101,7 @@ const EventCard = ({
         {/* Top white box with image */}
         <div className="bg-white rounded-[14px] sm:rounded-[18px] p-2 sm:p-3 h-30 sm:h-35 md:h-40 relative overflow-hidden">
           {/* Solo/Team Badge - Top left corner */}
-          <span className="absolute top-2 sm:top-3 left-2 sm:left-3 bg-black text-white text-[10px] sm:text-xs font-medium px-2 sm:px-3 py-1 rounded-full poppin z-50">
+          <span className="absolute top-2 sm:top-3 left-2 sm:left-3 bg-black text-white text-[10px] sm:text-xs font-medium px-2 sm:px-3 py-1 rounded-full poppin z-1">
             {eventTypeText}
           </span>
 
@@ -165,7 +165,7 @@ const EventCard = ({
             <div className="flex items-center gap-1 sm:gap-2 p-2 mt-1">
               <Calendar size={12} className="sm:size-[10px] text-purple-300" />
               <p
-                className=" text-sm font-medium truncate flex-1 milonga"
+                className=" text-sm font-medium truncate flex-1 milonga py-1"
                 
               >
                 {formatDate(event.startTime)} • {formatTime(event.startTime)}
