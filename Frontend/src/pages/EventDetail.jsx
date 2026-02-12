@@ -286,14 +286,14 @@ export default function EventDetail() {
   const parsedDesc = parseDescription(event.description);
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-purple-100 via-pink-50 to-blue-100 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-blue-900/20 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
         {/* Back Button */}
         <button
           onClick={() => navigate(-1)}
           className="mb-8 bg-white text-purple-900 px-8 py-4 rounded-full hover:bg-purple-50 transition-all cursor-pointer flex items-center gap-3 shadow-xl border-2 border-purple-200 font-bold text-lg"
         >
-          <ArrowLeft className="w-6 h-6" />
+          <ArrowLeft className="w-6 h-6 milonga" />
           Back to Events
         </button>
 
@@ -301,9 +301,9 @@ export default function EventDetail() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Left Column - Event Card */}
           <div className="lg:col-span-2">
-            <div className="bg-linear-to-br from-purple-200 to-purple-300 rounded-[2.5rem] p-8 border-4 border-dashed border-purple-400 shadow-2xl">
+            <div className="  back bg-purple-400 rounded-[2.5rem] p-8 border-4 border-dashed border-purple-400 shadow-2xl">
               {/* Event Image Placeholder */}
-              <div className="bg-linear-to-r from-purple-400 to-pink-400 rounded-3xl h-80 mb-6 flex items-center justify-center overflow-hidden relative shadow-xl">
+              <div className="bg-linear-to-r bg-amber-50 rounded-3xl h-80 mb-6 flex items-center justify-center overflow-hidden relative shadow-xl">
                 <div className="absolute inset-0 bg-black/20"></div>
                 <div className="relative z-10 text-center">
                   {event.eventType && (
@@ -478,7 +478,7 @@ export default function EventDetail() {
           {/* Right Column - Action Sidebar */}
           <div className="space-y-6">
             {/* Registration Card */}
-            <div className="bg-linear-to-br from-purple-200 to-purple-300 rounded-[2.5rem] p-8 border-4 border-dashed border-purple-400 shadow-2xl sticky top-6">
+            <div className="bg-purple-300 rounded-[2.5rem] p-8 border-2 border-dashed border-black shadow-2xl sticky top-6 outline-4 outline-white back ">
               {/* Countdown */}
               {daysUntil && daysUntil > 0 && (
                 <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 mb-6 text-center border-2 border-purple-300 shadow-lg">
@@ -641,7 +641,7 @@ export default function EventDetail() {
             </div>
 
             {/* Important Dates Card */}
-            <div className="bg-linear-to-br from-purple-200 to-purple-300 rounded-[2.5rem] p-8 border-4 border-dashed border-purple-400 shadow-2xl">
+            <div className="bg-linear-to-br from-purple-200 to-purple-300 rounded-[2.5rem] p-8 border-2 border-dashed border-black shadow-2xl outline-4 outline-white">
               <h3 className="text-xl font-black text-purple-900 mb-6 flex items-center gap-3">
                 <Calendar className="w-6 h-6 text-purple-600" />
                 Important Dates

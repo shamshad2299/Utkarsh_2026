@@ -1,17 +1,21 @@
 const HeroTitle = () => {
   return (
-    <div className="w-full max-w-5xl flex flex-col items-center md:items-start">
+    <div className="w-full max-w-5xl flex flex-col  md:items-start ">
       <div className="max-w-xl lg:max-w-2xl text-center md:text-left">
+        
         {/* Tagline */}
         <p
-          className="text-purple-200 tracking-wide leading-none mb-2 text-[32px]"
+          className="text-purple-200 tracking-wide leading-none mb-2 
+                     text-2xl sm:text-3xl md:text-4xl"
           style={{ fontFamily: "Milonga" }}
         >
           Virasat se vikas tak
         </p>
 
+        {/* UTKARSH */}
         <h1
-          className="text-white font-black leading-[1] tracking-normal text-[clamp(3.5rem,8vw,120px)]"
+          className="text-white font-black leading-none tracking-tight
+                     text-5xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl"
           style={{ fontFamily: "Poppins" }}
         >
           UTKARSH
@@ -19,7 +23,8 @@ const HeroTitle = () => {
 
         {/* fest'26 */}
         <h2
-          className="text-white font-black leading-[1] mt-2 text-[clamp(2.8rem,7vw,6rem)]"
+          className="text-white font-black leading-none mt-2
+                     text-4xl sm:text-5xl md:text-6xl lg:text-7xl"
           style={{ fontFamily: "Poppins" }}
         >
           fest&apos;26
@@ -27,7 +32,8 @@ const HeroTitle = () => {
 
         {/* Date */}
         <p
-          className="mt-4 text-white/90 font-medium text-lg sm:text-xl md:text-2xl"
+          className="mt-4 text-white/90 font-medium
+                     text-base sm:text-lg md:text-xl lg:text-2xl"
           style={{ fontFamily: "Milonga" }}
         >
           26–28 February 2026

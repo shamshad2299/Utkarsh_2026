@@ -2,7 +2,7 @@ import monumentsAll from "../assets/mmm.svg";
 
 const MonumentBottom = () => {
   return (
-    <div className="absolute left-0 right-0 bottom-0 pointer-events-none overflow-hidden">
+    <div className="">
       <img
         src={monumentsAll}
         alt="Monuments"

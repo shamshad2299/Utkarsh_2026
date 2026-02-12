@@ -211,7 +211,7 @@ const ProfileModal = ({ isOpen, onClose, authUser, registrations, loadingRegistr
               </div>
 
               {/* Additional Info */}
-              <div className="mt-6 bg-gradient-to-r from-[#7c7cf5] to-[#9f9ff7] rounded-3xl p-6">
+              <div className="mt-6 bg-linear-to-r from-[#7c7cf5] to-[#9f9ff7] rounded-3xl p-6">
                 <div className="text-white/90 space-y-3">
                   <p className="font-semibold text-white text-lg mb-2">Profile Information</p>
                   <p>• User ID: {authUser._id}</p>
