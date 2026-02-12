@@ -42,13 +42,13 @@ const Navbar = () => {
       return;
     }
 
-    if (item === "Sponsorship_form") {
+    if (item === "Sponsorship form") {
       navigate("/sponsorship_form");
       setIsMenuOpen(false);
       return;
     }
 
-    if (item === "Food_stall_form") {
+    if (item === "Food stall form") {
       navigate("/food_stall_form");
       setIsMenuOpen(false);
       return;
@@ -94,8 +94,8 @@ const Navbar = () => {
     "About",
     "Schedule",
     "Rulebook",
-    "Sponsorship_form",
-    "Food_stall_form",
+    "Sponsorship form",
+    "Food stall form",
     ...(isLoggedIn ? ["Profile"] : []),
   ];
 
