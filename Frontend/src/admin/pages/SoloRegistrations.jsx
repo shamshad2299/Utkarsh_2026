@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
+import api from "../api/axios";
 
 const SoloRegistrations = () => {
   const [loading, setLoading] = useState(true);
@@ -11,8 +12,8 @@ const SoloRegistrations = () => {
       try {
         const token = localStorage.getItem("adminAccessToken");
 
-        const response = await axios.get(
-          "http://localhost:7000/api/admin/auth/registrations?type=solo",
+        const response = await api.get(
+          "/admin/auth/registrations?type=solo",
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -36,8 +37,8 @@ const SoloRegistrations = () => {
     try {
       const token = localStorage.getItem("adminAccessToken");
 
-      const response = await axios.get(
-        "http://localhost:7000/api/admin/auth/export-registrations?type=solo",
+      const response = await api.get(
+        "/admin/auth/export-registrations?type=solo",
         {
           headers: {
             Authorization: `Bearer ${token}`,
