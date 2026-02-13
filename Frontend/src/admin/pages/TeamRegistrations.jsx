@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
+import api from "../api/axios";
 
 const TeamRegistrations = () => {
     const [loading, setLoading] = useState(true);
@@ -9,8 +10,8 @@ const TeamRegistrations = () => {
         try {
             const token = localStorage.getItem("adminAccessToken");
 
-            const response = await axios.get(
-                "http://localhost:7000/api/admin/auth/export-registrations?type=team",
+            const response = await api.get(
+                "/admin/auth/export-registrations?type=team",
                 {
                     headers: {
                         Authorization: `Bearer ${token}`,
@@ -42,8 +43,8 @@ const TeamRegistrations = () => {
             try {
                 const token = localStorage.getItem("adminAccessToken");
 
-                const res = await axios.get(
-                    "http://localhost:7000/api/admin/auth/registrations?type=team",
+                const res = await api.get(
+                    "/admin/auth/registrations?type=team",
                     {
                         headers: {
                             Authorization: `Bearer ${token}`,
