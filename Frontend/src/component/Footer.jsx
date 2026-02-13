@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import rulebookPdf from "../assets/newrulebook.pdf";
 import schedulePdf from "../assets/sch.pdf"; // ✅ ADD THIS
 import footGrid from "../assets/foot.svg";
-import mapImage from "../assets/mapp.png";
+import mapImage from "../assets/bbd_map.webp";
 
 import m1 from "../assets/monument-1.svg";
 import m2 from "../assets/monument-2.svg";
@@ -151,7 +151,7 @@ const FooterSection = () => {
                 onClick={() => setShowMap(true)}
                 className="mt-6 underline cursor-pointer text-base sm:text-lg hover:text-white transition"
               >
-                Campus Map
+                Event Map
                 <br />
                 View Map
               </p>
@@ -286,7 +286,7 @@ const FooterSection = () => {
             <div className="mt-8 w-full flex-1 overflow-hidden rounded-3xl border border-white/10 bg-white/5">
               <img
                 src={mapImage}
-                alt="Campus Map"
+                alt=" Places of all events are mentioned"
                 onClick={() => setShowMap(true)}
                 className="w-full h-full object-cover cursor-pointer"
                 draggable={false}
@@ -331,8 +331,8 @@ const FooterSection = () => {
 
           <div className="relative z-10 w-full max-w-5xl rounded-3xl border border-white/15 bg-white/5 backdrop-blur-2xl shadow-2xl overflow-hidden">
             <div className="flex items-center justify-between px-5 sm:px-6 py-4 border-b border-white/10">
-              <h3 className="text-white text-lg sm:text-xl font-semibold">
-                Campus Map
+              <h3 className="text-white text-lg sm:text-xl font-semibold text-center">
+             Places of all events are mentioned in Map (Zoom to See )
               </h3>
 
               <button

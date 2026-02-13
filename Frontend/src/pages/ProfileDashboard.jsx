@@ -369,7 +369,7 @@ export default function SummaryCard() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0a2e] p-6">
+    <div className="min-h-screen bg-[#0a0a2e] sm:p-6 p-3">
       {/* Main container with dotted border */}
       <div className="border-2 border-dotted border-blue-400 rounded-3xl p-6 max-w-7xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -687,10 +687,10 @@ export default function SummaryCard() {
           {/* Right Column - Profile Dashboards */}
           <div className="lg:col-span-2 space-y-6">
             {/* Header */}
-            <div className="bg-[#6b6bf1] rounded-3xl p-6 relative">
+            <div className="bg-[#6b6bf1] rounded-3xl sm:p-6 p-2 relative">
               <button
                 onClick={() => navigate("/")}
-                className="absolute top-6 right-6 bg-white text-[#4b4b7a] px-6 py-2 rounded-full flex items-center gap-2 hover:bg-gray-50 transition-colors font-medium cursor-pointer"
+                className="absolute top-6 right-6 bg-white text-[#4b4b7a] px-6 py-2 rounded-full flex items-center gap-2 hover:bg-gray-50 transition-colors font-medium cursor-pointer max-sm:hidden"
               >
                 Back To Home
                 <ArrowRight className="w-4 h-4" />
@@ -705,7 +705,7 @@ export default function SummaryCard() {
             </div>
 
             {/* Your Registered Events Section */}
-            <div className="bg-[#7c7cf5] rounded-3xl p-6">
+            <div className="bg-[#7c7cf5] rounded-3xl sm:p-6 p-2">
               <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-3">
                   <Calendar className="w-6 h-6 text-white" />
@@ -762,7 +762,7 @@ export default function SummaryCard() {
                     return (
                       <div
                         key={registration._id}
-                        className="bg-white rounded-2xl p-5"
+                        className="bg-white rounded-2xl sm:p-5 p-2"
                       >
                         <div className="flex justify-between items-start mb-3">
                           <div>
@@ -787,7 +787,7 @@ export default function SummaryCard() {
                             )}
                           </div>
                           <span
-                            className={`text-xs px-3 py-1 rounded-full font-medium px-4 py-2 ${
+                            className={`text-xs px-3 py-1 rounded-full font-medium  ${
                               registrationStatus.color === "green"
                                 ? "bg-green-100 text-green-800"
                                 : registrationStatus.color === "yellow"
@@ -817,7 +817,7 @@ export default function SummaryCard() {
                         </div>
 
                         {/* Button Group */}
-                        <div className="flex gap-2 mt-4">
+                        <div className="flex max-sm:flex-col gap-2 mt-4">
                           {/* Details Button - Always shown */}
                           <button
                             onClick={() => handleViewEvent(event._id)}

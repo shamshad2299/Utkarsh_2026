@@ -16,6 +16,7 @@ import AllEvents from "./website/AllEvent/AllEvents";
 import EventsLayout from "./website/EventLayout/EventLayout";
 import UserRegisteredEvents from "./website/AllEvent/components/UserEventPage";
 import EventDetail from "./pages/EventDetail";
+import EventDetailModal from "./website/AllEvent/components/EventDetailModal";
 
 function App() {
   return (
@@ -35,6 +36,7 @@ function App() {
           {/* event filter routing  */}
           <Route path="events" element={<EventsLayout />}>
             <Route index element={<AllEvents />} />
+            <Route path="view/:id" element={<EventDetailModal/>}/>
            
   
           </Route>

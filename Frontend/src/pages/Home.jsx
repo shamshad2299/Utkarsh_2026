@@ -10,7 +10,7 @@ import Footer from "../component/Footer";
 
 import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
-import Line from "../assets/Vector_63.png"
+import Line from "../assets/Vector_63.png";
 
 const Home = () => {
   const location = useLocation();
@@ -25,18 +25,26 @@ const Home = () => {
 
   return (
     <div className="w-full overflow-x-hidden">
-      {/* HERO */}
-      <div className="relative w-full overflow-hidden">
-        <section id="hero">
-          <HeroSection />
-        </section>
 
-        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+      {/* ================= HERO ================= */}
+      <section id="hero" className="relative overflow-hidden">
+
+        {/* Background Glow */}
+        <div className="absolute inset-0 pointer-events-none z-0">
           <BackgroundGlow />
         </div>
 
-        <MonumentBottom />
-      </div>
+        {/* Hero Content */}
+        <div className="relative z-10">
+          <HeroSection />
+        </div>
+
+        {/* Monument Bottom - Always bottom 0 */}
+        <div className="absolute bottom-0 left-0 right-0 pointer-events-none z-20">
+          <MonumentBottom />
+        </div>
+
+      </section>
 
       {/* EVENTS */}
       <section id="events" className="scroll-mt-28 relative">
@@ -47,24 +55,25 @@ const Home = () => {
       <section id="about" className="scroll-mt-28 lg:-mt-20 md:-mt-40  mt-10">
         <AboutUs />
       </section>
-      {/* GALLERY */}
-      <section id="schedule" className="scroll-mt-28 ">
+
+      {/* ================= GALLERY ================= */}
+      <section id="schedule" className="scroll-mt-28 py-20">
         <EventGallerySection />
       </section>
 
-     
-
-      {/* EDM (GAP FIX) */}
-      <section className="scroll-mt-28 -mt-12">
+      {/* ================= EDM ================= */}
+      <section className="scroll-mt-28 py-20">
         <EDM />
       </section>
 
-      {/* TEAM */}
-      <section id="team" className="scroll-mt-28">
+      {/* ================= TEAM ================= */}
+      <section id="team" className="scroll-mt-28 py-20">
         <TeamSection />
       </section>
 
+      {/* ================= FOOTER ================= */}
       <Footer />
+
     </div>
   );
 };

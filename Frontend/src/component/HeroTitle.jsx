@@ -1,7 +1,8 @@
 const HeroTitle = () => {
   return (
-    <div className="w-full max-w-5xl flex flex-col items-center md:items-start">
+    <div className="w-full max-w-5xl flex flex-col  md:items-start ">
       <div className="max-w-xl lg:max-w-2xl text-center md:text-left">
+        
         {/* Tagline */}
         <p
           className="text-[#e7e7fb] font-regular tracking-wide leading-none mb-2 text-[36px]"
@@ -10,6 +11,7 @@ const HeroTitle = () => {
           Virasat se vikas tak
         </p>
 
+        {/* UTKARSH */}
         <h1
           className="text-[#e0c3f2] font-black leading-[1] tracking-normal text-[clamp(3.5rem,8vw,120px)]"
           style={{ fontFamily: "Poppins" }}
