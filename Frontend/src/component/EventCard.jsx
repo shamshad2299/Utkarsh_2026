@@ -1,38 +1,50 @@
-import bgpng from "../assets/Event_list_box.png";
+import desktopBg from "../assets/Group_1171274883.png";
+import mobileBg from "../assets/Event_card_bg_mobile.png";
 
 const EventCard = ({ title, onClick, year = "2026" }) => {
   return (
     <div
       onClick={onClick}
-      className="relative overflow-hidden rounded-2xl  border-white/10 
-                 p-8 h-48 flex flex-col justify-end group cursor-pointer
-                 transition-all hover:border-purple-500/50"
+      className="
+        relative overflow-hidden rounded-2xl
+        h-full
+        w-full
+        sm:h-48
+        sm:p-8
+        flex flex-col justify-end
+        cursor-pointer transition-all
+        hover:border-purple-500/50
+      "
     >
-      {/* PNG Background */}
+      {/* Background Images */}
       <img
-        src={bgpng}
+        src={mobileBg}
         alt=""
-        className="absolute inset-0 w-full h-full object-contain
-                   pointer-events-none
-                   scale-100 group-hover:scale-105 transition-transform duration-500
-                   "
+        className="absolute inset-0 w-full h-full object-contain sm:hidden"
+      />
+      <img
+        src={desktopBg}
+        alt=""
+        className="absolute inset-0 w-full h-full object-contain hidden sm:block"
       />
 
-      {/* Light overlay (not killing colors) */}
-      <div className="absolute inset-0 bg-black/10 pointer-events-none" />
-
       {/* Content */}
-      <div className="relative z-10">
-        <h3 className="text-xl font-bold tracking-wider text-white/90">
-          <span className="text-purple-400">{title.split(" ")[0]}</span>{" "}
-          {title.split(" ").slice(1).join(" ")}
+      <div className="relative z-10 text-[#080131] ml-2 sm:ml-3">
+        <h3 className="text-[22px] sm:text-[31px] font-bold tracking-wider truncate">
+          {title}
         </h3>
-        <p className="text-xs text-gray-400 mt-1 font-mono">{year}</p>
+        <p className="text-[14px] sm:text-[16px] mt-1 font-mono">
+          {year}
+        </p>
       </div>
 
-      {/* Hover glow */}
-      <div className="absolute inset-0 bg-linear-to-br from-purple-600/10 to-transparent
-                      opacity-0 group-hover:opacity-100 transition-opacity" />
+      {/* Hover glow (desktop only) */}
+      <div className="
+        hidden sm:block
+        absolute inset-0
+        bg-gradient-to-br from-purple-600/10 to-transparent
+        opacity-0 group-hover:opacity-100 transition-opacity
+      " />
     </div>
   );
 };

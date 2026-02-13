@@ -46,19 +46,13 @@ const Home = () => {
 
       </section>
 
-      {/* ================= EVENTS ================= */}
-      <section id="events" className="relative scroll-mt-28 py-20">
-        
-        {/* Decorative Line */}
-        <div className="hidden lg:block absolute right-8 bottom-0 pointer-events-none">
-          <img src={Line} alt="" className="w-72 xl:w-96" />
-        </div>
-
+      {/* EVENTS */}
+      <section id="events" className="scroll-mt-28 relative">
         <EventsSection />
       </section>
 
-      {/* ================= ABOUT ================= */}
-      <section id="about" className="scroll-mt-28 py-20">
+ {/* ABOUT */}
+      <section id="about" className="scroll-mt-28 lg:-mt-20 md:-mt-40  mt-10">
         <AboutUs />
       </section>
 
