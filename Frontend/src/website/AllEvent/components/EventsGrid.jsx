@@ -1,45 +1,35 @@
 import React, { useMemo, useCallback } from 'react';
-import { Calendar, MapPin, Users, IndianRupee, Tag } from 'lucide-react';
+import { Calendar } from 'lucide-react';
 import EventCard from './EventCard';
 import { useEvents } from '../../../features/eventsAPI';
 
-// Memoized helper functions - defined outside component to prevent recreation
+// Helper functions
 const isUserEnrolledHelper = (userRegistrations, eventId) => {
-  return userRegistrations?.some(reg => 
-    reg.eventId?._id === eventId || 
-    reg.eventId === eventId
-  ) || false;
+  return userRegistrations?.some(reg => {
+    if (!reg) return false;
+    const regEventId = reg.eventId?._id || reg.eventId;
+    return regEventId === eventId && reg.isDeleted === false;
+  }) || false;
 };
 
 const hasDeletedRegistrationHelper = (userRegistrations, eventId) => {
-  return userRegistrations?.some(reg => 
-    (reg.eventId === eventId || reg.eventId?._id === eventId) &&
-    reg.isDeleted === true &&
-    reg.status === "cancelled"
-  ) || false;
+  return userRegistrations?.some(reg => {
+    if (!reg) return false;
+    const regEventId = reg.eventId?._id || reg.eventId;
+    return regEventId === eventId && reg.isDeleted === true && reg.status === "cancelled";
+  }) || false;
 };
 
 const getDeletedRegistrationIdHelper = (userRegistrations, eventId) => {
-  const reg = userRegistrations?.find(
-    (reg) => 
-      (reg.eventId === eventId || reg.eventId?._id === eventId) &&
-      reg.isDeleted === true &&
-      reg.status === "cancelled"
-  );
+  const reg = userRegistrations?.find(reg => {
+    if (!reg) return false;
+    const regEventId = reg.eventId?._id || reg.eventId;
+    return regEventId === eventId && reg.isDeleted === true && reg.status === "cancelled";
+  });
   return reg?._id;
 };
 
-const isRegistrationOpenHelper = (deadline) => {
-  if (!deadline) return true;
-  return new Date() <= new Date(deadline);
-};
-
-const isEventFullHelper = (capacity, currentParticipants) => {
-  if (!capacity) return false;
-  return (currentParticipants || 0) >= capacity;
-};
-
-// Memoized sub-components
+// Loading State
 const LoadingState = React.memo(() => (
   <div className="flex justify-center items-center py-20">
     <div className="text-center">
@@ -48,15 +38,13 @@ const LoadingState = React.memo(() => (
     </div>
   </div>
 ));
-
 LoadingState.displayName = 'LoadingState';
 
+// Error State
 const ErrorState = React.memo(({ error, onRetry }) => (
   <div className="text-center py-20">
     <div className="bg-red-500/10 border border-red-500/30 rounded-2xl p-8 max-w-md mx-auto backdrop-blur-sm">
-      <p className="text-red-400 text-xl mb-2 font-semibold">
-        Error loading events
-      </p>
+      <p className="text-red-400 text-xl mb-2 font-semibold">Error loading events</p>
       <p className="text-gray-400 mb-6">{error}</p>
       <button
         onClick={onRetry}
@@ -67,29 +55,21 @@ const ErrorState = React.memo(({ error, onRetry }) => (
     </div>
   </div>
 ));
-
 ErrorState.displayName = 'ErrorState';
 
-const EmptyState = React.memo(({ 
-  searchQuery, 
-  selectedFilter, 
-  selectedTypeFilter, 
-  onClearSearch, 
-  onClearFilters 
-}) => (
+// Empty State
+const EmptyState = React.memo(({ searchQuery, selectedFilter, selectedTypeFilter, onClearSearch, onClearFilters }) => (
   <div className="text-center py-20">
     <div className="bg-white/5 border border-white/10 rounded-2xl p-10 max-w-lg mx-auto backdrop-blur-sm">
       <div className="w-20 h-20 bg-gradient-to-br from-purple-500/20 to-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
         <Calendar className="w-10 h-10 text-gray-400" />
       </div>
-      <h3 className="text-2xl font-bold text-white mb-3">
-        No Events Found
-      </h3>
+      <h3 className="text-2xl font-bold text-white mb-3">No Events Found</h3>
       <p className="text-gray-400 mb-6 text-lg">
         {searchQuery
           ? `No events found for "${searchQuery}"`
           : selectedFilter !== "all" || selectedTypeFilter !== "all"
-          ? `No events found with the current filters.`
+          ? "No events found with the current filters."
           : "No events are scheduled yet. Check back soon!"}
       </p>
       <div className="flex gap-4 justify-center">
@@ -113,11 +93,10 @@ const EmptyState = React.memo(({
     </div>
   </div>
 ));
-
 EmptyState.displayName = 'EmptyState';
 
+// MAIN COMPONENT
 const EventsGrid = ({
-  // Remove loading and error props - they'll come from React Query
   filteredEvents = [],
   allEvents = [],
   selectedFilter = "all",
@@ -128,7 +107,7 @@ const EventsGrid = ({
   setSearchQuery,
   handleViewDetails,
   handleEnroll,
-  handleRestoreRegistration, // 👈 NEW: Add restore handler prop
+  handleRestoreRegistration,
   isAuthenticated = false,
   userRegistrations = [],
   enrollingEventId = null,
@@ -144,10 +123,10 @@ const EventsGrid = ({
 }) => {
   // Get events data from React Query cache
   const { data: events = [], isLoading: eventsLoading, error: eventsError, refetch } = useEvents({
-    refetchOnMount: false, // Don't refetch on mount - use cache
+    refetchOnMount: false,
   });
 
-  // Memoize utility functions with useCallback
+  // Memoize utility functions
   const isUserEnrolled = useCallback((eventId) => {
     return isUserEnrolledHelper(userRegistrations, eventId);
   }, [userRegistrations]);
@@ -161,14 +140,14 @@ const EventsGrid = ({
   }, [userRegistrations]);
 
   const isRegistrationOpen = useCallback((event) => {
-    return isRegistrationOpenHelper(event?.registrationDeadline);
+    return new Date() <= new Date(event?.registrationDeadline);
   }, []);
 
   const isEventFull = useCallback((event) => {
-    return isEventFullHelper(event?.capacity, event?.currentParticipants);
+    return (event?.currentParticipants || 0) >= (event?.capacity || 0);
   }, []);
 
-  // Memoize event cards to prevent unnecessary re-renders
+  // Memoize event cards
   const eventCards = useMemo(() => {
     if (filteredEvents.length === 0) return null;
 
@@ -185,7 +164,7 @@ const EventsGrid = ({
           event={event}
           handleViewDetails={handleViewDetails}
           handleEnroll={handleEnroll}
-          handleRestoreRegistration={handleRestoreRegistration} // 👈 PASS RESTORE HANDLER TO EVENT CARD
+          handleRestoreRegistration={handleRestoreRegistration}
           isAuthenticated={isAuthenticated}
           userRegistrations={userRegistrations}
           getCategoryName={getCategoryName}
@@ -201,8 +180,8 @@ const EventsGrid = ({
           isEnrolled={enrolled}
           isRegistrationOpen={registrationOpen}
           isEventFull={eventFull}
-          hasDeletedRegistration={hasDeletedReg} // 👈 PASS DELETED REGISTRATION STATUS
-          deletedRegistrationId={deletedRegId} // 👈 PASS DELETED REGISTRATION ID
+          hasDeletedRegistration={hasDeletedReg}
+          deletedRegistrationId={deletedRegId}
         />
       );
     });
@@ -215,7 +194,7 @@ const EventsGrid = ({
     getDeletedRegistrationId,
     handleViewDetails,
     handleEnroll,
-    handleRestoreRegistration, // 👈 ADD TO DEPENDENCIES
+    handleRestoreRegistration,
     isAuthenticated,
     userRegistrations,
     getCategoryName,
@@ -230,7 +209,7 @@ const EventsGrid = ({
     enrollingEventId
   ]);
 
-  // Memoize handlers
+  // Handlers for empty state
   const handleClearSearch = useCallback(() => {
     setSearchQuery?.("");
   }, [setSearchQuery]);
@@ -244,17 +223,9 @@ const EventsGrid = ({
     refetch?.();
   }, [refetch]);
 
-  // Show loading state from React Query
-  if (eventsLoading) {
-    return <LoadingState />;
-  }
-
-  // Show error state from React Query
-  if (eventsError) {
-    return <ErrorState error={eventsError.message || "Failed to load events"} onRetry={handleRetry} />;
-  }
-
-  // Show empty state
+  // Loading/Error/Empty states
+  if (eventsLoading) return <LoadingState />;
+  if (eventsError) return <ErrorState error={eventsError.message || "Failed to load events"} onRetry={handleRetry} />;
   if (filteredEvents.length === 0) {
     return (
       <EmptyState
@@ -274,5 +245,4 @@ const EventsGrid = ({
   );
 };
 
-// Memoize the entire component
 export default React.memo(EventsGrid);

@@ -20,6 +20,7 @@ import {
 import api from "../../api/axios.js";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import Swal from 'sweetalert2';
 
 // Constants
 const ITEMS_PER_PAGE = 10;
@@ -44,8 +45,6 @@ const EventList = () => {
   const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
   const [page, setPage] = useState(1);
   const [selectedEvent, setSelectedEvent] = useState(null);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [eventToDelete, setEventToDelete] = useState(null);
 
   // Queries
   const { data: events = [], isLoading: eventsLoading } = useQuery({
@@ -54,7 +53,11 @@ const EventList = () => {
       const response = await api.get("/events");
       return response.data.data || [];
     },
-    staleTime: 2 * 60 * 1000, // Cache for 2 minutes
+    staleTime: 0, // 👈 FIX: Don't cache, always fetch fresh data
+    gcTime: 0, // 👈 FIX: Don't keep in garbage collection
+    refetchOnMount: true, // 👈 FIX: Refetch when component mounts
+    refetchOnWindowFocus: true, // 👈 FIX: Refetch when window gains focus
+    refetchOnReconnect: true, // 👈 FIX: Refetch on reconnect
   });
 
   const { data: categories = [] } = useQuery({
@@ -63,19 +66,33 @@ const EventList = () => {
       const response = await api.get("/category/get");
       return response.data.data || [];
     },
-    staleTime: 5 * 60 * 1000, // Cache for 5 minutes
+    staleTime: 5 * 60 * 1000,
   });
 
   // Delete mutation
   const deleteMutation = useMutation({
     mutationFn: (id) => api.delete(`/events/${id}`),
     onSuccess: () => {
+      // 👈 FIX: Properly invalidate and refetch
       queryClient.invalidateQueries({ queryKey: ["events"] });
-      setShowDeleteModal(false);
-      setEventToDelete(null);
+      queryClient.refetchQueries({ queryKey: ["events"] });
+      
+      Swal.fire({
+        icon: 'success',
+        title: 'Deleted!',
+        text: 'Event has been deleted successfully.',
+        timer: 1500,
+        showConfirmButton: false
+      });
     },
     onError: (error) => {
-      alert(error.response?.data?.message || "Failed to delete event");
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: error.response?.data?.message || "Failed to delete event",
+        timer: 2000,
+        showConfirmButton: false
+      });
       console.error("Delete error:", error);
     },
   });
@@ -228,9 +245,33 @@ const EventList = () => {
   }, []);
 
   const handleDeleteClick = useCallback((event) => {
-    setEventToDelete(event);
-    setShowDeleteModal(true);
-  }, []);
+    Swal.fire({
+      title: 'Delete Event?',
+      text: `Are you sure you want to delete "${event.title}"? This action cannot be undone.`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#ef4444',
+      cancelButtonColor: '#6b7280',
+      confirmButtonText: 'Yes, Delete',
+      cancelButtonText: 'Cancel',
+      reverseButtons: true,
+      showLoaderOnConfirm: true,
+      preConfirm: () => {
+        return deleteMutation.mutateAsync(event._id);
+      },
+      allowOutsideClick: () => !deleteMutation.isPending
+    }).then((result) => {
+      if (result.isConfirmed) {
+        Swal.fire({
+          icon: 'success',
+          title: 'Deleted!',
+          text: 'Event has been deleted successfully.',
+          timer: 1500,
+          showConfirmButton: false
+        });
+      }
+    });
+  }, [deleteMutation]);
 
   const handleEdit = useCallback((eventId) => {
     navigate(`/admin/dashboard/edit-event/${eventId}`);
@@ -238,7 +279,6 @@ const EventList = () => {
 
   const handlePageChange = useCallback((newPage) => {
     setPage(newPage);
-    // Scroll to top of table
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, []);
 
@@ -340,25 +380,14 @@ const EventList = () => {
             formatDateTime={formatDateTime}
           />
         )}
-
-        {/* Delete Confirmation Modal */}
-        {showDeleteModal && eventToDelete && (
-          <DeleteConfirmationModal
-            event={eventToDelete}
-            onClose={() => {
-              setShowDeleteModal(false);
-              setEventToDelete(null);
-            }}
-            onConfirm={() => deleteMutation.mutate(eventToDelete._id)}
-            isLoading={deleteMutation.isPending}
-          />
-        )}
       </div>
     </div>
   );
 };
 
-// Sub-components
+// Sub-components remain the same...
+// (All sub-components from your original code remain unchanged)
+
 const Header = () => (
   <div className="mb-8">
     <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-2">
@@ -1200,46 +1229,6 @@ const InfoCard = ({ title, icon: Icon, bgColor, iconColor, content }) => (
       </div>
     </div>
     <div className="mt-3">{content}</div>
-  </div>
-);
-
-const DeleteConfirmationModal = ({ event, onClose, onConfirm, isLoading }) => (
-  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-    <div className="bg-white rounded-2xl max-w-md w-full p-6">
-      <div className="text-center">
-        <Trash2 className="w-12 h-12 text-red-500 mx-auto mb-4" />
-        <h3 className="text-lg font-semibold text-gray-800 mb-2">
-          Delete Event
-        </h3>
-        <p className="text-gray-600 mb-6">
-          Are you sure you want to delete "{event?.title}"? This action cannot be undone.
-        </p>
-
-        <div className="flex gap-3">
-          <button
-            onClick={onClose}
-            disabled={isLoading}
-            className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={onConfirm}
-            disabled={isLoading}
-            className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-          >
-            {isLoading ? (
-              <>
-                <Loader2 className="w-4 h-4 animate-spin" />
-                Deleting...
-              </>
-            ) : (
-              "Delete"
-            )}
-          </button>
-        </div>
-      </div>
-    </div>
   </div>
 );
 

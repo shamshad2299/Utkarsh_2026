@@ -10,6 +10,7 @@ import {
   Clock,
   Tag,
   Loader2,
+  FileText, // 👈 NEW ICON
 } from "lucide-react";
 import api from "../../api/axios.js";
 import { useNavigate } from "react-router-dom";
@@ -26,6 +27,7 @@ const INITIAL_FORM_STATE = {
   capacity: "",
   fee: 0,
   eventType: "solo",
+  event_rule: "", // 👈 NEW FIELD
 };
 
 const INITIAL_TEAM_SIZE = { min: 1, max: 1 };
@@ -41,6 +43,7 @@ const AddEvent = () => {
   const [imagePreviews, setImagePreviews] = useState([]);
   const [teamSize, setTeamSize] = useState(INITIAL_TEAM_SIZE);
   const [formData, setFormData] = useState(INITIAL_FORM_STATE);
+  const [errors, setErrors] = useState({}); // 👈 NEW STATE FOR ERRORS
 
   // Queries
   const { data: categoriesData = [], isLoading: loadingCategories } = useQuery({
@@ -96,6 +99,9 @@ const AddEvent = () => {
   const handleInputChange = useCallback((e) => {
     const { name, value } = e.target;
 
+    // Clear error for this field
+    setErrors((prev) => ({ ...prev, [name]: "" }));
+
     setFormData((prev) => {
       const newFormData = { ...prev, [name]: value };
       
@@ -113,26 +119,55 @@ const AddEvent = () => {
       ...prev,
       [field]: Math.max(1, parseInt(value) || 1),
     }));
+    setErrors((prev) => ({ ...prev, teamSize: "" }));
   }, []);
 
   const handleImageUpload = useCallback((e) => {
     const files = Array.from(e.target.files);
     
-    // Limit number of images (optional)
+    // Limit number of images
     const MAX_IMAGES = 5;
     if (images.length + files.length > MAX_IMAGES) {
-      alert(`You can only upload up to ${MAX_IMAGES} images`);
+      setErrors((prev) => ({
+        ...prev,
+        images: `You can only upload up to ${MAX_IMAGES} images`,
+      }));
       return;
     }
 
+    // Validate file types
+    const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"];
+    const MAX_SIZE = 10 * 1024 * 1024; // 10MB
+
+    const validFiles = files.filter((file) => {
+      if (!ALLOWED_TYPES.includes(file.type)) {
+        setErrors((prev) => ({
+          ...prev,
+          images: "Only JPG, PNG, and WEBP files are allowed",
+        }));
+        return false;
+      }
+      if (file.size > MAX_SIZE) {
+        setErrors((prev) => ({
+          ...prev,
+          images: "File size must be less than 10MB",
+        }));
+        return false;
+      }
+      return true;
+    });
+
+    if (validFiles.length === 0) return;
+
     // Create previews
-    const newPreviews = files.map((file) => ({
+    const newPreviews = validFiles.map((file) => ({
       file,
       preview: URL.createObjectURL(file),
     }));
 
-    setImages((prev) => [...prev, ...files]);
+    setImages((prev) => [...prev, ...validFiles]);
     setImagePreviews((prev) => [...prev, ...newPreviews]);
+    setErrors((prev) => ({ ...prev, images: "" }));
     
     // Reset input
     e.target.value = '';
@@ -151,6 +186,7 @@ const AddEvent = () => {
     setSelectedCategory("");
     setSelectedSubCategory("");
     setTeamSize(INITIAL_TEAM_SIZE);
+    setErrors({});
     
     // Clean up image previews
     imagePreviews.forEach((preview) => {
@@ -161,45 +197,50 @@ const AddEvent = () => {
   }, [imagePreviews]);
 
   const validateForm = useCallback(() => {
-    const errors = [];
+    const newErrors = {};
 
-    if (!formData.title?.trim()) errors.push("Title is required");
-    if (!selectedCategory) errors.push("Category is required");
-    if (!selectedSubCategory) errors.push("Sub-category is required");
-    if (!formData.description?.trim()) errors.push("Description is required");
-    if (!formData.venueName?.trim()) errors.push("Venue is required");
-    if (!formData.startTime) errors.push("Start time is required");
-    if (!formData.endTime) errors.push("End time is required");
-    if (!formData.registrationDeadline) errors.push("Registration deadline is required");
-    
+    if (!formData.title?.trim()) newErrors.title = "Title is required";
+    if (!selectedCategory) newErrors.category = "Category is required";
+    if (!selectedSubCategory) newErrors.subCategory = "Sub-category is required";
+    if (!formData.description?.trim()) newErrors.description = "Description is required";
+    if (!formData.venueName?.trim()) newErrors.venueName = "Venue is required";
+    if (!formData.startTime) newErrors.startTime = "Start time is required";
+    if (!formData.endTime) newErrors.endTime = "End time is required";
+    if (!formData.registrationDeadline) newErrors.registrationDeadline = "Registration deadline is required";
+    if (!formData.event_rule?.trim()) newErrors.event_rule = "Event rules are required"; // 👈 NEW VALIDATION
+
     const capacity = parseInt(formData.capacity);
-    if (!capacity || capacity < 1) errors.push("Valid capacity is required");
-    
+    if (!capacity || capacity < 1) {
+      newErrors.capacity = "Valid capacity is required";
+    }
+
     if (formData.startTime && formData.endTime) {
       if (new Date(formData.endTime) <= new Date(formData.startTime)) {
-        errors.push("End time must be after start time");
+        newErrors.endTime = "End time must be after start time";
       }
-    }
-    
-    if (formData.registrationDeadline && formData.startTime) {
-      if (new Date(formData.registrationDeadline) >= new Date(formData.startTime)) {
-        errors.push("Registration deadline must be before start time");
-      }
-    }
-    
-    if (teamSize.min > teamSize.max) {
-      errors.push("Minimum team size cannot be greater than maximum");
     }
 
-    return errors;
+    if (formData.registrationDeadline && formData.startTime) {
+      if (new Date(formData.registrationDeadline) >= new Date(formData.startTime)) {
+        newErrors.registrationDeadline = "Registration deadline must be before start time";
+      }
+    }
+
+    if (teamSize.min > teamSize.max) {
+      newErrors.teamSize = "Minimum team size cannot be greater than maximum";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   }, [formData, selectedCategory, selectedSubCategory, teamSize]);
 
   const handleSubmit = useCallback(async (e) => {
     e.preventDefault();
 
-    const errors = validateForm();
-    if (errors.length > 0) {
-      alert(errors.join("\n"));
+    if (!validateForm()) {
+      // Scroll to first error
+      const firstError = document.querySelector('[class*="border-red-300"]');
+      firstError?.scrollIntoView({ behavior: "smooth", block: "center" });
       return;
     }
 
@@ -251,7 +292,7 @@ const AddEvent = () => {
                 value={formData.title}
                 onChange={handleInputChange}
                 placeholder="Enter event title"
-                required
+                error={errors.title}
               />
 
               <SelectField
@@ -263,7 +304,7 @@ const AddEvent = () => {
                 optionValue="_id"
                 placeholder="Select Category"
                 loading={loadingCategories}
-                required
+                error={errors.category}
               />
 
               <SelectField
@@ -276,7 +317,7 @@ const AddEvent = () => {
                 placeholder="Select Sub-category"
                 loading={loadingSubCategories}
                 disabled={!selectedCategory}
-                required
+                error={errors.subCategory}
               />
 
               <SelectField
@@ -308,6 +349,11 @@ const AddEvent = () => {
                     value={teamSize.max}
                     onChange={(e) => handleTeamSizeChange("max", e.target.value)}
                   />
+                  {errors.teamSize && (
+                    <div className="col-span-2">
+                      <ErrorMessage message={errors.teamSize} />
+                    </div>
+                  )}
                 </>
               )}
             </div>
@@ -320,8 +366,26 @@ const AddEvent = () => {
                 onChange={handleInputChange}
                 placeholder="Enter event description..."
                 rows={4}
-                required
+                error={errors.description}
               />
+            </div>
+          </Card>
+
+          {/* Event Rules Card - NEW */}
+          <Card icon={FileText} bgColor="bg-orange-600" title="Event Rules">
+            <div className="space-y-4">
+              <TextAreaField
+                label="Event Rules & Guidelines *"
+                name="event_rule"
+                value={formData.event_rule}
+                onChange={handleInputChange}
+                placeholder="Enter event rules, guidelines, prerequisites, etc..."
+                rows={6}
+                error={errors.event_rule}
+              />
+              <p className="text-sm text-gray-500 mt-2">
+                Include important rules, eligibility criteria, what to bring, dress code, etc.
+              </p>
             </div>
           </Card>
 
@@ -334,7 +398,7 @@ const AddEvent = () => {
                 value={formData.startTime}
                 onChange={handleInputChange}
                 icon={Calendar}
-                required
+                error={errors.startTime}
               />
               <DateTimeField
                 label="End Time *"
@@ -342,7 +406,7 @@ const AddEvent = () => {
                 value={formData.endTime}
                 onChange={handleInputChange}
                 icon={Clock}
-                required
+                error={errors.endTime}
               />
               <DateTimeField
                 label="Registration Deadline *"
@@ -350,7 +414,7 @@ const AddEvent = () => {
                 value={formData.registrationDeadline}
                 onChange={handleInputChange}
                 icon={Calendar}
-                required
+                error={errors.registrationDeadline}
               />
             </div>
           </Card>
@@ -365,7 +429,7 @@ const AddEvent = () => {
                 onChange={handleInputChange}
                 placeholder="Enter venue name"
                 icon={MapPin}
-                required
+                error={errors.venueName}
               />
               <InputField
                 label="Capacity *"
@@ -376,7 +440,7 @@ const AddEvent = () => {
                 onChange={handleInputChange}
                 placeholder="Maximum participants"
                 icon={Users}
-                required
+                error={errors.capacity}
               />
             </div>
           </Card>
@@ -407,6 +471,7 @@ const AddEvent = () => {
               imagePreviews={imagePreviews}
               onUpload={handleImageUpload}
               onRemove={removeImage}
+              error={errors.images}
             />
           </Card>
 
@@ -462,6 +527,7 @@ const InputField = ({
   icon: Icon, 
   suffix, 
   helperText, 
+  error,
   className = "",
   ...props 
 }) => (
@@ -473,7 +539,11 @@ const InputField = ({
       )}
       <input
         {...props}
-        className={`w-full ${Icon ? 'pl-12' : 'px-4'} pr-4 py-3 bg-gray-50 border border-gray-300 rounded-xl text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent ${className}`}
+        className={`w-full ${Icon ? 'pl-12' : 'px-4'} pr-4 py-3 border rounded-xl text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition ${
+          error
+            ? "border-red-300 bg-red-50"
+            : "border-gray-300 bg-gray-50"
+        } ${className}`}
       />
       {suffix && (
         <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500">
@@ -481,17 +551,23 @@ const InputField = ({
         </span>
       )}
     </div>
+    {error && <ErrorMessage message={error} />}
     {helperText && <p className="text-sm text-gray-500 mt-1">{helperText}</p>}
   </div>
 );
 
-const TextAreaField = ({ label, ...props }) => (
+const TextAreaField = ({ label, error, ...props }) => (
   <div className="space-y-2">
     <label className="block text-sm font-medium text-gray-700">{label}</label>
     <textarea
       {...props}
-      className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-xl text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
+      className={`w-full px-4 py-3 border rounded-xl text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none transition ${
+        error
+          ? "border-red-300 bg-red-50"
+          : "border-gray-300 bg-gray-50"
+      }`}
     />
+    {error && <ErrorMessage message={error} />}
   </div>
 );
 
@@ -505,7 +581,7 @@ const SelectField = ({
   placeholder,
   loading,
   disabled,
-  required,
+  error,
   name,
 }) => (
   <div className="space-y-2">
@@ -515,9 +591,12 @@ const SelectField = ({
         name={name}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-xl text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent appearance-none disabled:opacity-50 disabled:cursor-not-allowed"
+        className={`w-full px-4 py-3 border rounded-xl text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent appearance-none transition ${
+          error
+            ? "border-red-300 bg-red-50"
+            : "border-gray-300 bg-gray-50"
+        } ${disabled || loading ? 'opacity-50 cursor-not-allowed' : ''}`}
         disabled={disabled || loading}
-        required={required}
       >
         <option value="">{placeholder || "Select"}</option>
         {options.map((option) => (
@@ -530,10 +609,11 @@ const SelectField = ({
         {loading && <Loader2 className="w-4 h-4 text-purple-600 animate-spin" />}
       </div>
     </div>
+    {error && <ErrorMessage message={error} />}
   </div>
 );
 
-const DateTimeField = ({ label, icon: Icon, ...props }) => (
+const DateTimeField = ({ label, icon: Icon, error, ...props }) => (
   <div className="space-y-2">
     <label className="block text-sm font-medium text-gray-700">{label}</label>
     <div className="relative">
@@ -541,15 +621,29 @@ const DateTimeField = ({ label, icon: Icon, ...props }) => (
       <input
         {...props}
         type="datetime-local"
-        className="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-300 rounded-xl text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        className={`w-full pl-12 pr-4 py-3 border rounded-xl text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition ${
+          error
+            ? "border-red-300 bg-red-50"
+            : "border-gray-300 bg-gray-50"
+        }`}
       />
     </div>
+    {error && <ErrorMessage message={error} />}
   </div>
 );
 
-const ImageUpload = ({ imagePreviews, onUpload, onRemove }) => (
+const ErrorMessage = ({ message }) => (
+  <p className="text-sm text-red-600 flex items-center gap-1 mt-1">
+    <span>⚠️</span>
+    <span>{message}</span>
+  </p>
+);
+
+const ImageUpload = ({ imagePreviews, onUpload, onRemove, error }) => (
   <div className="space-y-4">
-    <div className="border-2 border-dashed border-gray-300 rounded-2xl p-8 text-center hover:border-purple-500 transition-colors bg-gray-50">
+    <div className={`border-2 border-dashed rounded-2xl p-8 text-center hover:border-purple-500 transition-colors ${
+      error ? 'border-red-300 bg-red-50' : 'border-gray-300 bg-gray-50'
+    }`}>
       <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
       <p className="text-gray-600 mb-2">Drop images here or click to upload</p>
       <p className="text-sm text-gray-500 mb-4">PNG, JPG, WEBP up to 10MB</p>
@@ -568,6 +662,7 @@ const ImageUpload = ({ imagePreviews, onUpload, onRemove }) => (
         Select Images
       </label>
     </div>
+    {error && <ErrorMessage message={error} />}
 
     {imagePreviews.length > 0 && (
       <div className="mt-6">
@@ -589,7 +684,7 @@ const ImageUpload = ({ imagePreviews, onUpload, onRemove }) => (
               <button
                 type="button"
                 onClick={() => onRemove(index)}
-                className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600"
                 aria-label="Remove image"
               >
                 <X className="w-4 h-4" />

@@ -1,4 +1,3 @@
-// Updated AllEvents.jsx with React Query - FULLY OPTIMIZED with SweetAlert2 & RESTORE
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { ArrowLeft, ArrowUpRight, Filter, User, Users } from "lucide-react";
@@ -25,11 +24,7 @@ import {
   getTypeFilterColor,
 } from "../utils/eventUtils";
 import { useAuth } from "../../Context/AuthContext";
-import { 
-  useEvents, 
-  useCategories, 
-  eventKeys
-} from "../../features/eventsAPI";
+import { useEvents, useCategories, eventKeys } from "../../features/eventsAPI";
 import { useQueryClient } from "@tanstack/react-query";
 
 // ================ CONSTANTS ================
@@ -116,22 +111,19 @@ const showSoloEnrollmentConfirmation = async (event) => {
     cancelButtonText: "Cancel",
     confirmButtonColor: "#8b5cf6",
   });
-
   return result.isConfirmed;
 };
 
 const showReenrollmentSuccess = async (eventTitle) => {
   triggerConfetti();
-
   await Swal.fire({
-    title: "Successfully again enrolled in this event. 🎉",
+    title: "Successfully Re-enrolled! 🎉",
     text: `You are registered again for "${eventTitle}".`,
     icon: "success",
-    confirmButtonText: "Continue to re enroll",
+    confirmButtonText: "Continue",
     confirmButtonColor: "#8b5cf6",
   });
 };
-
 
 const showLoginRequired = (navigate, location) => {
   Swal.fire({
@@ -152,18 +144,14 @@ const showLoginRequired = (navigate, location) => {
 // ================ MEMOIZED COMPONENTS ================
 const WelcomeBadge = React.memo(({ user }) => (
   <div className="px-4 py-2 bg-white/10 backdrop-blur-sm rounded-full border border-white/20">
-    <span className="text-sm font-medium">
-      Welcome, {user?.name || user?.email}
-    </span>
+    <span className="text-sm font-medium">Welcome, {user?.name || user?.email}</span>
   </div>
 ));
 WelcomeBadge.displayName = 'WelcomeBadge';
 
 const EventCountBadge = React.memo(({ count }) => (
   <div className="px-4 py-2 bg-white/10 backdrop-blur-sm rounded-full border border-white/20">
-    <span className="text-md font-medium">
-      {count} {count === 1 ? "Event" : "Events"}
-    </span>
+    <span className="text-md font-medium">{count} {count === 1 ? "Event" : "Events"}</span>
   </div>
 ));
 EventCountBadge.displayName = 'EventCountBadge';
@@ -198,22 +186,13 @@ const AllEvents = () => {
   const queryClient = useQueryClient();
   const { user, logout } = useAuth();
 
-  // Auth state - memoized
+  // Auth state
   const isAuthenticated = useMemo(() => !!localStorage.getItem("accessToken"), []);
   const token = useMemo(() => localStorage.getItem("accessToken"), []);
 
-  // React Query hooks with caching - NO API CALLS on subsequent visits
-  const { 
-    data: events = [], 
-    isLoading: eventsLoading, 
-    error: eventsError,
-    refetch: refetchEvents
-  } = useEvents();
-
-  const { 
-    data: categories = [], 
-    isLoading: categoriesLoading 
-  } = useCategories();
+  // React Query hooks
+  const { data: events = [], isLoading: eventsLoading, error: eventsError, refetch: refetchEvents } = useEvents();
+  const { data: categories = [], isLoading: categoriesLoading } = useCategories();
 
   // Local state
   const [selectedCategoryFilter, setSelectedCategoryFilter] = useState("all");
@@ -225,10 +204,7 @@ const AllEvents = () => {
   const [showModal, setShowModal] = useState(false);
   const [showRegistrationModal, setShowRegistrationModal] = useState(false);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
-  const [expandedRules, setExpandedRules] = useState({
-    general: false,
-    event: false,
-  });
+  const [expandedRules, setExpandedRules] = useState({ general: false, event: false });
 
   // User data states
   const [userRegistrations, setUserRegistrations] = useState([]);
@@ -241,42 +217,30 @@ const AllEvents = () => {
   // ================ MEMOIZED VALUES ================
   const filterOptions = useMemo(() => {
     if (!categories.length) return [{ id: "all", label: "All", icon: Filter }];
-    
     const filters = [{ id: "all", label: "All", icon: Filter }];
     categories.forEach((cat) => {
       const categoryName = getCategoryName(cat);
       const icon = getCategoryIcon(categoryName);
-      filters.push({
-        id: cat._id,
-        label: categoryName,
-        icon: icon,
-      });
+      filters.push({ id: cat._id, label: categoryName, icon });
     });
     return filters;
   }, [categories]);
 
   const filteredEvents = useMemo(() => {
     if (!events.length) return [];
-    
     let filtered = [...events];
 
     if (selectedCategoryFilter !== "all") {
       filtered = filtered.filter((event) => {
         const eventCategoryId = event.category?._id;
         const eventCategoryName = event.category?.name?.toLowerCase() || "";
-        return (
-          eventCategoryId === selectedCategoryFilter ||
-          eventCategoryName.includes(selectedCategoryFilter.toLowerCase())
-        );
+        return eventCategoryId === selectedCategoryFilter || eventCategoryName.includes(selectedCategoryFilter.toLowerCase());
       });
     }
 
     if (selectedTypeFilter !== "all") {
       filtered = filtered.filter((event) => {
-        const eventType = getEventTypeText(
-          event.teamSize,
-          event.eventType,
-        ).toLowerCase();
+        const eventType = getEventTypeText(event.teamSize, event.eventType).toLowerCase();
         return eventType === selectedTypeFilter.toLowerCase();
       });
     }
@@ -289,17 +253,9 @@ const AllEvents = () => {
         const categoryName = event.category?.name?.toLowerCase() || "";
         const venueName = event.venueName?.toLowerCase() || "";
         const subCategoryName = event.subCategory?.title?.toLowerCase() || "";
-
-        return (
-          title.includes(query) ||
-          description.includes(query) ||
-          categoryName.includes(query) ||
-          venueName.includes(query) ||
-          subCategoryName.includes(query)
-        );
+        return title.includes(query) || description.includes(query) || categoryName.includes(query) || venueName.includes(query) || subCategoryName.includes(query);
       });
     }
-
     return filtered;
   }, [selectedCategoryFilter, selectedTypeFilter, events, searchQuery]);
 
@@ -328,17 +284,11 @@ const AllEvents = () => {
 
   const fetchUserData = useCallback(async () => {
     if (!isAuthenticated || !token) return;
-
     try {
       setUserDataLoading(true);
-
       const [regResponse, teamsResponse] = await Promise.allSettled([
-        api.get("/registrations/my", {
-          headers: { Authorization: `Bearer ${token}` },
-        }),
-        api.get("/teams/my", {
-          headers: { Authorization: `Bearer ${token}` },
-        }),
+        api.get("/registrations/my", { headers: { Authorization: `Bearer ${token}` } }),
+        api.get("/teams/my", { headers: { Authorization: `Bearer ${token}` } }),
       ]);
 
       if (regResponse.status === "fulfilled") {
@@ -372,6 +322,23 @@ const AllEvents = () => {
     });
   }, [userRegistrations]);
 
+  const hasDeletedRegistration = useCallback((eventId) => {
+    return userRegistrations.some((reg) => {
+      if (!reg) return false;
+      const regEventId = reg.eventId?._id || reg.eventId;
+      return regEventId === eventId && reg.isDeleted === true && reg.status === "cancelled";
+    });
+  }, [userRegistrations]);
+
+  const getDeletedRegistrationId = useCallback((eventId) => {
+    const reg = userRegistrations.find((reg) => {
+      if (!reg) return false;
+      const regEventId = reg.eventId?._id || reg.eventId;
+      return regEventId === eventId && reg.isDeleted === true && reg.status === "cancelled";
+    });
+    return reg?._id;
+  }, [userRegistrations]);
+
   const isRegistrationOpen = useCallback((deadline) => {
     return new Date(deadline) > new Date();
   }, []);
@@ -385,138 +352,125 @@ const AllEvents = () => {
       if (!oldData) return oldData;
       return oldData.map((event) =>
         event._id === eventId
-          ? {
-              ...event,
-              currentParticipants: (event.currentParticipants || 0) + increment,
-            }
+          ? { ...event, currentParticipants: (event.currentParticipants || 0) + increment }
           : event
       );
     });
   }, [queryClient]);
 
   // ================ RESTORE REGISTRATION HANDLER ================
-const handleRestoreRegistration = useCallback(async (registrationId, event, teamId = null) => {
-  try {
-    const response = await api.patch(
-      `/registrations/${registrationId}/restore`,
-      { teamId },
-      {
-        headers: { Authorization: `Bearer ${token}` },
-      }
-    );
+  const handleRestoreRegistration = useCallback(async (registrationId, event, teamId = null) => {
+    try {
+      setEnrollingEventId(event._id);
+      
+      const response = await api.patch(
+        `/registrations/${registrationId}/restore`,
+        { teamId },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
 
-    // Update local state
-    setUserRegistrations((prev) =>
-      prev.map((reg) =>
-        reg._id === registrationId
-          ? response.data.data
-          : reg
-      )
-    );
+      // Optimistic update
+      setUserRegistrations((prev) => {
+        const filtered = prev.filter(reg => reg._id !== registrationId);
+        return [...filtered, response.data.data];
+      });
 
-    updateEventCapacity(event._id, 1);
+      updateEventCapacity(event._id, 1);
+      triggerConfetti();
+      showSuccessToast(`🎉 Successfully re-enrolled in "${event.title}"!`);
 
-    await showReenrollmentSuccess(event.title);
+    } catch (error) {
+      console.error('Restore error:', error);
+      const message = error.response?.data?.message || "Failed to re-enroll";
+      showErrorToast(message);
+    } finally {
+      setEnrollingEventId(null);
+    }
+  }, [token, updateEventCapacity]);
 
-  } catch (error) {
-    const message = error.response?.data?.message || "Failed to re-enroll";
-    showErrorToast(message);
-  }
-}, [token, updateEventCapacity]);
-
-
-
-  // ================ ENROLLMENT HANDLERS ================
+  // ================ ENROLLMENT HANDLER ================
   const handleEnroll = useCallback(async (event, teamId = null) => {
-  if (!isAuthenticated) {
-    showLoginRequired(navigate, location);
-    return;
-  }
-
-  setEnrollingEventId(event._id);
-
-  try {
-    // 1️⃣ Check if soft deleted registration exists
-    const deletedRegistration = userRegistrations.find(
-      (reg) =>
-        (reg.eventId === event._id || reg.eventId?._id === event._id) &&
-        reg.isDeleted === true &&
-        reg.status === "cancelled"
-    );
-
-    if (deletedRegistration) {
-      await handleRestoreRegistration(deletedRegistration._id, event, teamId);
+    if (!isAuthenticated) {
+      showLoginRequired(navigate, location);
       return;
     }
 
-    // 2️⃣ Check active registration
-    const activeRegistration = userRegistrations.find(
-      (reg) =>
-        (reg.eventId === event._id || reg.eventId?._id === event._id) &&
-        reg.isDeleted === false &&
-        reg.status !== "cancelled"
-    );
+    setEnrollingEventId(event._id);
 
-    if (activeRegistration) {
-      showInfoToast("You are already enrolled in this event!");
-      return;
-    }
+    try {
+      // Check for soft-deleted registration first
+      const deletedRegistration = userRegistrations.find((reg) => {
+        if (!reg) return false;
+        const regEventId = reg.eventId?._id || reg.eventId;
+        return regEventId === event._id && reg.isDeleted === true && reg.status === "cancelled";
+      });
 
-    // 3️⃣ Deadline check
-    if (new Date() > new Date(event.registrationDeadline)) {
-      showErrorToast("Registration deadline has passed!");
-      return;
-    }
-
-    // 4️⃣ Capacity check
-    if ((event.currentParticipants || 0) >= event.capacity) {
-      showErrorToast("Event is full!");
-      return;
-    }
-
-    // 5️⃣ Create new registration
-    const response = await api.post(
-      "/registrations",
-      {
-        eventId: event._id,
-        teamId: teamId || null,
-      },
-      {
-        headers: { Authorization: `Bearer ${token}` },
+      if (deletedRegistration) {
+        await handleRestoreRegistration(deletedRegistration._id, event, teamId);
+        return;
       }
-    );
 
-    setUserRegistrations((prev) => [...prev, response.data.data]);
+      // Check active registration
+      const activeRegistration = userRegistrations.find((reg) => {
+        if (!reg) return false;
+        const regEventId = reg.eventId?._id || reg.eventId;
+        return regEventId === event._id && reg.isDeleted === false && reg.status !== "cancelled";
+      });
 
-    updateEventCapacity(event._id, 1);
+      if (activeRegistration) {
+        showInfoToast("You are already enrolled in this event!");
+        return;
+      }
 
-    showSuccessToast(`Successfully enrolled in "${event.title}"!`);
+      // Deadline check
+      if (new Date() > new Date(event.registrationDeadline)) {
+        showErrorToast("Registration deadline has passed!");
+        return;
+      }
 
-  } catch (error) {
-    const message = error.response?.data?.message || "Failed to enroll";
-    showErrorToast(message);
-  } finally {
-    setEnrollingEventId(null);
-  }
-}, [
-  isAuthenticated,
-  userRegistrations,
-  handleRestoreRegistration,
-  token,
-  navigate,
-  location,
-  updateEventCapacity,
-]);
+      // Capacity check
+      if ((event.currentParticipants || 0) >= event.capacity) {
+        showErrorToast("Event is full!");
+        return;
+      }
+
+      // Solo event confirmation
+      if (event.eventType === "solo") {
+        const confirmed = await showSoloEnrollmentConfirmation(event);
+        if (!confirmed) {
+          setEnrollingEventId(null);
+          return;
+        }
+      }
+
+      // Create new registration
+      const response = await api.post(
+        "/registrations",
+        { eventId: event._id, teamId: teamId || null },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      // Optimistic update
+      setUserRegistrations((prev) => [...prev, response.data.data]);
+      updateEventCapacity(event._id, 1);
+      triggerConfetti();
+      showSuccessToast(`✅ Successfully enrolled in "${event.title}"!`);
+
+    } catch (error) {
+      console.error('Enrollment error:', error);
+      const message = error.response?.data?.message || "Failed to enroll";
+      showErrorToast(message);
+    } finally {
+      setEnrollingEventId(null);
+    }
+  }, [isAuthenticated, userRegistrations, handleRestoreRegistration, token, navigate, location, updateEventCapacity]);
 
   // ================ MODAL HANDLERS ================
   const handleViewDetails = useCallback((event) => {
     document.body.style.overflow = "hidden";
     setSelectedEventId(event._id);
     setSelectedImageIndex(0);
-    setExpandedRules({
-      general: false,
-      event: false,
-    });
+    setExpandedRules({ general: false, event: false });
     setShowModal(true);
   }, []);
 
@@ -536,18 +490,14 @@ const handleRestoreRegistration = useCallback(async (registrationId, event, team
     setSelectedCategoryFilter(filterId);
     setFilterToURL(navigate, location, "filter", filterId);
     const eventsSection = document.getElementById("events-section");
-    if (eventsSection) {
-      eventsSection.scrollIntoView({ behavior: "smooth" });
-    }
+    if (eventsSection) eventsSection.scrollIntoView({ behavior: "smooth" });
   }, [navigate, location]);
 
   const handleTypeFilterClick = useCallback((filterId) => {
     setSelectedTypeFilter(filterId);
     setFilterToURL(navigate, location, "type", filterId);
     const eventsSection = document.getElementById("events-section");
-    if (eventsSection) {
-      eventsSection.scrollIntoView({ behavior: "smooth" });
-    }
+    if (eventsSection) eventsSection.scrollIntoView({ behavior: "smooth" });
   }, [navigate, location]);
 
   // ================ OPEN REGISTRATION MODAL ================
@@ -558,6 +508,13 @@ const handleRestoreRegistration = useCallback(async (registrationId, event, team
     }
 
     setSelectedEventId(event._id);
+
+    // Check for soft-deleted registration
+    if (hasDeletedRegistration(event._id)) {
+      const deletedRegId = getDeletedRegistrationId(event._id);
+      await handleRestoreRegistration(deletedRegId, event);
+      return;
+    }
 
     if (isUserEnrolled(event._id)) {
       showInfoToast("You are already enrolled in this event!");
@@ -574,27 +531,21 @@ const handleRestoreRegistration = useCallback(async (registrationId, event, team
       return;
     }
 
-    const categoryName = getCategoryName(event.category);
-    const eventTypeText = getEventTypeText(event.teamSize, event.eventType);
-
-    // For solo events - show SweetAlert2 confirmation
+    // Solo events - show confirmation
     if (event.eventType === "solo") {
-      const confirmed = await showSoloEnrollmentConfirmation(event, categoryName, eventTypeText);
+      const confirmed = await showSoloEnrollmentConfirmation(event);
       if (confirmed) {
         handleEnroll(event);
       }
       return;
     }
 
-    // For team events - show registration modal
+    // Team events - show registration modal
     setShowRegistrationModal(true);
-  }, [isAuthenticated, isUserEnrolled, isRegistrationOpen, hasCapacity, handleEnroll, navigate, location]);
+  }, [isAuthenticated, isUserEnrolled, hasDeletedRegistration, getDeletedRegistrationId, isRegistrationOpen, hasCapacity, handleEnroll, handleRestoreRegistration, navigate, location]);
 
   const toggleRuleSection = useCallback((section) => {
-    setExpandedRules((prev) => ({
-      ...prev,
-      [section]: !prev[section],
-    }));
+    setExpandedRules((prev) => ({ ...prev, [section]: !prev[section] }));
   }, []);
 
   // ================ LOADING STATE ================
@@ -620,7 +571,7 @@ const handleRestoreRegistration = useCallback(async (registrationId, event, team
                 <p className="text-gray-400 text-lg milonga mt-4">
                   Discover every upcoming event across all categories. From tech
                   fests and cultural nights to competitions and workshops. Stay
-                  updated, get inspired, and never miss what’s coming next.
+                  updated, get inspired, and never miss what's coming next.
                 </p>
               </div>
               <button
@@ -628,27 +579,19 @@ const handleRestoreRegistration = useCallback(async (registrationId, event, team
                 className="flex w-50 px-4 py-2 rounded-2xl milonga bg-white items-center gap-2 cursor-pointer text-black mb-8 transition-colors group -mt-5"
               >
                 Go Back
-                <ArrowUpRight
-                  size={20}
-                  className="group-hover:-translate-x-1 transition-transform"
-                />
+                <ArrowUpRight size={20} className="group-hover:-translate-x-1 transition-transform" />
               </button>
             </div>
           </div>
 
           <div className="flex items-center gap-4">
-            {isAuthenticated && user && (
-              <WelcomeBadge user={user} />
-            )}
+            {isAuthenticated && user && <WelcomeBadge user={user} />}
             <EventCountBadge count={filteredEvents.length} />
           </div>
 
           {/* Search and Type Filter */}
           <div className="w-full bg-white text-black rounded-md mt-6">
-            <EventSearchBar
-              searchQuery={searchQuery}
-              setSearchQuery={setSearchQuery}
-            />
+            <EventSearchBar searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
           </div>
 
           <div className="mt-6">
@@ -672,7 +615,7 @@ const handleRestoreRegistration = useCallback(async (registrationId, event, team
         </div>
       </div>
 
-      {/* ================ EVENTS GRID WITH RESTORE HANDLER ================ */}
+      {/* Events Grid */}
       <EventsGrid
         loading={userDataLoading}
         error={eventsError}
@@ -686,7 +629,7 @@ const handleRestoreRegistration = useCallback(async (registrationId, event, team
         setSearchQuery={setSearchQuery}
         handleViewDetails={handleViewDetails}
         handleEnroll={openRegistrationModal}
-        handleRestoreRegistration={handleRestoreRegistration} // 👈 RESTORE HANDLER PASSED HERE
+        handleRestoreRegistration={handleRestoreRegistration}
         isAuthenticated={isAuthenticated}
         userRegistrations={userRegistrations}
         enrollingEventId={enrollingEventId}
@@ -719,7 +662,7 @@ const handleRestoreRegistration = useCallback(async (registrationId, event, team
           formatDate={formatDate}
           formatTime={formatTime}
           handleEnroll={handleEnroll}
-          handleRestoreRegistration={handleRestoreRegistration} // 👈 ALSO PASS TO MODAL
+          handleRestoreRegistration={handleRestoreRegistration}
           isAuthenticated={isAuthenticated}
           token={token}
           user={user}
@@ -736,19 +679,18 @@ const handleRestoreRegistration = useCallback(async (registrationId, event, team
           event={selectedEvent}
           userTeams={userTeams}
           onEnroll={handleEnroll}
-          onRestore={handleRestoreRegistration} // 👈 PASS RESTORE HANDLER TO REGISTRATION MODAL
+          onRestore={handleRestoreRegistration}
           loading={enrollingEventId === selectedEvent._id}
           isAuthenticated={isAuthenticated}
           token={token}
           user={user}
           userEnrollments={userRegistrations}
+          refreshTeams={fetchUserData}
         />
       )}
 
       {/* Back to Top Button */}
-      {!eventsLoading && !eventsError && filteredEvents.length > 0 && (
-        <BackToTopButton />
-      )}
+      {!eventsLoading && !eventsError && filteredEvents.length > 0 && <BackToTopButton />}
     </div>
   );
 };
