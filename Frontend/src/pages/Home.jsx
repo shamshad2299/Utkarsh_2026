@@ -40,15 +40,11 @@ const Home = () => {
 
       {/* EVENTS */}
       <section id="events" className="scroll-mt-28 relative">
-        <div className="absolute xl:-bottom-65 z-1 right-8 lg:right-5 lg:-bottom-50 md:-bottom-20 max-md:hidden">
-          <img 
-          src={Line} alt="" className="xl:w-350 lg:w-282 md:w-230" />
-        </div>
         <EventsSection />
       </section>
 
  {/* ABOUT */}
-      <section id="about" className="scroll-mt-28 lg:-mt-20 md:-mt-40">
+      <section id="about" className="scroll-mt-28 lg:-mt-20 md:-mt-40  mt-10">
         <AboutUs />
       </section>
       {/* GALLERY */}

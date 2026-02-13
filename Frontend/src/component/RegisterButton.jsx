@@ -4,7 +4,7 @@ import { useAuth } from "../Context/AuthContext";
 
 const RegisterButton = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user,logout } = useAuth();
 
   const handleClick = () => {
     if (user) {
