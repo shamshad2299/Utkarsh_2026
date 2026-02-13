@@ -19,68 +19,60 @@ const Navbar = () => {
     setIsMenuOpen(false);
   }, [location.pathname]);
 
-  const handleNavClick = (item) => {
-    if (item === "Home") {
-      if (location.pathname === "/") {
-        window.scrollTo({ top: 0, behavior: "smooth" });
-      } else {
-        navigate("/");
-      }
-      setIsMenuOpen(false);
-      return;
-    }
-
-    if (item === "Rulebook") {
-      window.open(rulebookPdf, "_blank");
-      setIsMenuOpen(false);
-      return;
-    }
-
-    if (item === "Schedule") {
-      window.open(schedulePdf, "_blank");
-      setIsMenuOpen(false);
-      return;
-    }
-
-    if (item === "Sponsorship form") {
-      navigate("/sponsorship_form");
-      setIsMenuOpen(false);
-      return;
-    }
-
-    if (item === "Food stall form") {
-      navigate("/food_stall_form");
-      setIsMenuOpen(false);
-      return;
-    }
-
-    if (item === "Profile") {
-      navigate("/profile");
-      setIsMenuOpen(false);
-      return;
-    }
-
-    if (item === "About") {
-      navigate("/about");
-      setIsMenuOpen(false);
-      return;
-    }
-
-    const sectionMap = {
-      Events: "events",
-    };
-
-    const sectionId = sectionMap[item];
-    if (!sectionId) return;
-
+const handleNavClick = (item) => {
+  if (item === "Home") {
     if (location.pathname === "/") {
-      document.getElementById(sectionId)?.scrollIntoView({ behavior: "smooth" });
+      window.scrollTo({ top: 0, behavior: "smooth" });
     } else {
-      navigate("/", { state: { scrollTo: sectionId } });
+      navigate("/");
     }
-
     setIsMenuOpen(false);
-  };
+    return;
+  }
+
+  if (item === "Events") {
+    navigate("/events");
+    setIsMenuOpen(false);
+    return;
+  }
+
+  if (item === "Rulebook") {
+    window.open(rulebookPdf, "_blank");
+    setIsMenuOpen(false);
+    return;
+  }
+
+  if (item === "Schedule") {
+    window.open(schedulePdf, "_blank");
+    setIsMenuOpen(false);
+    return;
+  }
+
+  if (item === "Sponsorship form") {
+    navigate("/sponsorship_form");
+    setIsMenuOpen(false);
+    return;
+  }
+
+  if (item === "Food stall form") {
+    navigate("/food_stall_form");
+    setIsMenuOpen(false);
+    return;
+  }
+
+  if (item === "Profile") {
+    navigate("/profile");
+    setIsMenuOpen(false);
+    return;
+  }
+
+  if (item === "About") {
+    navigate("/about");
+    setIsMenuOpen(false);
+    return;
+  }
+};
+
 
   const handleLogout = () => {
     logout();

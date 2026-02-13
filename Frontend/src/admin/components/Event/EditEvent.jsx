@@ -13,10 +13,12 @@ import {
   ArrowLeft,
   Image as ImageIcon,
   AlertCircle,
+  FileText,
 } from "lucide-react";
 import api from "../../api/axios.js";
 import { useParams, useNavigate } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import Swal from 'sweetalert2';
 
 // Constants
 const INITIAL_FORM_STATE = {
@@ -29,6 +31,7 @@ const INITIAL_FORM_STATE = {
   capacity: "",
   fee: 0,
   eventType: "solo",
+  event_rule: "", // 👈 NEW FIELD
 };
 
 const INITIAL_TEAM_SIZE = { min: 1, max: 1 };
@@ -57,8 +60,20 @@ const EditEvent = () => {
   const { data: categories = [], isLoading: categoriesLoading } = useQuery({
     queryKey: ["categories"],
     queryFn: async () => {
-      const response = await api.get("/category/get");
-      return response.data.data || [];
+      try {
+        const response = await api.get("/category/get");
+        return response.data.data || [];
+      } catch (error) {
+        console.error("Error fetching categories:", error);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'Failed to load categories',
+          timer: 2000,
+          showConfirmButton: false
+        });
+        return [];
+      }
     },
     staleTime: 5 * 60 * 1000,
   });
@@ -80,6 +95,13 @@ const EditEvent = () => {
         return response.data.data || [];
       } catch (error) {
         console.error("Error fetching subcategories:", error);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'Failed to load subcategories',
+          timer: 2000,
+          showConfirmButton: false
+        });
         return [];
       }
     },
@@ -99,11 +121,23 @@ const EditEvent = () => {
   const { data: event, isLoading: eventLoading } = useQuery({
     queryKey: ["event", id],
     queryFn: async () => {
-      const token = localStorage.getItem("accessToken");
-      const response = await api.get(`/events/${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      return response.data.data;
+      try {
+        const token = localStorage.getItem("accessToken");
+        const response = await api.get(`/events/${id}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        return response.data.data;
+      } catch (error) {
+        console.error("Error fetching event:", error);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'Failed to load event details',
+          timer: 2000,
+          showConfirmButton: false
+        });
+        return null;
+      }
     },
     enabled: !!id,
     staleTime: 0,
@@ -123,6 +157,7 @@ const EditEvent = () => {
         capacity: event.capacity || "",
         fee: event.fee || 0,
         eventType: event.eventType || "solo",
+        event_rule: event.event_rule || "", // 👈 NEW FIELD
       });
 
       // Set category and subcategory
@@ -148,12 +183,26 @@ const EditEvent = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["events"] });
       queryClient.invalidateQueries({ queryKey: ["event", id] });
-      alert("Event updated successfully!");
-      navigate("/admin/dashboard/events-list");
+      
+      Swal.fire({
+        icon: 'success',
+        title: 'Success!',
+        text: 'Event updated successfully!',
+        timer: 1500,
+        showConfirmButton: false
+      }).then(() => {
+        navigate("/admin/dashboard/events-list");
+      });
     },
     onError: (error) => {
       const message = error.response?.data?.message || "Failed to update event";
-      alert(message);
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: message,
+        timer: 2000,
+        showConfirmButton: false
+      });
       console.error("Update error:", error);
     },
   });
@@ -174,8 +223,14 @@ const EditEvent = () => {
     return date.toISOString().slice(0, 16);
   }, []);
 
-  // Handlers
+  // Handlers - FIXED: Added proper event checking
   const handleInputChange = useCallback((e) => {
+    // FIX: Check if e and e.target exist
+    if (!e || !e.target) {
+      console.error("Event or target is undefined", e);
+      return;
+    }
+    
     const { name, value } = e.target;
 
     setErrors((prev) => ({ ...prev, [name]: "" }));
@@ -202,7 +257,13 @@ const EditEvent = () => {
   }, []);
 
   const handleImageUpload = useCallback((e) => {
-    const files = Array.from(e.target.files);
+    // FIX: Check if e and e.target exist
+    if (!e || !e.target) {
+      console.error("Event or target is undefined", e);
+      return;
+    }
+    
+    const files = Array.from(e.target.files || []);
     
     if (existingImages.length + newImages.length + files.length > MAX_IMAGES) {
       setErrors((prev) => ({
@@ -259,34 +320,55 @@ const EditEvent = () => {
   }, []);
 
   const resetForm = useCallback(() => {
-    if (event) {
-      setFormData({
-        title: event.title || "",
-        description: event.description || "",
-        venueName: event.venueName || "",
-        startTime: formatDateTimeForInput(event.startTime),
-        endTime: formatDateTimeForInput(event.endTime),
-        registrationDeadline: formatDateTimeForInput(event.registrationDeadline),
-        capacity: event.capacity || "",
-        fee: event.fee || 0,
-        eventType: event.eventType || "solo",
-      });
+    // FIX: Add confirmation before reset
+    Swal.fire({
+      title: 'Reset Changes?',
+      text: 'Are you sure you want to reset all changes?',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#ef4444',
+      cancelButtonColor: '#6b7280',
+      confirmButtonText: 'Yes, Reset',
+      cancelButtonText: 'Cancel'
+    }).then((result) => {
+      if (result.isConfirmed && event) {
+        setFormData({
+          title: event.title || "",
+          description: event.description || "",
+          venueName: event.venueName || "",
+          startTime: formatDateTimeForInput(event.startTime),
+          endTime: formatDateTimeForInput(event.endTime),
+          registrationDeadline: formatDateTimeForInput(event.registrationDeadline),
+          capacity: event.capacity || "",
+          fee: event.fee || 0,
+          eventType: event.eventType || "solo",
+          event_rule: event.event_rule || "", // 👈 NEW FIELD
+        });
 
-      setSelectedCategory(event.category?._id || "");
-      setSelectedSubCategory(event.subCategory?._id || "");
-      setExistingImages(event.images || []);
-      setTeamSize({
-        min: event.teamSize?.min || 1,
-        max: event.teamSize?.max || 1,
-      });
-    }
+        setSelectedCategory(event.category?._id || "");
+        setSelectedSubCategory(event.subCategory?._id || "");
+        setExistingImages(event.images || []);
+        setTeamSize({
+          min: event.teamSize?.min || 1,
+          max: event.teamSize?.max || 1,
+        });
 
-    imagePreviews.forEach((preview) => {
-      URL.revokeObjectURL(preview.preview);
+        imagePreviews.forEach((preview) => {
+          URL.revokeObjectURL(preview.preview);
+        });
+        setNewImages([]);
+        setImagePreviews([]);
+        setErrors({});
+        
+        Swal.fire({
+          icon: 'success',
+          title: 'Reset!',
+          text: 'Form has been reset',
+          timer: 1500,
+          showConfirmButton: false
+        });
+      }
     });
-    setNewImages([]);
-    setImagePreviews([]);
-    setErrors({});
   }, [event, imagePreviews, formatDateTimeForInput]);
 
   const validateForm = useCallback(() => {
@@ -300,6 +382,7 @@ const EditEvent = () => {
     if (!formData.startTime) newErrors.startTime = "Start time is required";
     if (!formData.endTime) newErrors.endTime = "End time is required";
     if (!formData.registrationDeadline) newErrors.registrationDeadline = "Registration deadline is required";
+    if (!formData.event_rule?.trim()) newErrors.event_rule = "Event rules are required"; // 👈 NEW VALIDATION
 
     const capacity = parseInt(formData.capacity);
     if (!capacity || capacity < 1) {
@@ -337,6 +420,14 @@ const EditEvent = () => {
     if (!validateForm()) {
       const firstError = document.querySelector('[class*="border-red-300"]');
       firstError?.scrollIntoView({ behavior: "smooth", block: "center" });
+      
+      Swal.fire({
+        icon: 'error',
+        title: 'Validation Error',
+        text: 'Please fix the errors before submitting',
+        timer: 2000,
+        showConfirmButton: false
+      });
       return;
     }
 
@@ -381,7 +472,27 @@ const EditEvent = () => {
         <Header 
           title={formData.title} 
           eventId={id} 
-          onBack={() => navigate(-1)} 
+          onBack={() => {
+            // FIX: Add confirmation before leaving
+            if (hasUnsavedChanges()) {
+              Swal.fire({
+                title: 'Unsaved Changes',
+                text: 'You have unsaved changes. Are you sure you want to leave?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: 'Yes, Leave',
+                cancelButtonText: 'Stay'
+              }).then((result) => {
+                if (result.isConfirmed) {
+                  navigate(-1);
+                }
+              });
+            } else {
+              navigate(-1);
+            }
+          }} 
         />
 
         <form onSubmit={handleSubmit} className="space-y-6" noValidate>
@@ -400,7 +511,7 @@ const EditEvent = () => {
               <SelectField
                 label="Category *"
                 value={selectedCategory}
-                onChange={setSelectedCategory}
+                onChange={(value) => setSelectedCategory(value)}
                 options={categories}
                 optionLabel="name"
                 optionValue="_id"
@@ -412,7 +523,7 @@ const EditEvent = () => {
               <SelectField
                 label="Sub-category *"
                 value={selectedSubCategory}
-                onChange={setSelectedSubCategory}
+                onChange={(value) => setSelectedSubCategory(value)}
                 options={subCategories}
                 optionLabel="title"
                 optionValue="_id"
@@ -426,10 +537,16 @@ const EditEvent = () => {
                 label="Event Type *"
                 name="eventType"
                 value={formData.eventType}
-                onChange={handleInputChange}
+                onChange={(value) => {
+                  setFormData(prev => ({ ...prev, eventType: value }));
+                  if (value === "duo") {
+                    setTeamSize({ min: 2, max: 2 });
+                  } else if (value === "solo") {
+                    setTeamSize(INITIAL_TEAM_SIZE);
+                  }
+                }}
                 options={[
                   { value: "solo", label: "Solo" },
-                  { value: "duo", label: "Duo" },
                   { value: "team", label: "Team" },
                 ]}
                 optionLabel="label"
@@ -471,6 +588,24 @@ const EditEvent = () => {
                 rows={4}
                 error={errors.description}
               />
+            </div>
+          </Card>
+
+          {/* Event Rules Card - NEW */}
+          <Card icon={FileText} bgColor="bg-orange-600" title="Event Rules">
+            <div className="space-y-4">
+              <TextAreaField
+                label="Event Rules & Guidelines *"
+                name="event_rule"
+                value={formData.event_rule}
+                onChange={handleInputChange}
+                placeholder="Enter event rules, guidelines, prerequisites, etc..."
+                rows={6}
+                error={errors.event_rule}
+              />
+              <p className="text-sm text-gray-500 mt-2">
+                Include important rules, eligibility criteria, what to bring, dress code, etc.
+              </p>
             </div>
           </Card>
 
@@ -566,7 +701,26 @@ const EditEvent = () => {
 
           {/* Action Buttons */}
           <ActionButtons
-            onCancel={() => navigate(-1)}
+            onCancel={() => {
+              if (hasUnsavedChanges()) {
+                Swal.fire({
+                  title: 'Unsaved Changes',
+                  text: 'You have unsaved changes. Are you sure you want to cancel?',
+                  icon: 'warning',
+                  showCancelButton: true,
+                  confirmButtonColor: '#ef4444',
+                  cancelButtonColor: '#6b7280',
+                  confirmButtonText: 'Yes, Cancel',
+                  cancelButtonText: 'Stay'
+                }).then((result) => {
+                  if (result.isConfirmed) {
+                    navigate(-1);
+                  }
+                });
+              } else {
+                navigate(-1);
+              }
+            }}
             onReset={resetForm}
             isSubmitting={isSubmitting}
           />
@@ -574,6 +728,12 @@ const EditEvent = () => {
       </div>
     </div>
   );
+};
+
+// Helper function to check unsaved changes
+const hasUnsavedChanges = () => {
+  // Implement your logic to check if there are unsaved changes
+  return false; // Placeholder
 };
 
 // Sub-components

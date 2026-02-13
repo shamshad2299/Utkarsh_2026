@@ -26,9 +26,11 @@ import {
   TrendingUp,
   CheckCircle,
 } from "lucide-react";
+import Swal from 'sweetalert2';
 import { useAuth } from "../Context/AuthContext";
 import { api } from "../api/axios";
-import ProfileModal from "./ProfileModal"; // Modal component import karein
+import ProfileModal from "./ProfileModal";
+import TeamManagementModal from "./Team/TeamManagementModal";
 
 export default function SummaryCard() {
   const navigate = useNavigate();
@@ -42,8 +44,16 @@ export default function SummaryCard() {
   const [saveMessage, setSaveMessage] = useState({ type: "", text: "" });
   const [unEnrollingId, setUnEnrollingId] = useState(null);
   
-  // Modal state
+  // Team stats state
+  const [teamStats, setTeamStats] = useState({
+    totalTeams: 0,
+    totalMembers: 0,
+    teamsLed: 0
+  });
+
+  // Modal states
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isTeamModalOpen, setIsTeamModalOpen] = useState(false);
 
   // Stats state
   const [stats, setStats] = useState({
@@ -57,6 +67,10 @@ export default function SummaryCard() {
   // Modal functions
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => setIsModalOpen(false);
+
+  // Team modal functions
+  const openTeamModal = () => setIsTeamModalOpen(true);
+  const closeTeamModal = () => setIsTeamModalOpen(false);
 
   useEffect(() => {
     if (!authUser) {
@@ -76,7 +90,37 @@ export default function SummaryCard() {
     });
 
     fetchUserRegistrations();
+    fetchTeamStats();
   }, [authUser, navigate]);
+
+  // Fetch team statistics
+  const fetchTeamStats = async () => {
+    try {
+      const token = localStorage.getItem("accessToken");
+      if (!token) return;
+
+      const response = await api.get("/teams/my", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const teams = response.data?.data || [];
+      
+      // Calculate stats
+      const totalTeams = teams.length;
+      const totalMembers = teams.reduce((acc, team) => 
+        acc + 1 + (team.teamMembers?.length || 0), 0
+      );
+      const teamsLed = teams.filter(team => 
+        team.teamLeader?._id === authUser?._id || team.teamLeader === authUser?._id
+      ).length;
+
+      setTeamStats({ totalTeams, totalMembers, teamsLed });
+    } catch (error) {
+      console.error("Error fetching team stats:", error);
+    }
+  };
 
   // Fetch actual registered events from API
   const fetchUserRegistrations = async () => {
@@ -105,6 +149,13 @@ export default function SummaryCard() {
     } catch (error) {
       console.error("Error fetching registrations:", error);
       setRegistrations([]);
+      Swal.fire({
+        icon: 'error',
+        title: 'Oops...',
+        text: 'Failed to load registrations',
+        timer: 2000,
+        showConfirmButton: false
+      });
     } finally {
       setLoadingRegistrations(false);
       setLoading(false);
@@ -145,30 +196,69 @@ export default function SummaryCard() {
     });
   };
 
-  // Unenroll/Delete registration function
-  const handleUnenroll = async (registrationId, eventTitle) => {
-    if (
-      !window.confirm(`Are you sure you want to unenroll from "${eventTitle}"?`)
-    ) {
-      return;
-    }
+  // Unenroll function with SweetAlert2
+  const handleUnenroll = (registrationId, eventTitle) => {
+    Swal.fire({
+      title: 'Unenroll from Event?',
+      text: `Are you sure you want to unenroll from "${eventTitle}"?`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#ef4444',
+      cancelButtonColor: '#6b7280',
+      confirmButtonText: 'Yes, Unenroll',
+      cancelButtonText: 'Cancel',
+      reverseButtons: true,
+      showLoaderOnConfirm: true,
+      preConfirm: () => {
+        return performUnenroll(registrationId, eventTitle);
+      },
+      allowOutsideClick: () => !Swal.isLoading()
+    }).then((result) => {
+      if (result.isConfirmed) {
+        Swal.fire({
+          icon: 'success',
+          title: 'Unenrolled!',
+          text: `You have been unenrolled from "${eventTitle}"`,
+          timer: 2000,
+          showConfirmButton: false
+        });
+        
+        Swal.fire({
+          icon: 'warning',
+          title: 'Note',
+          text: 'You cannot enroll again in this event',
+          timer: 3000,
+          showConfirmButton: false
+        });
+      }
+    });
+  };
 
+  // Actual unenroll function
+  const performUnenroll = async (registrationId, eventTitle) => {
     try {
       setUnEnrollingId(registrationId);
       const token = localStorage.getItem("accessToken");
 
       if (!token) {
-        alert("Authentication token not found. Please login again.");
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'Please login again',
+          timer: 2000,
+          showConfirmButton: false
+        });
         return;
       }
 
       const response = await api.patch(
         `/registrations/${registrationId}/cancel`,
+        {},
         {
           headers: {
             Authorization: `Bearer ${token}`,
           },
-        },
+        }
       );
 
       if (response.data.success) {
@@ -179,18 +269,22 @@ export default function SummaryCard() {
 
         // Recalculate stats
         const updatedRegistrations = registrations.filter(
-          (reg) => reg._id !== registrationId,
+          (reg) => reg._id !== registrationId
         );
         calculateStats(updatedRegistrations);
 
-        alert("Successfully unenrolled from the event!");
+        return true;
       }
     } catch (error) {
       console.error("Error unenrolling:", error);
-      alert(
-        error.response?.data?.message ||
-          "Failed to unenroll. Please try again.",
-      );
+      Swal.fire({
+        icon: 'error',
+        title: 'Failed!',
+        text: error.response?.data?.message || "Failed to unenroll",
+        timer: 2000,
+        showConfirmButton: false
+      });
+      return false;
     } finally {
       setUnEnrollingId(null);
     }
@@ -287,7 +381,13 @@ export default function SummaryCard() {
       });
 
       if (Object.keys(updates).length === 0) {
-        setSaveMessage({ type: "warning", text: "No changes to save" });
+        Swal.fire({
+          icon: 'info',
+          title: 'No Changes',
+          text: 'No changes to save',
+          timer: 1500,
+          showConfirmButton: false
+        });
         setIsEditing(false);
         setIsSaving(false);
         return;
@@ -312,17 +412,23 @@ export default function SummaryCard() {
         // Refresh the page to get updated data from context
         window.location.reload();
 
-        setSaveMessage({
-          type: "success",
-          text: "Profile updated successfully!",
+        Swal.fire({
+          icon: 'success',
+          title: 'Success!',
+          text: 'Profile updated successfully!',
+          timer: 1500,
+          showConfirmButton: false
         });
         setIsEditing(false);
       }
     } catch (error) {
       console.error("Error updating profile:", error);
-      setSaveMessage({
-        type: "error",
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
         text: error.response?.data?.message || "Failed to update profile",
+        timer: 2000,
+        showConfirmButton: false
       });
     } finally {
       setIsSaving(false);
@@ -345,8 +451,28 @@ export default function SummaryCard() {
   };
 
   const handleLogout = () => {
-    logout();
-    navigate("/login");
+    Swal.fire({
+      title: 'Logout?',
+      text: 'Are you sure you want to logout?',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#ef4444',
+      cancelButtonColor: '#6b7280',
+      confirmButtonText: 'Yes, Logout',
+      cancelButtonText: 'Cancel'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        logout();
+        navigate("/login");
+        Swal.fire({
+          icon: 'success',
+          title: 'Logged Out!',
+          text: 'You have been logged out successfully',
+          timer: 1500,
+          showConfirmButton: false
+        });
+      }
+    });
   };
 
   const handleViewAllEvents = () => {
@@ -355,7 +481,6 @@ export default function SummaryCard() {
 
   const handleViewEvent = (eventId) => {
     navigate(`/${eventId}`);
-    console.log(eventId)
   };
 
   const formatDateTime = (date) =>
@@ -367,6 +492,9 @@ export default function SummaryCard() {
   if (!authUser) {
     return null;
   }
+
+  // Get token from localStorage
+  const token = localStorage.getItem("accessToken");
 
   return (
     <div className="min-h-screen bg-[#0a0a2e] sm:p-6 p-3">
@@ -381,7 +509,7 @@ export default function SummaryCard() {
                 {/* View Profile Button */}
                 <button
                   onClick={openModal}
-                  className="absolute top-4 right-4 bg-white/20 text-white p-2 rounded-full hover:bg-white/30 transition-colors"
+                  className="absolute top-4 right-4 bg-white/20 text-white p-2 rounded-full hover:bg-white/30 transition-colors cursor-pointer"
                   title="View Full Profile"
                 >
                   <Eye className="w-4 h-4" />
@@ -834,7 +962,13 @@ export default function SummaryCard() {
                             <button
                               className="flex-1 bg-yellow-500 text-white rounded-full py-2 px-4 flex items-center justify-center gap-2 hover:bg-yellow-600 transition-colors cursor-pointer"
                               onClick={() => {
-                                alert("Payment integration will be added here");
+                                Swal.fire({
+                                  icon: 'info',
+                                  title: 'Payment',
+                                  text: 'Payment integration will be added here',
+                                  timer: 2000,
+                                  showConfirmButton: false
+                                });
                               }}
                             >
                               <IndianRupee className="w-4 h-4" />
@@ -883,7 +1017,7 @@ export default function SummaryCard() {
             </div>
 
             {/* Additional Information Card */}
-            <div className="bg-gradient-to-r from-[#7c7cf5] to-[#9f9ff7] rounded-3xl p-6">
+            <div className="bg-linear-to-r from-[#7c7cf5] to-[#9f9ff7] rounded-3xl p-6">
               <div className="flex items-center gap-3 mb-4">
                 <AlertCircle className="w-6 h-6 text-white" />
                 <h2 className="text-2xl font-serif text-white">
@@ -918,6 +1052,74 @@ export default function SummaryCard() {
                 <span className="font-medium">Logout</span>
               </button>
             </div>
+
+            {/* Dynamic Manage Team Section */}
+            <div className="bg-white rounded-2xl shadow-lg p-6 hover:shadow-2xl transition-all duration-300 border border-gray-100">
+              {/* Header with dynamic badge */}
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-semibold text-gray-800">
+                  Manage Team
+                </h2>
+                <span className={`text-xs px-3 py-1 rounded-full ${
+                  teamStats.teamsLed > 0 
+                    ? 'bg-green-100 text-green-600' 
+                    : 'bg-blue-100 text-blue-600'
+                }`}>
+                  {teamStats.teamsLed > 0 ? 'Leader' : 'Member'}
+                </span>
+              </div>
+
+              {/* Description */}
+              <p className="text-gray-500 text-sm mb-6">
+                {teamStats.totalTeams > 0 
+                  ? `You are part of ${teamStats.totalTeams} team${teamStats.totalTeams > 1 ? 's' : ''}`
+                  : "You haven't joined any teams yet"}
+              </p>
+
+              {/* Dynamic Stats Section */}
+              <div className="grid grid-cols-3 gap-4 mb-6">
+                <div className="text-center">
+                  <p className="text-2xl font-bold text-gray-800">{teamStats.totalTeams}</p>
+                  <p className="text-xs text-gray-400">Total Teams</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-2xl font-bold text-green-600">{teamStats.totalMembers}</p>
+                  <p className="text-xs text-gray-400">Team Members</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-2xl font-bold text-purple-600">{teamStats.teamsLed}</p>
+                  <p className="text-xs text-gray-400">Teams Led</p>
+                </div>
+              </div>
+
+              {/* Quick Team Preview - Show if teams exist */}
+              {teamStats.totalTeams > 0 && (
+                <div className="mb-4 p-3 bg-purple-50 rounded-lg">
+                  <p className="text-xs text-purple-600 font-medium mb-2">
+                    Quick Summary
+                  </p>
+                  <p className="text-xs text-gray-600">
+                    You're leading {teamStats.teamsLed} team{teamStats.teamsLed !== 1 ? 's' : ''} 
+                    {teamStats.teamsLed > 0 && teamStats.totalTeams - teamStats.teamsLed > 0 
+                      ? ` and member of ${teamStats.totalTeams - teamStats.teamsLed} other team${teamStats.totalTeams - teamStats.teamsLed !== 1 ? 's' : ''}`
+                      : teamStats.teamsLed === teamStats.totalTeams && teamStats.totalTeams > 0
+                        ? ' (all teams you lead)'
+                        : ''
+                    }
+                  </p>
+                </div>
+              )}
+
+              {/* Button */}
+              <button
+                onClick={openTeamModal}
+                className="w-full bg-linear-to-r from-[#6b6bf1] to-[#9f9ff7] text-white py-3 rounded-xl font-semibold hover:scale-105 transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <Users className="w-4 h-4" />
+                {teamStats.totalTeams > 0 ? 'Manage Teams' : 'Create Team'}
+                <ArrowRight className="w-4 h-4" />
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -930,6 +1132,14 @@ export default function SummaryCard() {
         registrations={registrations}
         loadingRegistrations={loadingRegistrations}
         stats={stats}
+      />
+
+      {/* Team Management Modal */}
+      <TeamManagementModal
+        isOpen={isTeamModalOpen}
+        onClose={closeTeamModal}
+        token={token}
+        user={authUser}
       />
     </div>
   );
