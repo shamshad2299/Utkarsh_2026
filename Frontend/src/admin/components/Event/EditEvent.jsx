@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from "react";
+import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import {
   Save,
   Upload,
@@ -31,7 +31,7 @@ const INITIAL_FORM_STATE = {
   capacity: "",
   fee: 0,
   eventType: "solo",
-  event_rule: "", // 👈 NEW FIELD
+  event_rule: "",
 };
 
 const INITIAL_TEAM_SIZE = { min: 1, max: 1 };
@@ -55,6 +55,10 @@ const EditEvent = () => {
   const [errors, setErrors] = useState({});
   const [formData, setFormData] = useState(INITIAL_FORM_STATE);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
+  const [unsavedChanges, setUnsavedChanges] = useState(false);
+
+  // Track form changes
+  const formChanged = useRef(false);
 
   // Queries
   const { data: categories = [], isLoading: categoriesLoading } = useQuery({
@@ -65,20 +69,12 @@ const EditEvent = () => {
         return response.data.data || [];
       } catch (error) {
         console.error("Error fetching categories:", error);
-        Swal.fire({
-          icon: 'error',
-          title: 'Error',
-          text: 'Failed to load categories',
-          timer: 2000,
-          showConfirmButton: false
-        });
         return [];
       }
     },
     staleTime: 5 * 60 * 1000,
   });
 
-  // Fix: Properly fetch subcategories with enabled flag
   const { 
     data: subCategories = [], 
     isLoading: subCategoriesLoading,
@@ -86,30 +82,19 @@ const EditEvent = () => {
   } = useQuery({
     queryKey: ["subCategories", selectedCategory],
     queryFn: async () => {
-      if (!selectedCategory) {
-        return [];
-      }
-      
+      if (!selectedCategory) return [];
       try {
         const response = await api.get(`/subCategory/get-by-categ/${selectedCategory}`);
         return response.data.data || [];
       } catch (error) {
         console.error("Error fetching subcategories:", error);
-        Swal.fire({
-          icon: 'error',
-          title: 'Error',
-          text: 'Failed to load subcategories',
-          timer: 2000,
-          showConfirmButton: false
-        });
         return [];
       }
     },
-    enabled: false, // Disable automatic fetching, we'll trigger it manually
-    staleTime: 2 * 60 * 1000,
+    enabled: false,
   });
 
-  // Force refetch when selectedCategory changes and has a value
+  // Force refetch when selectedCategory changes
   useEffect(() => {
     if (selectedCategory) {
       refetchSubCategories();
@@ -117,6 +102,45 @@ const EditEvent = () => {
       setSelectedSubCategory("");
     }
   }, [selectedCategory, refetchSubCategories]);
+
+  // ✅ FIXED: Proper date formatting function
+  const formatDateForInput = useCallback((dateString) => {
+    if (!dateString) return "";
+    
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) return "";
+      
+      // Get local date time string in YYYY-MM-DDTHH:mm format
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      const hours = String(date.getHours()).padStart(2, '0');
+      const minutes = String(date.getMinutes()).padStart(2, '0');
+      
+      return `${year}-${month}-${day}T${hours}:${minutes}`;
+    } catch (error) {
+      console.error("Date formatting error:", error);
+      return "";
+    }
+  }, []);
+
+  // ✅ FIXED: Convert input datetime to ISO string for API
+  const formatDateForAPI = useCallback((inputDateTime) => {
+    if (!inputDateTime) return null;
+    
+    try {
+      // Create date object from input (local time)
+      const date = new Date(inputDateTime);
+      if (isNaN(date.getTime())) return null;
+      
+      // Return ISO string for API
+      return date.toISOString();
+    } catch (error) {
+      console.error("Date conversion error:", error);
+      return null;
+    }
+  }, []);
 
   const { data: event, isLoading: eventLoading } = useQuery({
     queryKey: ["event", id],
@@ -140,46 +164,92 @@ const EditEvent = () => {
       }
     },
     enabled: !!id,
-    staleTime: 0,
   });
 
-  // Update form when event data is loaded
+  // ✅ FIXED: Update form when event data is loaded
   useEffect(() => {
     if (event) {
-      // Set form data
+      console.log("Event data received:", event);
+      
+      // Format dates properly
+      const formattedStartTime = formatDateForInput(event.startTime);
+      const formattedEndTime = formatDateForInput(event.endTime);
+      const formattedDeadline = formatDateForInput(event.registrationDeadline);
+      
+      console.log("Formatted dates:", {
+        start: formattedStartTime,
+        end: formattedEndTime,
+        deadline: formattedDeadline
+      });
+
       setFormData({
         title: event.title || "",
         description: event.description || "",
         venueName: event.venueName || "",
-        startTime: formatDateTimeForInput(event.startTime),
-        endTime: formatDateTimeForInput(event.endTime),
-        registrationDeadline: formatDateTimeForInput(event.registrationDeadline),
+        startTime: formattedStartTime,
+        endTime: formattedEndTime,
+        registrationDeadline: formattedDeadline,
         capacity: event.capacity || "",
         fee: event.fee || 0,
         eventType: event.eventType || "solo",
-        event_rule: event.event_rule || "", // 👈 NEW FIELD
+        event_rule: event.event_rule || "",
       });
 
-      // Set category and subcategory
       setSelectedCategory(event.category?._id || "");
       setSelectedSubCategory(event.subCategory?._id || "");
-      
-      // Set existing images
       setExistingImages(event.images || []);
-      
-      // Set team size
       setTeamSize({
         min: event.teamSize?.min || 1,
         max: event.teamSize?.max || 1,
       });
 
       setIsInitialLoad(false);
+      formChanged.current = false;
+      setUnsavedChanges(false);
     }
-  }, [event]);
+  }, [event, formatDateForInput]);
+
+  // Track unsaved changes
+  useEffect(() => {
+    if (!isInitialLoad && event) {
+      const hasChanges = 
+        formData.title !== event.title ||
+        formData.description !== event.description ||
+        formData.venueName !== event.venueName ||
+        formData.startTime !== formatDateForInput(event.startTime) ||
+        formData.endTime !== formatDateForInput(event.endTime) ||
+        formData.registrationDeadline !== formatDateForInput(event.registrationDeadline) ||
+        formData.capacity !== event.capacity ||
+        formData.fee !== event.fee ||
+        formData.eventType !== event.eventType ||
+        formData.event_rule !== event.event_rule ||
+        selectedCategory !== event.category?._id ||
+        selectedSubCategory !== event.subCategory?._id ||
+        teamSize.min !== event.teamSize?.min ||
+        teamSize.max !== event.teamSize?.max ||
+        existingImages.length !== event.images?.length ||
+        newImages.length > 0;
+
+      setUnsavedChanges(hasChanges);
+      formChanged.current = hasChanges;
+    }
+  }, [formData, selectedCategory, selectedSubCategory, teamSize, existingImages, newImages, event, isInitialLoad, formatDateForInput]);
 
   // Mutation
   const updateEventMutation = useMutation({
-    mutationFn: ({ id, formData }) => api.put(`/events/${id}`, formData),
+    mutationFn: async ({ id, formData }) => {
+      // Log the FormData contents for debugging
+      console.log("Submitting FormData:");
+      for (let pair of formData.entries()) {
+        console.log(pair[0], pair[1]);
+      }
+      
+      return await api.put(`/events/${id}`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["events"] });
       queryClient.invalidateQueries({ queryKey: ["event", id] });
@@ -195,6 +265,7 @@ const EditEvent = () => {
       });
     },
     onError: (error) => {
+      console.error("Update error:", error.response?.data);
       const message = error.response?.data?.message || "Failed to update event";
       Swal.fire({
         icon: 'error',
@@ -203,51 +274,42 @@ const EditEvent = () => {
         timer: 2000,
         showConfirmButton: false
       });
-      console.error("Update error:", error);
     },
   });
 
-  // Cleanup image previews on unmount
+  // Cleanup image previews
   useEffect(() => {
     return () => {
       imagePreviews.forEach((preview) => {
         URL.revokeObjectURL(preview.preview);
       });
     };
-  }, []);
+  }, [imagePreviews]);
 
-  // Helper functions
-  const formatDateTimeForInput = useCallback((dateString) => {
-    if (!dateString) return "";
-    const date = new Date(dateString);
-    return date.toISOString().slice(0, 16);
-  }, []);
-
-  // Handlers - FIXED: Added proper event checking
+  // Handlers
   const handleInputChange = useCallback((e) => {
-    // FIX: Check if e and e.target exist
-    if (!e || !e.target) {
-      console.error("Event or target is undefined", e);
-      return;
-    }
+    if (!e || !e.target) return;
     
-    const { name, value } = e.target;
+    const { name, value, type } = e.target;
 
     setErrors((prev) => ({ ...prev, [name]: "" }));
 
-    setFormData((prev) => {
-      const newFormData = { ...prev, [name]: value };
+    // Handle number inputs
+    if (type === 'number') {
+      const numValue = value === '' ? '' : Number(value);
+      setFormData((prev) => ({ ...prev, [name]: numValue }));
+    } else {
+      setFormData((prev) => ({ ...prev, [name]: value }));
+    }
 
-      if (name === "eventType") {
-        if (value === "duo") {
-          setTeamSize({ min: 2, max: 2 });
-        } else if (value === "solo") {
-          setTeamSize(INITIAL_TEAM_SIZE);
-        }
+    // Update team size based on event type
+    if (name === "eventType") {
+      if (value === "duo") {
+        setTeamSize({ min: 2, max: 2 });
+      } else if (value === "solo") {
+        setTeamSize(INITIAL_TEAM_SIZE);
       }
-
-      return newFormData;
-    });
+    }
   }, []);
 
   const handleTeamSizeChange = useCallback((field, value) => {
@@ -257,11 +319,7 @@ const EditEvent = () => {
   }, []);
 
   const handleImageUpload = useCallback((e) => {
-    // FIX: Check if e and e.target exist
-    if (!e || !e.target) {
-      console.error("Event or target is undefined", e);
-      return;
-    }
+    if (!e || !e.target) return;
     
     const files = Array.from(e.target.files || []);
     
@@ -320,7 +378,8 @@ const EditEvent = () => {
   }, []);
 
   const resetForm = useCallback(() => {
-    // FIX: Add confirmation before reset
+    if (!event) return;
+
     Swal.fire({
       title: 'Reset Changes?',
       text: 'Are you sure you want to reset all changes?',
@@ -331,18 +390,19 @@ const EditEvent = () => {
       confirmButtonText: 'Yes, Reset',
       cancelButtonText: 'Cancel'
     }).then((result) => {
-      if (result.isConfirmed && event) {
+      if (result.isConfirmed) {
+        // Reset to original event data
         setFormData({
           title: event.title || "",
           description: event.description || "",
           venueName: event.venueName || "",
-          startTime: formatDateTimeForInput(event.startTime),
-          endTime: formatDateTimeForInput(event.endTime),
-          registrationDeadline: formatDateTimeForInput(event.registrationDeadline),
+          startTime: formatDateForInput(event.startTime),
+          endTime: formatDateForInput(event.endTime),
+          registrationDeadline: formatDateForInput(event.registrationDeadline),
           capacity: event.capacity || "",
           fee: event.fee || 0,
           eventType: event.eventType || "solo",
-          event_rule: event.event_rule || "", // 👈 NEW FIELD
+          event_rule: event.event_rule || "",
         });
 
         setSelectedCategory(event.category?._id || "");
@@ -353,6 +413,7 @@ const EditEvent = () => {
           max: event.teamSize?.max || 1,
         });
 
+        // Clean up new image previews
         imagePreviews.forEach((preview) => {
           URL.revokeObjectURL(preview.preview);
         });
@@ -369,7 +430,7 @@ const EditEvent = () => {
         });
       }
     });
-  }, [event, imagePreviews, formatDateTimeForInput]);
+  }, [event, imagePreviews, formatDateForInput]);
 
   const validateForm = useCallback(() => {
     const newErrors = {};
@@ -382,21 +443,28 @@ const EditEvent = () => {
     if (!formData.startTime) newErrors.startTime = "Start time is required";
     if (!formData.endTime) newErrors.endTime = "End time is required";
     if (!formData.registrationDeadline) newErrors.registrationDeadline = "Registration deadline is required";
-    if (!formData.event_rule?.trim()) newErrors.event_rule = "Event rules are required"; // 👈 NEW VALIDATION
+    if (!formData.event_rule?.trim()) newErrors.event_rule = "Event rules are required";
 
     const capacity = parseInt(formData.capacity);
     if (!capacity || capacity < 1) {
       newErrors.capacity = "Valid capacity is required";
     }
 
+    // ✅ FIXED: Date validation with proper comparison
     if (formData.startTime && formData.endTime) {
-      if (new Date(formData.endTime) <= new Date(formData.startTime)) {
+      const start = new Date(formData.startTime);
+      const end = new Date(formData.endTime);
+      
+      if (end <= start) {
         newErrors.endTime = "End time must be after start time";
       }
     }
 
     if (formData.registrationDeadline && formData.startTime) {
-      if (new Date(formData.registrationDeadline) >= new Date(formData.startTime)) {
+      const deadline = new Date(formData.registrationDeadline);
+      const start = new Date(formData.startTime);
+      
+      if (deadline >= start) {
         newErrors.registrationDeadline = "Registration deadline must be before start time";
       }
     }
@@ -414,6 +482,7 @@ const EditEvent = () => {
     return Object.keys(newErrors).length === 0;
   }, [formData, selectedCategory, selectedSubCategory, teamSize]);
 
+  // ✅ FIXED: Handle submit with proper date formatting
   const handleSubmit = useCallback((e) => {
     e.preventDefault();
 
@@ -433,9 +502,19 @@ const EditEvent = () => {
 
     const data = new FormData();
 
+    // Add form data with properly formatted dates
     Object.entries(formData).forEach(([key, value]) => {
-      if (value !== undefined && value !== null) {
-        data.append(key, value.toString());
+      if (value !== undefined && value !== null && value !== '') {
+        // ✅ FIXED: Convert datetime-local to ISO string for API
+        if (key === 'startTime' || key === 'endTime' || key === 'registrationDeadline') {
+          const isoDate = formatDateForAPI(value);
+          if (isoDate) {
+            data.append(key, isoDate);
+            console.log(`Appending ${key}:`, isoDate);
+          }
+        } else {
+          data.append(key, value.toString());
+        }
       }
     });
 
@@ -452,8 +531,36 @@ const EditEvent = () => {
       data.append("images", image);
     });
 
+    // Log final data for debugging
+    console.log("Submitting event update with data:");
+    for (let pair of data.entries()) {
+      console.log(pair[0], pair[1]);
+    }
+
     updateEventMutation.mutate({ id, formData: data });
-  }, [formData, selectedCategory, selectedSubCategory, teamSize, existingImages, newImages, id, validateForm]);
+  }, [formData, selectedCategory, selectedSubCategory, teamSize, existingImages, newImages, id, validateForm, formatDateForAPI]);
+
+  // Handle navigation with unsaved changes
+  const handleBack = useCallback(() => {
+    if (unsavedChanges) {
+      Swal.fire({
+        title: 'Unsaved Changes',
+        text: 'You have unsaved changes. Are you sure you want to leave?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#ef4444',
+        cancelButtonColor: '#6b7280',
+        confirmButtonText: 'Yes, Leave',
+        cancelButtonText: 'Stay'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          navigate(-1);
+        }
+      });
+    } else {
+      navigate(-1);
+    }
+  }, [unsavedChanges, navigate]);
 
   // Memoized values
   const isTeamEvent = useMemo(() => formData.eventType === "team", [formData.eventType]);
@@ -465,6 +572,24 @@ const EditEvent = () => {
     return <LoadingScreen />;
   }
 
+  if (!event) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-purple-50">
+        <div className="text-center">
+          <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
+          <h2 className="text-xl font-bold text-gray-800 mb-2">Event Not Found</h2>
+          <p className="text-gray-600 mb-4">The event you're trying to edit doesn't exist.</p>
+          <button
+            onClick={() => navigate(-1)}
+            className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
+          >
+            Go Back
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-purple-50 p-4 md:p-6">
       <div className="max-w-6xl mx-auto">
@@ -472,27 +597,8 @@ const EditEvent = () => {
         <Header 
           title={formData.title} 
           eventId={id} 
-          onBack={() => {
-            // FIX: Add confirmation before leaving
-            if (hasUnsavedChanges()) {
-              Swal.fire({
-                title: 'Unsaved Changes',
-                text: 'You have unsaved changes. Are you sure you want to leave?',
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#ef4444',
-                cancelButtonColor: '#6b7280',
-                confirmButtonText: 'Yes, Leave',
-                cancelButtonText: 'Stay'
-              }).then((result) => {
-                if (result.isConfirmed) {
-                  navigate(-1);
-                }
-              });
-            } else {
-              navigate(-1);
-            }
-          }} 
+          onBack={handleBack}
+          unsavedChanges={unsavedChanges}
         />
 
         <form onSubmit={handleSubmit} className="space-y-6" noValidate>
@@ -511,7 +617,7 @@ const EditEvent = () => {
               <SelectField
                 label="Category *"
                 value={selectedCategory}
-                onChange={(value) => setSelectedCategory(value)}
+                onChange={setSelectedCategory}
                 options={categories}
                 optionLabel="name"
                 optionValue="_id"
@@ -523,14 +629,14 @@ const EditEvent = () => {
               <SelectField
                 label="Sub-category *"
                 value={selectedSubCategory}
-                onChange={(value) => setSelectedSubCategory(value)}
+                onChange={setSelectedSubCategory}
                 options={subCategories}
                 optionLabel="title"
                 optionValue="_id"
                 placeholder="Select Sub-category"
                 error={errors.subCategory}
                 disabled={!selectedCategory}
-                loading={subCategoriesLoading && selectedCategory ? true : false}
+                loading={subCategoriesLoading && selectedCategory}
               />
 
               <SelectField
@@ -547,6 +653,7 @@ const EditEvent = () => {
                 }}
                 options={[
                   { value: "solo", label: "Solo" },
+                  { value: "duo", label: "Duo" },
                   { value: "team", label: "Team" },
                 ]}
                 optionLabel="label"
@@ -591,7 +698,7 @@ const EditEvent = () => {
             </div>
           </Card>
 
-          {/* Event Rules Card - NEW */}
+          {/* Event Rules Card */}
           <Card icon={FileText} bgColor="bg-orange-600" title="Event Rules">
             <div className="space-y-4">
               <TextAreaField
@@ -609,7 +716,7 @@ const EditEvent = () => {
             </div>
           </Card>
 
-          {/* Date & Time Card */}
+          {/* Date & Time Card - FIXED */}
           <Card icon={Calendar} bgColor="bg-blue-600" title="Date & Time">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <DateTimeField
@@ -701,39 +808,15 @@ const EditEvent = () => {
 
           {/* Action Buttons */}
           <ActionButtons
-            onCancel={() => {
-              if (hasUnsavedChanges()) {
-                Swal.fire({
-                  title: 'Unsaved Changes',
-                  text: 'You have unsaved changes. Are you sure you want to cancel?',
-                  icon: 'warning',
-                  showCancelButton: true,
-                  confirmButtonColor: '#ef4444',
-                  cancelButtonColor: '#6b7280',
-                  confirmButtonText: 'Yes, Cancel',
-                  cancelButtonText: 'Stay'
-                }).then((result) => {
-                  if (result.isConfirmed) {
-                    navigate(-1);
-                  }
-                });
-              } else {
-                navigate(-1);
-              }
-            }}
+            onCancel={handleBack}
             onReset={resetForm}
             isSubmitting={isSubmitting}
+            unsavedChanges={unsavedChanges}
           />
         </form>
       </div>
     </div>
   );
-};
-
-// Helper function to check unsaved changes
-const hasUnsavedChanges = () => {
-  // Implement your logic to check if there are unsaved changes
-  return false; // Placeholder
 };
 
 // Sub-components
@@ -746,7 +829,7 @@ const LoadingScreen = () => (
   </div>
 );
 
-const Header = ({ title, eventId, onBack }) => (
+const Header = ({ title, eventId, onBack, unsavedChanges }) => (
   <div className="mb-8">
     <button
       onClick={onBack}
@@ -764,6 +847,7 @@ const Header = ({ title, eventId, onBack }) => (
         </h1>
         <p className="text-gray-600">
           Update the details for "{title || 'Event'}"
+          {unsavedChanges && <span className="ml-2 text-yellow-600">(Unsaved changes)</span>}
         </p>
       </div>
 
@@ -775,6 +859,30 @@ const Header = ({ title, eventId, onBack }) => (
     </div>
   </div>
 );
+
+// ... (rest of your sub-components remain the same)
+
+// DateTimeField component with proper type
+const DateTimeField = ({ label, icon: Icon, error, ...props }) => (
+  <div className="space-y-2">
+    <label className="block text-sm font-medium text-gray-700">{label}</label>
+    <div className="relative">
+      <Icon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-500" />
+      <input
+        {...props}
+        type="datetime-local"
+        className={`w-full pl-12 pr-4 py-3 border rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition ${
+          error
+            ? "border-red-300 bg-red-50"
+            : "border-gray-300 bg-gray-50"
+        }`}
+      />
+    </div>
+    {error && <ErrorMessage message={error} />}
+  </div>
+);
+
+// ... (keep all other sub-components exactly as they were)
 
 const Card = ({ icon: Icon, bgColor, title, children }) => (
   <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-lg hover:shadow-xl transition-shadow">
@@ -878,25 +986,6 @@ const SelectField = ({
           <div className="w-4 h-4" />
         )}
       </div>
-    </div>
-    {error && <ErrorMessage message={error} />}
-  </div>
-);
-
-const DateTimeField = ({ label, icon: Icon, error, ...props }) => (
-  <div className="space-y-2">
-    <label className="block text-sm font-medium text-gray-700">{label}</label>
-    <div className="relative">
-      <Icon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-500" />
-      <input
-        {...props}
-        type="datetime-local"
-        className={`w-full pl-12 pr-4 py-3 border rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition ${
-          error
-            ? "border-red-300 bg-red-50"
-            : "border-gray-300 bg-gray-50"
-        }`}
-      />
     </div>
     {error && <ErrorMessage message={error} />}
   </div>
@@ -1071,7 +1160,7 @@ const ImageCard = ({ src, alt, onRemove, overlayText, overlayColor = "from-black
   </div>
 );
 
-const ActionButtons = ({ onCancel, onReset, isSubmitting }) => (
+const ActionButtons = ({ onCancel, onReset, isSubmitting, unsavedChanges }) => (
   <div className="flex flex-col sm:flex-row gap-4 pt-6 border-t border-gray-200">
     <button
       type="button"
@@ -1105,7 +1194,7 @@ const ActionButtons = ({ onCancel, onReset, isSubmitting }) => (
       ) : (
         <>
           <Save className="w-5 h-5" />
-          Update Event
+          Update Event {unsavedChanges && '(Unsaved)'}
         </>
       )}
     </button>
