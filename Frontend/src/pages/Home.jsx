@@ -1,6 +1,4 @@
 import HeroSection from "../component/HeroSection";
-import MonumentBottom from "../component/MonumentBottom";
-import BackgroundGlow from "../component/BackgroundGlow";
 import EventsSection from "../component/EventsSection";
 import EventGallerySection from "../component/EventGallerySection";
 import AboutUs from "../component/AboutUs";
@@ -27,21 +25,12 @@ const Home = () => {
     <div className="w-full overflow-x-hidden">
 
       {/* ================= HERO ================= */}
-      <section id="hero" className="relative overflow-hidden">
+      <section id="hero" className="relative overflow-hidden ">
 
-        {/* Background Glow */}
-        <div className="absolute inset-0 pointer-events-none z-0">
-          <BackgroundGlow />
-        </div>
 
         {/* Hero Content */}
-        <div className="relative z-10">
+        <div className="relative z-10 ">
           <HeroSection />
-        </div>
-
-        {/* Monument Bottom - Always bottom 0 */}
-        <div className="absolute bottom-0 left-0 right-0 pointer-events-none z-20">
-          <MonumentBottom />
         </div>
 
       </section>
@@ -51,23 +40,23 @@ const Home = () => {
         <EventsSection />
       </section>
 
- {/* ABOUT */}
-      <section id="about" className="scroll-mt-28 lg:-mt-20 md:-mt-40  mt-10">
+      {/* ABOUT */}
+      <section id="about" className="scroll-mt-28 mt-10 ">
         <AboutUs />
       </section>
 
       {/* ================= GALLERY ================= */}
-      <section id="schedule" className="scroll-mt-28 py-20">
+      <section id="schedule" className="scroll-mt-28 pt-20">
         <EventGallerySection />
       </section>
 
       {/* ================= EDM ================= */}
-      <section className="scroll-mt-28 py-20">
+      <section className="scroll-mt-28 pb-10">
         <EDM />
       </section>
 
       {/* ================= TEAM ================= */}
-      <section id="team" className="scroll-mt-28 py-20">
+      <section id="team" className="scroll-mt-20 py-10">
         <TeamSection />
       </section>
 

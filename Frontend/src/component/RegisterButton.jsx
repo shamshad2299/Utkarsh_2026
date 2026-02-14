@@ -17,13 +17,13 @@ const RegisterButton = () => {
   return (
     <button
       onClick={handleClick}
-      className="flex items-center justify-between bg-white rounded-2xl shadow-xl hover:scale-105 transition-transform active:scale-95 cursor-pointer"
+      className="flex  items-center justify-between bg-white rounded-2xl shadow-xl hover:scale-105 transition-transform active:scale-95 cursor-pointer"
       style={{
         paddingLeft: "clamp(18px, 3vw, 40px)",
         paddingRight: "clamp(12px, 1.6vw, 16px)",
         paddingTop: "clamp(12px, 1.8vw, 16px)",
         paddingBottom: "clamp(12px, 1.8vw, 16px)",
-        minWidth: "clamp(240px, 28vw, 340px)",
+        minWidth: "clamp(200px, 28vw, 340px)",
       }}
     >
       <span
