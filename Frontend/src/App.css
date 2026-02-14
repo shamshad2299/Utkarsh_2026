@@ -379,4 +379,498 @@ body.sidebar-open {
   color: #3b82f6 !important;
 }
 
+/* Loader.css */
+/* component/Loader/VirasatLoader.css - FIXED VERSION */
 
+.virasat-loader-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+ 
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  overflow: hidden;
+}
+
+/* Mandala Pattern Background */
+.mandala-pattern {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background-image: 
+    radial-gradient(circle at 20% 30%, rgba(255, 215, 0, 0.1) 0%, transparent 15%),
+    radial-gradient(circle at 80% 70%, rgba(255, 140, 0, 0.1) 0%, transparent 20%),
+    radial-gradient(circle at 40% 80%, rgba(255, 215, 0, 0.1) 0%, transparent 18%),
+    radial-gradient(circle at 70% 20%, rgba(255, 140, 0, 0.1) 0%, transparent 22%);
+  animation: mandalaMove 20s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes mandalaMove {
+  0% { transform: rotate(0deg) scale(1); }
+  50% { transform: rotate(180deg) scale(1.1); }
+  100% { transform: rotate(360deg) scale(1); }
+}
+
+.loader-content {
+  position: relative;
+  width: 100%;
+  max-width: 700px;
+  text-align: center;
+  z-index: 10;
+  padding: 20px;
+}
+
+/* Toran Animation - MOVED TO TOP */
+.toran-container {
+  position: relative;
+  height: 70px;
+  margin-bottom: 20px;
+  z-index: 15;
+}
+
+.toran-top {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 250px;
+  height: 12px;
+  background: linear-gradient(90deg, #FFD700, #FFA500, #FFD700);
+  border-radius: 12px 12px 0 0;
+  animation: toranGlow 2s ease-in-out infinite;
+  box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+}
+
+.toran-leaf {
+  position: absolute;
+  top: 8px;
+  width: 35px;
+  height: 35px;
+  background: #4CAF50;
+  clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+  animation: leafWave 3s ease-in-out infinite;
+  filter: drop-shadow(0 5px 5px rgba(0,0,0,0.2));
+}
+
+.leaf-1 { left: 30%; animation-delay: 0s; }
+.leaf-2 { left: 40%; animation-delay: 0.2s; }
+.leaf-3 { left: 50%; animation-delay: 0.4s; }
+.leaf-4 { left: 60%; animation-delay: 0.6s; }
+.leaf-5 { left: 70%; animation-delay: 0.8s; }
+
+@keyframes leafWave {
+  0%, 100% { transform: rotate(0deg) scale(1); }
+  50% { transform: rotate(5deg) scale(1.1); background: #8BC34A; }
+}
+
+@keyframes toranGlow {
+  0%, 100% { box-shadow: 0 0 20px #FFD700; }
+  50% { box-shadow: 0 0 40px #FFA500; }
+}
+
+/* Charkha Animation - CENTERED */
+.charkha-container {
+  position: relative;
+  width: 130px;
+  height: 130px;
+  margin: 10px auto 20px;
+  animation: charkhaFloat 3s ease-in-out infinite;
+  z-index: 20;
+}
+
+.charkha {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  animation: rotateCharkha 8s linear infinite;
+}
+
+.charkha-circle {
+  position: absolute;
+  top: 10%;
+  left: 10%;
+  width: 80%;
+  height: 80%;
+  border: 4px solid #FFD700;
+  border-radius: 50%;
+  box-shadow: 0 0 30px rgba(255, 215, 0, 0.6);
+}
+
+.charkha-spoke {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 3px;
+  height: 55px;
+  background: linear-gradient(180deg, #FFD700, #FFA500);
+  transform-origin: 0% 0%;
+  animation: spokeGlow 2s ease-in-out infinite;
+  border-radius: 2px;
+}
+
+.spoke-1 { transform: rotate(0deg) translateY(-27px); }
+.spoke-2 { transform: rotate(45deg) translateY(-27px); }
+.spoke-3 { transform: rotate(90deg) translateY(-27px); }
+.spoke-4 { transform: rotate(135deg) translateY(-27px); }
+.spoke-5 { transform: rotate(180deg) translateY(-27px); }
+.spoke-6 { transform: rotate(225deg) translateY(-27px); }
+.spoke-7 { transform: rotate(270deg) translateY(-27px); }
+.spoke-8 { transform: rotate(315deg) translateY(-27px); }
+
+@keyframes rotateCharkha {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes spokeGlow {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+@keyframes charkhaFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+/* Text Container - CLEAR SPACE */
+.virasat-text-container {
+  margin: 20px 0 30px;
+  position: relative;
+  z-index: 30;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 20px;
+  border-radius: 20px;
+  backdrop-filter: blur(5px);
+  border: 1px solid rgba(255, 215, 0, 0.3);
+}
+
+.virasat-title {
+  margin-bottom: 25px;
+}
+
+.hindi-text {
+  display: block;
+  font-size: 2.8rem;
+  font-weight: bold;
+  color: #FFD700;
+  text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.4);
+  animation: hindiGlow 2s ease-in-out infinite;
+  font-family: 'Anek Devanagari', sans-serif;
+  line-height: 1.3;
+}
+
+.english-text {
+  display: block;
+  font-size: 1.8rem;
+  color: #FFF;
+  letter-spacing: 3px;
+  opacity: 0.95;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+}
+
+@keyframes hindiGlow {
+  0%, 100% { text-shadow: 3px 3px 6px rgba(0,0,0,0.4); }
+  50% { text-shadow: 0 0 25px #FFD700, 3px 3px 6px rgba(0,0,0,0.4); }
+}
+
+/* Loading Bar */
+.loading-bar-container {
+  width: 350px;
+  height: 25px;
+  margin: 25px auto;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 15px;
+  overflow: hidden;
+  position: relative;
+  border: 2px solid rgba(255, 215, 0, 0.3);
+}
+
+.loading-bar {
+  width: 0%;
+  height: 100%;
+  background: linear-gradient(90deg, #FF9933, #FFFFFF, #138808);
+  animation: loadProgress 2.5s ease-in-out infinite;
+  position: relative;
+}
+
+.loading-bar::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(90deg, 
+    transparent,
+    rgba(255, 255, 255, 0.5),
+    transparent);
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes loadProgress {
+  0% { width: 0%; }
+  50% { width: 70%; }
+  100% { width: 100%; }
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+/* Cultural Elements - HORIZONTAL LINE */
+.cultural-elements {
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+  margin: 25px 0;
+  flex-wrap: wrap;
+}
+
+.cultural-elements .element {
+  font-size: 2.5rem;
+  animation: elementBounce 2s ease-in-out infinite;
+  filter: drop-shadow(0 0 15px rgba(255, 215, 0, 0.6));
+  background: rgba(255, 255, 255, 0.1);
+  padding: 10px;
+  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cultural-elements .element:nth-child(1) { animation-delay: 0s; }
+.cultural-elements .element:nth-child(2) { animation-delay: 0.2s; }
+.cultural-elements .element:nth-child(3) { animation-delay: 0.4s; }
+.cultural-elements .element:nth-child(4) { animation-delay: 0.6s; }
+.cultural-elements .element:nth-child(5) { animation-delay: 0.8s; }
+
+@keyframes elementBounce {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-15px) rotate(5deg); }
+}
+
+/* Sanskrit Text - CLEAR AND VISIBLE */
+.loading-subtitle {
+  margin-top: 25px;
+  padding: 15px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 15px;
+  border-left: 4px solid #FFD700;
+  border-right: 4px solid #FFD700;
+}
+
+.sanskrit {
+  display: block;
+  font-size: 1.3rem;
+  color: #FFD700;
+  font-style: italic;
+  margin-bottom: 8px;
+  font-family: 'Noto Sans Devanagari', sans-serif;
+  font-weight: bold;
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+}
+
+.meaning {
+  display: block;
+  font-size: 1rem;
+  color: #FFF;
+  opacity: 0.9;
+  letter-spacing: 1px;
+}
+
+/* Traditional Motifs - REPOSITIONED TO CORNERS */
+.traditional-motifs {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 5;
+}
+
+.motif {
+  position: absolute;
+  width: 50px;
+  height: 50px;
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.2), rgba(255, 140, 0, 0.2));
+  clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+  animation: motifFloat 4s ease-in-out infinite;
+}
+
+.motif-1 {
+  top: 10%;
+  left: 5%;
+  transform: rotate(-15deg);
+  animation-delay: 0s;
+}
+
+.motif-2 {
+  top: 15%;
+  right: 5%;
+  transform: rotate(15deg);
+  animation-delay: 0.5s;
+}
+
+.motif-3 {
+  bottom: 20%;
+  left: 8%;
+  transform: rotate(45deg);
+  animation-delay: 1s;
+}
+
+.motif-4 {
+  bottom: 25%;
+  right: 8%;
+  transform: rotate(-45deg);
+  animation-delay: 1.5s;
+}
+
+.motif-5 {
+  top: 50%;
+  left: 2%;
+  transform: rotate(90deg);
+  animation-delay: 2s;
+}
+
+@keyframes motifFloat {
+  0%, 100% { transform: rotate(var(--rotate)) scale(1); opacity: 0.3; }
+  50% { transform: rotate(var(--rotate)) scale(1.2); opacity: 0.6; }
+}
+
+/* Floating Elements - REPOSITIONED TO EDGES */
+.floating-elements {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 25;
+}
+
+.float-element {
+  position: absolute;
+  font-size: 2rem;
+  opacity: 0.4;
+  animation: floatElement 8s linear infinite;
+  filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.3));
+}
+
+.float-element.diya {
+  top: 20%;
+  left: 3%;
+  animation-delay: 0s;
+}
+
+.float-element.lotus {
+  top: 80%;
+  right: 2%;
+  animation-delay: 2s;
+}
+
+.float-element.pot {
+  bottom: 10%;
+  left: 5%;
+  animation-delay: 4s;
+}
+
+.float-element.gear {
+  top: 30%;
+  right: 3%;
+  animation-delay: 6s;
+}
+
+.float-element.rocket {
+  bottom: 30%;
+  right: 5%;
+  animation-delay: 8s;
+}
+
+@keyframes floatElement {
+  0% {
+    transform: translateY(0) rotate(0deg);
+    opacity: 0.3;
+  }
+  50% {
+    transform: translateY(-50px) rotate(180deg);
+    opacity: 0.6;
+  }
+  100% {
+    transform: translateY(-100px) rotate(360deg);
+    opacity: 0;
+  }
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .hindi-text {
+    font-size: 2rem;
+  }
+  
+  .english-text {
+    font-size: 1.3rem;
+  }
+  
+  .charkha-container {
+    width: 100px;
+    height: 100px;
+  }
+  
+  .loading-bar-container {
+    width: 280px;
+  }
+  
+  .cultural-elements .element {
+    font-size: 2rem;
+    width: 50px;
+    height: 50px;
+  }
+  
+  .sanskrit {
+    font-size: 1rem;
+  }
+  
+  .meaning {
+    font-size: 0.9rem;
+  }
+  
+  .motif {
+    width: 35px;
+    height: 35px;
+  }
+}
+
+/* Small Mobile */
+@media (max-width: 480px) {
+  .hindi-text {
+    font-size: 1.6rem;
+  }
+  
+  .english-text {
+    font-size: 1.1rem;
+  }
+  
+  .charkha-container {
+    width: 80px;
+    height: 80px;
+  }
+  
+  .cultural-elements {
+    gap: 15px;
+  }
+  
+  .cultural-elements .element {
+    font-size: 1.5rem;
+    width: 40px;
+    height: 40px;
+  }
+}
