@@ -25,7 +25,7 @@ const TeamSection = () => {
   }, []);
 
   return (
-    <section id="team" className="relative py-20 bg-[#080131] text-white">
+    <section id="team" className="relative bg-[#080131] text-white">
       {/* background glow */}
       <div className="absolute -top-32 -left-32 w-96 h-96 bg-purple-600/20 blur-[120px]" />
       <div className="absolute -bottom-32 -right-32 w-96 h-96 bg-indigo-500/20 blur-[120px]" />
@@ -36,13 +36,6 @@ const TeamSection = () => {
         <img
           src={websiteCrewHeading}
           alt="Website Crew :he website crew: Bringing the magic"
-          className="
-            w-[320px]
-            sm:w-[420px]
-            md:w-[540px]
-            h-auto
-            select-none
-          "
         />
       </div>
 

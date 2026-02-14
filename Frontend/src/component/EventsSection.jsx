@@ -88,9 +88,7 @@ const EventsSection = () => {
   };
 
   return (
-    <section 
-      className="relative bg-transparent text-white px-6 md:px-6 pt-10 bg-[radial-gradient(ellipse_at_center,_#4C2580_-100%,_#13092E_100%)]"
-    >
+    <section className="relative bg-transparent text-white px-6 md:px-6 pt-10 bg-[radial-gradient(ellipse_at_center,_#4C2580_-100%,_#13092E_100%)]">
       <div
         className="absolute inset-0 opacity-[0.08] pointer-events-none"
         style={{
@@ -102,7 +100,7 @@ const EventsSection = () => {
 
       
       <div className="max-w-7xl mx-auto relative z-10">
-        <div className="absolute mr-10 xl:-mt-16 md:-right-12 md:top-16 max-md:hidden ">
+        <div className="absolute mr-10 xl:-mt-16 md:-right-12 md:top-16 lg:top-10 max-md:hidden ">
           <img 
           className="w-450 "
           src={Line} alt="" />
@@ -113,7 +111,7 @@ const EventsSection = () => {
           <div className="max-w-2xl ">
             <h2
               className="
-                text-5xl sm:text-6xl text-center sm:text-start font-semibold mb-6
+                text-[24px] sm:text-6xl text-center sm:text-start font-semibold mb-6
                 bg-linear-to-r
                 from-[#7070DE] via-[#FFFEFF] to-[#C8ABFE]
                 bg-clip-text text-transparent
@@ -123,7 +121,12 @@ const EventsSection = () => {
               Events List
             </h2>
 
-            <p className="text-white text-sm text-center sm:text-normal md:text-base leading-relaxed mb-6 milonga">
+            {/* Mobile: short text; Tablet+ : full text */}
+            <p className="text-white text-sm text-center leading-relaxed -mt-6 mb-3 milonga sm:hidden">
+              Experience a thrilling array of events
+            </p>
+
+            <p className="hidden sm:block text-white text-sm text-center sm:text-left md:text-base leading-relaxed md:text-3xl mb-6 milonga">
               Experience a thrilling array of events, from mind-bending coding
               competitions to electrifying dance performances, and showcase your
               talents on a stage that embraces innovation.
@@ -131,12 +134,12 @@ const EventsSection = () => {
           </div>
 
           {/* RIGHT BUTTON */}
-            <div className="relative h-full flex ">
+            <div className="relative w:full lg:w-fit h-full  flex  text-[9px] justify-center md:justify-end sm:mb-10 md:mb-5 sm:text-[16px]  ">
               <button
                 onClick={handleSeeAll} 
-                className="flex items-center gap-2 bg-white text-black px-10 py-3 rounded-2xl font-medium hover:bg-gray-200 transition-colors w-fit relative z-20 text-lg max-md:w-40"
+                className="flex justify-center items-center gap-2 bg-white text-black sm:px-10 px-[6px] md:px-auto py-3 rounded hover:bg-gray-200 transition-colors relative z-20  h-[20px] "
               >
-                See all <ArrowUpRight size={18}  className="font-bold"/>
+                See all <ArrowUpRight size={9} sm:size={18}  className="font-bold"/>
               </button>
             </div>
 
@@ -187,8 +190,8 @@ const EventsSection = () => {
 
               /* Existing desktop offsets */
               md:ml-12
-              md:-mt-10
-              lg:mt-2
+              md:-mt-0
+              lg:mt-10
               xl:mt-20
             "
           >
@@ -217,8 +220,8 @@ const EventsSection = () => {
 
 
       {/* DIVIDER IMAGE */}
-      <div className="overflow-visible h-20 relative w-screen left-1/2 -translate-x-1/2 mt-15 pointer-events-none select-none z-10">
-        <img src={dividerImg} alt="divider" className="w-full absolute -bottom-8 object-cover z-15" />
+      <div className="overflow-visible h-20 relative w-screen left-1/2 -translate-x-1/2 mt-15 xl:mt-35 pointer-events-none select-none z-10">
+        <img src={dividerImg} alt="divider" className="w-full absolute -bottom-8 xl:-bottom-20 object-cover z-15" />
       </div>
     </section>
   );

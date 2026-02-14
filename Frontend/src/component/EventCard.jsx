@@ -9,6 +9,8 @@ const EventCard = ({ title, onClick, year = "2026" }) => {
         relative overflow-hidden rounded-2xl
         h-full
         w-full
+        pb-[10px]
+        sm:pb-0
         sm:h-48
         sm:p-8
         flex flex-col justify-end
@@ -29,11 +31,11 @@ const EventCard = ({ title, onClick, year = "2026" }) => {
       />
 
       {/* Content */}
-      <div className="relative z-10 text-[#080131] ml-2 sm:ml-3">
-        <h3 className="text-[22px] sm:text-[31px] font-bold tracking-wider truncate">
+      <div className="absolute z-10 md:pb-[30px] text-[#080131] ml-2 sm:ml-3 ">
+        <h3 className="text-[12px] sm:text-[22px] font-bold tracking-wider truncate">
           {title}
         </h3>
-        <p className="text-[14px] sm:text-[16px] mt-1 font-mono">
+        <p className="text-[8px] sm:text-[14px] mt-1 font-mono">
           {year}
         </p>
       </div>
