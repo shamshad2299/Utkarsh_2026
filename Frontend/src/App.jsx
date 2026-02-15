@@ -4,6 +4,7 @@ import "./App.css";
 
 import Layout from "./component/Layout/Layout";
 import Loader from "./component/Loader/Loader";
+import FooterSection from "./component/Footer";
 
 // Lazy load components for better performance
 const Home = lazy(() => import("./pages/Home"));

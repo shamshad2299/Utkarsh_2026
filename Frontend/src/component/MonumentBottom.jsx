@@ -6,7 +6,7 @@ const MonumentBottom = () => {
       <img
         src={monumentsAll}
         alt="Monuments"
-        className="w-full object-contain object-bottom opacity-95 block"
+        className="w-full object-cover object-bottom opacity-95 block"
       />
     </div>
   );

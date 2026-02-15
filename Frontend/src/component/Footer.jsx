@@ -312,7 +312,7 @@ const FooterSection = () => {
 
           <div className="text-center pb-10 px-4 overflow-hidden">
             <h1
-              className="text-[14vw] sm:text-[12vw] md:text-[9vw] font-extrabold tracking-widest text-white/30 select-none whitespace-nowrap"
+              className="text-[30px] sm:text-[8vw] md:text-[9vw] font-extrabold tracking-widest text-white/30 select-none whitespace-nowrap"
               style={{ fontFamily: "Poppins, sans-serif" }}
             >
               # UTKARSH 2026
