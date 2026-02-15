@@ -54,7 +54,7 @@ const triggerConfetti = () => {
       particleCount: 150,
       spread: 70,
       origin: { y: 0.6 },
-      colors: ['#8b5cf6', '#6366f1', '#3b82f6', '#10b981', '#f59e0b']
+      colors: ["#8b5cf6", "#6366f1", "#3b82f6", "#10b981", "#f59e0b"],
     });
   }
 };
@@ -79,17 +79,6 @@ const showErrorToast = (message) => {
     iconColor: "#ef4444",
   });
 };
-
-const showWarningToast = (message) => {
-  Toast.fire({
-    icon: "warning",
-    title: message,
-    background: "#1a1a3e",
-    color: "#ffffff",
-    iconColor: "#f59e0b",
-  });
-};
-
 const showInfoToast = (message) => {
   Toast.fire({
     icon: "info",
@@ -114,17 +103,6 @@ const showSoloEnrollmentConfirmation = async (event) => {
   return result.isConfirmed;
 };
 
-const showReenrollmentSuccess = async (eventTitle) => {
-  triggerConfetti();
-  await Swal.fire({
-    title: "Successfully Re-enrolled! 🎉",
-    text: `You are registered again for "${eventTitle}".`,
-    icon: "success",
-    confirmButtonText: "Continue",
-    confirmButtonColor: "#8b5cf6",
-  });
-};
-
 const showLoginRequired = (navigate, location) => {
   Swal.fire({
     title: "Login Required",
@@ -144,40 +122,44 @@ const showLoginRequired = (navigate, location) => {
 // ================ MEMOIZED COMPONENTS ================
 const WelcomeBadge = React.memo(({ user }) => (
   <div className="px-4 py-2 bg-white/10 backdrop-blur-sm rounded-full border border-white/20">
-    <span className="text-sm font-medium">Welcome, {user?.name || user?.email}</span>
+    <span className="text-sm font-medium">
+      Welcome, {user?.name || user?.email}
+    </span>
   </div>
 ));
-WelcomeBadge.displayName = 'WelcomeBadge';
+WelcomeBadge.displayName = "WelcomeBadge";
 
 const EventCountBadge = React.memo(({ count }) => (
   <div className="px-4 py-2 bg-white/10 backdrop-blur-sm rounded-full border border-white/20">
-    <span className="text-md font-medium">{count} {count === 1 ? "Event" : "Events"}</span>
+    <span className="text-md font-medium">
+      {count} {count === 1 ? "Event" : "Events"}
+    </span>
   </div>
 ));
-EventCountBadge.displayName = 'EventCountBadge';
+EventCountBadge.displayName = "EventCountBadge";
 
 const BackToTopButton = React.memo(() => (
   <div className="fixed bottom-8 right-8 z-40">
     <button
       onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-      className="p-4 bg-gradient-to-r from-purple-600 to-blue-600 rounded-full shadow-lg hover:shadow-xl hover:shadow-purple-500/25 transition-all duration-300"
+      className="p-4 bg-linear-to-r from-purple-600 to-blue-600 rounded-full shadow-lg hover:shadow-xl hover:shadow-purple-500/25 transition-all duration-300"
       aria-label="Back to top"
     >
       <ArrowLeft size={24} className="rotate-90" />
     </button>
   </div>
 ));
-BackToTopButton.displayName = 'BackToTopButton';
+BackToTopButton.displayName = "BackToTopButton";
 
 const LoadingScreen = React.memo(() => (
-  <div className="min-h-screen bg-gradient-to-b from-[#080131] to-[#0a051a] flex items-center justify-center">
+  <div className="min-h-screen bg-linear-to-b from-[#080131] to-[#0a051a] flex items-center justify-center">
     <div className="text-center">
       <div className="w-16 h-16 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
       <p className="text-white text-lg">Loading events...</p>
     </div>
   </div>
 ));
-LoadingScreen.displayName = 'LoadingScreen';
+LoadingScreen.displayName = "LoadingScreen";
 
 // ================ MAIN COMPONENT ================
 const AllEvents = () => {
@@ -187,24 +169,36 @@ const AllEvents = () => {
   const { user, logout } = useAuth();
 
   // Auth state
-  const isAuthenticated = useMemo(() => !!localStorage.getItem("accessToken"), []);
+  const isAuthenticated = useMemo(
+    () => !!localStorage.getItem("accessToken"),
+    [],
+  );
   const token = useMemo(() => localStorage.getItem("accessToken"), []);
 
   // React Query hooks
-  const { data: events = [], isLoading: eventsLoading, error: eventsError, refetch: refetchEvents } = useEvents();
-  const { data: categories = [], isLoading: categoriesLoading } = useCategories();
+  const {
+    data: events = [],
+    isLoading: eventsLoading,
+    error: eventsError,
+    refetch: refetchEvents,
+  } = useEvents();
+  const { data: categories = [], isLoading: categoriesLoading } =
+    useCategories();
 
   // Local state
   const [selectedCategoryFilter, setSelectedCategoryFilter] = useState("all");
   const [selectedTypeFilter, setSelectedTypeFilter] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
-  
+
   // Modal states
   const [selectedEventId, setSelectedEventId] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [showRegistrationModal, setShowRegistrationModal] = useState(false);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
-  const [expandedRules, setExpandedRules] = useState({ general: false, event: false });
+  const [expandedRules, setExpandedRules] = useState({
+    general: false,
+    event: false,
+  });
 
   // User data states
   const [userRegistrations, setUserRegistrations] = useState([]);
@@ -234,13 +228,19 @@ const AllEvents = () => {
       filtered = filtered.filter((event) => {
         const eventCategoryId = event.category?._id;
         const eventCategoryName = event.category?.name?.toLowerCase() || "";
-        return eventCategoryId === selectedCategoryFilter || eventCategoryName.includes(selectedCategoryFilter.toLowerCase());
+        return (
+          eventCategoryId === selectedCategoryFilter ||
+          eventCategoryName.includes(selectedCategoryFilter.toLowerCase())
+        );
       });
     }
 
     if (selectedTypeFilter !== "all") {
       filtered = filtered.filter((event) => {
-        const eventType = getEventTypeText(event.teamSize, event.eventType).toLowerCase();
+        const eventType = getEventTypeText(
+          event.teamSize,
+          event.eventType,
+        ).toLowerCase();
         return eventType === selectedTypeFilter.toLowerCase();
       });
     }
@@ -253,7 +253,13 @@ const AllEvents = () => {
         const categoryName = event.category?.name?.toLowerCase() || "";
         const venueName = event.venueName?.toLowerCase() || "";
         const subCategoryName = event.subCategory?.title?.toLowerCase() || "";
-        return title.includes(query) || description.includes(query) || categoryName.includes(query) || venueName.includes(query) || subCategoryName.includes(query);
+        return (
+          title.includes(query) ||
+          description.includes(query) ||
+          categoryName.includes(query) ||
+          venueName.includes(query) ||
+          subCategoryName.includes(query)
+        );
       });
     }
     return filtered;
@@ -261,7 +267,7 @@ const AllEvents = () => {
 
   const selectedEvent = useMemo(() => {
     if (!selectedEventId || !events.length) return null;
-    return events.find(event => event._id === selectedEventId) || null;
+    return events.find((event) => event._id === selectedEventId) || null;
   }, [selectedEventId, events]);
 
   // ================ READ FILTERS FROM URL ================
@@ -287,7 +293,9 @@ const AllEvents = () => {
     try {
       setUserDataLoading(true);
       const [regResponse, teamsResponse] = await Promise.allSettled([
-        api.get("/registrations/my", { headers: { Authorization: `Bearer ${token}` } }),
+        api.get("/registrations/my", {
+          headers: { Authorization: `Bearer ${token}` },
+        }),
         api.get("/teams/my", { headers: { Authorization: `Bearer ${token}` } }),
       ]);
 
@@ -314,30 +322,47 @@ const AllEvents = () => {
   }, [isAuthenticated, token, logout, navigate]);
 
   // ================ HELPER FUNCTIONS ================
-  const isUserEnrolled = useCallback((eventId) => {
-    return userRegistrations.some((reg) => {
-      if (!reg || reg.isDeleted) return false;
-      const regEventId = reg.eventId?._id || reg.eventId;
-      return regEventId === eventId;
-    });
-  }, [userRegistrations]);
+  const isUserEnrolled = useCallback(
+    (eventId) => {
+      return userRegistrations.some((reg) => {
+        if (!reg || reg.isDeleted) return false;
+        const regEventId = reg.eventId?._id || reg.eventId;
+        return regEventId === eventId;
+      });
+    },
+    [userRegistrations],
+  );
 
-  const hasDeletedRegistration = useCallback((eventId) => {
-    return userRegistrations.some((reg) => {
-      if (!reg) return false;
-      const regEventId = reg.eventId?._id || reg.eventId;
-      return regEventId === eventId && reg.isDeleted === true && reg.status === "cancelled";
-    });
-  }, [userRegistrations]);
+  const hasDeletedRegistration = useCallback(
+    (eventId) => {
+      return userRegistrations.some((reg) => {
+        if (!reg) return false;
+        const regEventId = reg.eventId?._id || reg.eventId;
+        return (
+          regEventId === eventId &&
+          reg.isDeleted === true &&
+          reg.status === "cancelled"
+        );
+      });
+    },
+    [userRegistrations],
+  );
 
-  const getDeletedRegistrationId = useCallback((eventId) => {
-    const reg = userRegistrations.find((reg) => {
-      if (!reg) return false;
-      const regEventId = reg.eventId?._id || reg.eventId;
-      return regEventId === eventId && reg.isDeleted === true && reg.status === "cancelled";
-    });
-    return reg?._id;
-  }, [userRegistrations]);
+  const getDeletedRegistrationId = useCallback(
+    (eventId) => {
+      const reg = userRegistrations.find((reg) => {
+        if (!reg) return false;
+        const regEventId = reg.eventId?._id || reg.eventId;
+        return (
+          regEventId === eventId &&
+          reg.isDeleted === true &&
+          reg.status === "cancelled"
+        );
+      });
+      return reg?._id;
+    },
+    [userRegistrations],
+  );
 
   const isRegistrationOpen = useCallback((deadline) => {
     return new Date(deadline) > new Date();
@@ -347,123 +372,154 @@ const AllEvents = () => {
     return (event.currentParticipants || 0) < event.capacity;
   }, []);
 
-  const updateEventCapacity = useCallback((eventId, increment = 1) => {
-    queryClient.setQueryData(eventKeys.lists(), (oldData) => {
-      if (!oldData) return oldData;
-      return oldData.map((event) =>
-        event._id === eventId
-          ? { ...event, currentParticipants: (event.currentParticipants || 0) + increment }
-          : event
-      );
-    });
-  }, [queryClient]);
+  const updateEventCapacity = useCallback(
+    (eventId, increment = 1) => {
+      queryClient.setQueryData(eventKeys.lists(), (oldData) => {
+        if (!oldData) return oldData;
+        return oldData.map((event) =>
+          event._id === eventId
+            ? {
+                ...event,
+                currentParticipants:
+                  (event.currentParticipants || 0) + increment,
+              }
+            : event,
+        );
+      });
+    },
+    [queryClient],
+  );
 
   // ================ RESTORE REGISTRATION HANDLER ================
-  const handleRestoreRegistration = useCallback(async (registrationId, event, teamId = null) => {
-    try {
-      setEnrollingEventId(event._id);
-      
-      const response = await api.patch(
-        `/registrations/${registrationId}/restore`,
-        { teamId },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+  const handleRestoreRegistration = useCallback(
+    async (registrationId, event, teamId = null) => {
+      try {
+        setEnrollingEventId(event._id);
 
-      // Optimistic update
-      setUserRegistrations((prev) => {
-        const filtered = prev.filter(reg => reg._id !== registrationId);
-        return [...filtered, response.data.data];
-      });
+        const response = await api.patch(
+          `/registrations/${registrationId}/restore`,
+          { teamId },
+          { headers: { Authorization: `Bearer ${token}` } },
+        );
 
-      updateEventCapacity(event._id, 1);
-      triggerConfetti();
-      showSuccessToast(`🎉 Successfully re-enrolled in "${event.title}"!`);
+        // Optimistic update
+        setUserRegistrations((prev) => {
+          const filtered = prev.filter((reg) => reg._id !== registrationId);
+          return [...filtered, response.data.data];
+        });
 
-    } catch (error) {
-      console.error('Restore error:', error);
-      const message = error.response?.data?.message || "Failed to re-enroll";
-      showErrorToast(message);
-    } finally {
-      setEnrollingEventId(null);
-    }
-  }, [token, updateEventCapacity]);
+        updateEventCapacity(event._id, 1);
+        triggerConfetti();
+        showSuccessToast(`🎉 Successfully re-enrolled in "${event.title}"!`);
+      } catch (error) {
+        console.error("Restore error:", error);
+        const message = error.response?.data?.message || "Failed to re-enroll";
+        showErrorToast(message);
+      } finally {
+        setEnrollingEventId(null);
+      }
+    },
+    [token, updateEventCapacity],
+  );
 
   // ================ ENROLLMENT HANDLER ================
-  const handleEnroll = useCallback(async (event, teamId = null) => {
-    if (!isAuthenticated) {
-      showLoginRequired(navigate, location);
-      return;
-    }
-
-    setEnrollingEventId(event._id);
-
-    try {
-      // Check for soft-deleted registration first
-      const deletedRegistration = userRegistrations.find((reg) => {
-        if (!reg) return false;
-        const regEventId = reg.eventId?._id || reg.eventId;
-        return regEventId === event._id && reg.isDeleted === true && reg.status === "cancelled";
-      });
-
-      if (deletedRegistration) {
-        await handleRestoreRegistration(deletedRegistration._id, event, teamId);
+  const handleEnroll = useCallback(
+    async (event, teamId = null) => {
+      if (!isAuthenticated) {
+        showLoginRequired(navigate, location);
         return;
       }
 
-      // Check active registration
-      const activeRegistration = userRegistrations.find((reg) => {
-        if (!reg) return false;
-        const regEventId = reg.eventId?._id || reg.eventId;
-        return regEventId === event._id && reg.isDeleted === false && reg.status !== "cancelled";
-      });
+      setEnrollingEventId(event._id);
 
-      if (activeRegistration) {
-        showInfoToast("You are already enrolled in this event!");
-        return;
-      }
+      try {
+        // Check for soft-deleted registration first
+        const deletedRegistration = userRegistrations.find((reg) => {
+          if (!reg) return false;
+          const regEventId = reg.eventId?._id || reg.eventId;
+          return (
+            regEventId === event._id &&
+            reg.isDeleted === true &&
+            reg.status === "cancelled"
+          );
+        });
 
-      // Deadline check
-      if (new Date() > new Date(event.registrationDeadline)) {
-        showErrorToast("Registration deadline has passed!");
-        return;
-      }
-
-      // Capacity check
-      if ((event.currentParticipants || 0) >= event.capacity) {
-        showErrorToast("Event is full!");
-        return;
-      }
-
-      // Solo event confirmation
-      if (event.eventType === "solo") {
-        const confirmed = await showSoloEnrollmentConfirmation(event);
-        if (!confirmed) {
-          setEnrollingEventId(null);
+        if (deletedRegistration) {
+          await handleRestoreRegistration(
+            deletedRegistration._id,
+            event,
+            teamId,
+          );
           return;
         }
+
+        // Check active registration
+        const activeRegistration = userRegistrations.find((reg) => {
+          if (!reg) return false;
+          const regEventId = reg.eventId?._id || reg.eventId;
+          return (
+            regEventId === event._id &&
+            reg.isDeleted === false &&
+            reg.status !== "cancelled"
+          );
+        });
+
+        if (activeRegistration) {
+          showInfoToast("You are already enrolled in this event!");
+          return;
+        }
+
+        // Deadline check
+        if (new Date() > new Date(event.registrationDeadline)) {
+          showErrorToast("Registration deadline has passed!");
+          return;
+        }
+
+        // Capacity check
+        if ((event.currentParticipants || 0) >= event.capacity) {
+          showErrorToast("Event is full!");
+          return;
+        }
+
+        // Solo event confirmation
+        if (event.eventType === "solo") {
+          const confirmed = await showSoloEnrollmentConfirmation(event);
+          if (!confirmed) {
+            setEnrollingEventId(null);
+            return;
+          }
+        }
+
+        // Create new registration
+        const response = await api.post(
+          "/registrations",
+          { eventId: event._id, teamId: teamId || null },
+          { headers: { Authorization: `Bearer ${token}` } },
+        );
+
+        // Optimistic update
+        setUserRegistrations((prev) => [...prev, response.data.data]);
+        updateEventCapacity(event._id, 1);
+        triggerConfetti();
+        showSuccessToast(`✅ Successfully enrolled in "${event.title}"!`);
+      } catch (error) {
+        console.error("Enrollment error:", error);
+        const message = error.response?.data?.message || "Failed to enroll";
+        showErrorToast(message);
+      } finally {
+        setEnrollingEventId(null);
       }
-
-      // Create new registration
-      const response = await api.post(
-        "/registrations",
-        { eventId: event._id, teamId: teamId || null },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-
-      // Optimistic update
-      setUserRegistrations((prev) => [...prev, response.data.data]);
-      updateEventCapacity(event._id, 1);
-      triggerConfetti();
-      showSuccessToast(`✅ Successfully enrolled in "${event.title}"!`);
-
-    } catch (error) {
-      console.error('Enrollment error:', error);
-      const message = error.response?.data?.message || "Failed to enroll";
-      showErrorToast(message);
-    } finally {
-      setEnrollingEventId(null);
-    }
-  }, [isAuthenticated, userRegistrations, handleRestoreRegistration, token, navigate, location, updateEventCapacity]);
+    },
+    [
+      isAuthenticated,
+      userRegistrations,
+      handleRestoreRegistration,
+      token,
+      navigate,
+      location,
+      updateEventCapacity,
+    ],
+  );
 
   // ================ MODAL HANDLERS ================
   const handleViewDetails = useCallback((event) => {
@@ -486,63 +542,83 @@ const AllEvents = () => {
   }, []);
 
   // ================ FILTER HANDLERS ================
-  const handleCategoryFilterClick = useCallback((filterId) => {
-    setSelectedCategoryFilter(filterId);
-    setFilterToURL(navigate, location, "filter", filterId);
-    const eventsSection = document.getElementById("events-section");
-    if (eventsSection) eventsSection.scrollIntoView({ behavior: "smooth" });
-  }, [navigate, location]);
+  const handleCategoryFilterClick = useCallback(
+    (filterId) => {
+      setSelectedCategoryFilter(filterId);
+      setFilterToURL(navigate, location, "filter", filterId);
+      const eventsSection = document.getElementById("events-section");
+      if (eventsSection) eventsSection.scrollIntoView({ behavior: "smooth" });
+    },
+    [navigate, location],
+  );
 
-  const handleTypeFilterClick = useCallback((filterId) => {
-    setSelectedTypeFilter(filterId);
-    setFilterToURL(navigate, location, "type", filterId);
-    const eventsSection = document.getElementById("events-section");
-    if (eventsSection) eventsSection.scrollIntoView({ behavior: "smooth" });
-  }, [navigate, location]);
+  const handleTypeFilterClick = useCallback(
+    (filterId) => {
+      setSelectedTypeFilter(filterId);
+      setFilterToURL(navigate, location, "type", filterId);
+      const eventsSection = document.getElementById("events-section");
+      if (eventsSection) eventsSection.scrollIntoView({ behavior: "smooth" });
+    },
+    [navigate, location],
+  );
 
   // ================ OPEN REGISTRATION MODAL ================
-  const openRegistrationModal = useCallback(async (event) => {
-    if (!isAuthenticated) {
-      showLoginRequired(navigate, location);
-      return;
-    }
-
-    setSelectedEventId(event._id);
-
-    // Check for soft-deleted registration
-    if (hasDeletedRegistration(event._id)) {
-      const deletedRegId = getDeletedRegistrationId(event._id);
-      await handleRestoreRegistration(deletedRegId, event);
-      return;
-    }
-
-    if (isUserEnrolled(event._id)) {
-      showInfoToast("You are already enrolled in this event!");
-      return;
-    }
-
-    if (!isRegistrationOpen(event.registrationDeadline)) {
-      showErrorToast("Registration deadline has passed!");
-      return;
-    }
-
-    if (!hasCapacity(event)) {
-      showErrorToast("Event is full!");
-      return;
-    }
-
-    // Solo events - show confirmation
-    if (event.eventType === "solo") {
-      const confirmed = await showSoloEnrollmentConfirmation(event);
-      if (confirmed) {
-        handleEnroll(event);
+  const openRegistrationModal = useCallback(
+    async (event) => {
+      if (!isAuthenticated) {
+        showLoginRequired(navigate, location);
+        return;
       }
-      return;
-    }
 
-    // Team events - show registration modal
-    setShowRegistrationModal(true);
-  }, [isAuthenticated, isUserEnrolled, hasDeletedRegistration, getDeletedRegistrationId, isRegistrationOpen, hasCapacity, handleEnroll, handleRestoreRegistration, navigate, location]);
+      setSelectedEventId(event._id);
+
+      // Check for soft-deleted registration
+      if (hasDeletedRegistration(event._id)) {
+        const deletedRegId = getDeletedRegistrationId(event._id);
+        await handleRestoreRegistration(deletedRegId, event);
+        return;
+      }
+
+      if (isUserEnrolled(event._id)) {
+        showInfoToast("You are already enrolled in this event!");
+        return;
+      }
+
+      if (!isRegistrationOpen(event.registrationDeadline)) {
+        showErrorToast("Registration deadline has passed!");
+        return;
+      }
+
+      if (!hasCapacity(event)) {
+        showErrorToast("Event is full!");
+        return;
+      }
+
+      // Solo events - show confirmation
+      if (event.eventType === "solo") {
+        const confirmed = await showSoloEnrollmentConfirmation(event);
+        if (confirmed) {
+          handleEnroll(event);
+        }
+        return;
+      }
+
+      // Team events - show registration modal
+      setShowRegistrationModal(true);
+    },
+    [
+      isAuthenticated,
+      isUserEnrolled,
+      hasDeletedRegistration,
+      getDeletedRegistrationId,
+      isRegistrationOpen,
+      hasCapacity,
+      handleEnroll,
+      handleRestoreRegistration,
+      navigate,
+      location,
+    ],
+  );
 
   const toggleRuleSection = useCallback((section) => {
     setExpandedRules((prev) => ({ ...prev, [section]: !prev[section] }));
@@ -557,15 +633,15 @@ const AllEvents = () => {
 
   // ================ RENDER ================
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#080131] to-[#0a051a] text-white">
+    <div className="min-h-screen bg-linear-to-b from-[#080131] to-[#0a051a] text-white">
       {/* Header */}
       <div className="relative">
-        <div className="absolute inset-0 bg-gradient-to-r from-purple-900/20 via-blue-900/10 to-indigo-900/20" />
-        <div className="relative w-full mx-auto px-7 py-12">
+      
+        <div className="relative w-full mx-auto  py-12">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-12">
             <div className="flex max-sm:flex-col max-sm:gap-10 items-center">
               <div>
-                <h1 className="text-4xl md:text-5xl font-bold mb-2 bg-gradient-to-r from-purple-400 via-white to-blue-400 bg-clip-text text-transparent all-events-3d">
+                <h1 className="text-4xl md:text-5xl font-bold mb-2 bg-linear-to-r from-purple-400 via-white to-blue-400 bg-clip-text text-transparent all-events-3d">
                   All Events
                 </h1>
                 <p className="text-gray-400 text-lg milonga mt-4">
@@ -579,7 +655,10 @@ const AllEvents = () => {
                 className="flex w-50 px-4 py-2 rounded-2xl milonga bg-white items-center gap-2 cursor-pointer text-black mb-8 transition-colors group -mt-5"
               >
                 Go Back
-                <ArrowUpRight size={20} className="group-hover:-translate-x-1 transition-transform" />
+                <ArrowUpRight
+                  size={20}
+                  className="group-hover:-translate-x-1 transition-transform"
+                />
               </button>
             </div>
           </div>
@@ -591,7 +670,10 @@ const AllEvents = () => {
 
           {/* Search and Type Filter */}
           <div className="w-full bg-white text-black rounded-md mt-6">
-            <EventSearchBar searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
+            <EventSearchBar
+              searchQuery={searchQuery}
+              setSearchQuery={setSearchQuery}
+            />
           </div>
 
           <div className="mt-6">
@@ -690,7 +772,9 @@ const AllEvents = () => {
       )}
 
       {/* Back to Top Button */}
-      {!eventsLoading && !eventsError && filteredEvents.length > 0 && <BackToTopButton />}
+      {!eventsLoading && !eventsError && filteredEvents.length > 0 && (
+        <BackToTopButton />
+      )}
     </div>
   );
 };

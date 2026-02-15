@@ -1,29 +1,30 @@
-import React, { useState } from "react";
-import { ArrowLeft } from "lucide-react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import regImage from "../../assets/uk.png";
 import { useAuth } from "../../Context/AuthContext";
+import BackgroundGlow from "../BackgroundGlow";
 
 const LoginPage = () => {
-  const { login, register, requestPassword, resetPassword } = useAuth();
+  const { login, requestPassword, resetPassword } = useAuth();
   const navigate = useNavigate();
 
-  const [step, setStep] = useState("login"); // login | register | forgot | otp | reset
+  const [show, setShow] = useState(false);
+  const [step, setStep] = useState("login"); // login | forgot | otp | reset
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
   const [formData, setFormData] = useState({
-    // Login fields
     identifier: "",
     password: "",
-    // Forgot password fields
-    code: "", // OTP code
+    code: "",
     newPassword: "",
     confirmPassword: "",
   });
 
-  /* -------------------- handlers -------------------- */
+  useEffect(() => {
+    const t = setTimeout(() => setShow(true), 120);
+    return () => clearTimeout(t);
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -57,7 +58,7 @@ const LoginPage = () => {
       console.error("Login failed", err);
       setError(
         err.response?.data?.message ||
-          "Login failed. Please check your credentials.",
+          "Login failed. Please check your credentials."
       );
     } finally {
       setLoading(false);
@@ -77,25 +78,27 @@ const LoginPage = () => {
     try {
       setLoading(true);
       const response = await requestPassword({
-        identifier: formData.identifier
+        identifier: formData.identifier,
       });
       console.log("Forgot password response:", response);
 
       if (response.success) {
-        setSuccess(response.message || "OTP sent to your registered email. Please check your inbox.");
+        setSuccess(
+          response.message ||
+            "OTP sent to your registered email. Please check your inbox."
+        );
         setStep("otp");
       }
     } catch (err) {
       console.error("Forgot password failed", err);
       setError(
-        err.response?.data?.message || "Failed to send OTP. Please try again.",
+        err.response?.data?.message || "Failed to send OTP. Please try again."
       );
     } finally {
       setLoading(false);
     }
   };
 
-  // OTP verification and password reset in one step
   const handleResetPassword = async (e) => {
     e.preventDefault();
     setError("");
@@ -118,16 +121,14 @@ const LoginPage = () => {
 
     try {
       setLoading(true);
-      // Send all required data to reset-password endpoint
       const response = await resetPassword({
         identifier: formData.identifier,
         code: formData.code,
-        newPassword: formData.newPassword
+        newPassword: formData.newPassword,
       });
 
       console.log("Reset password response:", response);
 
-      // Success - go back to login
       setFormData({
         identifier: "",
         password: "",
@@ -135,15 +136,13 @@ const LoginPage = () => {
         newPassword: "",
         confirmPassword: "",
       });
-      setSuccess(
-        "Password reset successful! Please login with your new password.",
-      );
+      setSuccess("Password reset successful! Please login with your new password.");
       setStep("login");
     } catch (err) {
       console.error("Reset password failed", err);
       setError(
         err.response?.data?.message ||
-          "Failed to reset password. Please check OTP and try again.",
+          "Failed to reset password. Please check OTP and try again."
       );
     } finally {
       setLoading(false);
@@ -163,7 +162,6 @@ const LoginPage = () => {
       case "forgot":
         return handleForgotPassword(e);
       case "otp":
-        return handleResetPassword(e);
       case "reset":
         return handleResetPassword(e);
       default:
@@ -172,249 +170,273 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="min-h-screen relative flex items-center justify-center bg-linear-to-br from-[#010103] via-[#39363f] to-[#0b0618] text-white overflow-hidden">
-      <div
-        className="absolute inset-0 bg-cover bg-center opacity-30"
-        style={{ backgroundImage: `url(${regImage})` }}
-      />
-      <div className="absolute inset-0 bg-black/40" />
+    <div className="h-screen relative overflow-hidden flex flex-col">
+      {/* Background Glow */}
+      <div className="absolute inset-0 pointer-events-none">
+        <BackgroundGlow />
+      </div>
 
+      {/* Home Button */}
       <div
-        className="absolute top-6 left-6 flex items-center gap-2 cursor-pointer z-20 hover:text-purple-300 transition-colors"
+        className="absolute top-6 left-6 flex items-center gap-2 cursor-pointer z-20 hover:text-purple-300 transition-colors text-white/80 hover:text-white"
         onClick={handleBackToHome}
       >
-        <ArrowLeft size={20} />
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <path d="M19 12H5M12 19l-7-7 7-7" />
+        </svg>
         <span className="tracking-widest font-semibold">Home</span>
       </div>
 
-      <div className="relative z-10 w-full max-w-md px-6">
-        <div className="bg-black/30 backdrop-blur-xl rounded-2xl p-8 shadow-[0_0_60px_rgba(139,92,246,0.35)]">
-          <h1 className="sm:text-4xl text-2xl font-black italic text-[#8B5CF6] uppercase text-center mb-2">
-            UTKARSH'26
-          </h1>
+      {/* Center Content */}
+      <div className="relative z-10 flex-1 flex items-center justify-center px-4">
+        <div className="relative w-full max-w-2xl flex justify-center">
+          {/* Top Left Image */}
+        
 
-          <form onSubmit={handleFormSubmit}>
-            {/* STEP 1: LOGIN */}
-            {step === "login" && (
-              <>
-                <p className="text-gray-300 text-center mb-8">
-                  Sign in to your account
-                </p>
+          {/* Card */}
+          <div
+            className={`
+              relative w-full rounded-xl
+              lg:px-12 md:px-8 px-4 py-6
+              bg-gradient-to-br from-[#241f4a]/90 via-[#2b255f]/90 to-[#1b1738]/90
+              backdrop-blur-md border border-white/20
+              shadow-[0_10px_40px_rgba(0,0,0,0.8)]
+              transition-all duration-700
+              ${show ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}
+            `}
+          >
+            <div className="text-center mb-6">
+              <h1 className="text-2xl md:text-3xl font-semibold text-[#e4e1ff]">
+                {step === "login" && "Welcome Back"}
+                {step === "forgot" && "Forgot Password"}
+                {(step === "otp" || step === "reset") && "Reset Password"}
+              </h1>
+              <p className="text-sm md:text-base text-[#c9c3ff] mt-2">
+                {step === "login" && "Sign in to your account"}
+                {step === "forgot" && "Enter your email to receive OTP"}
+                {step === "otp" && "Enter the OTP sent to your email"}
+                {step === "reset" && "Create a new password"}
+              </p>
+            </div>
 
-                <input
-                  name="identifier"
-                  placeholder="Email, Mobile or Utkarsh ID"
-                  value={formData.identifier}
-                  onChange={handleChange}
-                  className="w-full mb-4 bg-black/60 border border-gray-700 p-3 rounded-md text-white placeholder-gray-400 focus:border-[#8B5CF6] focus:outline-none transition-colors"
-                  disabled={loading}
-                  autoComplete="username"
-                />
+            <form onSubmit={handleFormSubmit} className="space-y-4">
+              {/* LOGIN STEP */}
+              {step === "login" && (
+                <div className="space-y-4">
+                  <Input
+                    label="Email, Mobile or Utkarsh ID"
+                    name="identifier"
+                    value={formData.identifier}
+                    onChange={handleChange}
+                    placeholder="Enter your email, mobile or ID..."
+                    disabled={loading}
+                  />
 
-                <input
-                  type="password"
-                  name="password"
-                  placeholder="Password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  className="w-full mb-2 bg-black/60 border border-gray-700 p-3 rounded-md text-white placeholder-gray-400 focus:border-[#8B5CF6] focus:outline-none transition-colors"
-                  disabled={loading}
-                  autoComplete="current-password"
-                />
+                  <Input
+                    label="Password"
+                    type="password"
+                    name="password"
+                    value={formData.password}
+                    onChange={handleChange}
+                    placeholder="Enter your password..."
+                    disabled={loading}
+                  />
 
-                <div className="flex justify-between items-center mb-6">
-                  <div
-                    className="text-sm text-purple-300 cursor-pointer hover:underline hover:text-purple-200 transition-colors"
-                    onClick={() => {
-                      setStep("forgot");
-                      setError("");
-                      setSuccess("");
-                    }}
-                  >
-                    Forgot Password?
-                  </div>
-                  
-                  <div
-                    className="text-sm text-purple-300 cursor-pointer hover:underline hover:text-purple-200 transition-colors"
-                    onClick={() => {
-                      navigate("/register")
-                      setError("");
-                      setSuccess("");
-                    }}
-                  >
-                    Create Account
-                  </div>
-                </div>
-              </>
-            )}
-            {/* STEP 3: FORGOT PASSWORD - Request OTP */}
-            {step === "forgot" && (
-              <>
-                <p className="text-gray-300 text-center mb-8">
-                  Recover your account
-                </p>
-
-                <input
-                  name="identifier"
-                  type="text"
-                  placeholder="Enter your Email or UK ID"
-                  value={formData.identifier}
-                  onChange={handleChange}
-                  className="w-full mb-6 bg-black/60 border border-gray-700 p-3 rounded-md text-white placeholder-gray-400 focus:border-[#8B5CF6] focus:outline-none transition-colors"
-                  disabled={loading}
-                  autoComplete="email"
-                />
-              </>
-            )}
-
-            {/* STEP 4: OTP + NEW PASSWORD (combined) */}
-            {(step === "otp" || step === "reset") && (
-              <>
-                <p className="text-gray-300 text-center mb-8">
-                  {step === "otp" 
-                    ? "Enter OTP sent to your email" 
-                    : "Create new password"
-                  }
-                </p>
-
-                {step === "otp" && (
-                  <>
-                    <input
-                      name="code"
-                      placeholder="Enter 6-digit OTP"
-                      value={formData.code}
-                      onChange={handleChange}
-                      className="w-full mb-4 bg-black/60 border border-gray-700 p-3 rounded-md text-white placeholder-gray-400 focus:border-[#8B5CF6] focus:outline-none transition-colors"
-                      disabled={loading}
-                      maxLength="6"
-                      inputMode="numeric"
-                      pattern="[0-9]*"
-                      autoComplete="one-time-code"
-                    />
-                    
+                  <div className="flex justify-between items-center pt-2">
                     <div
-                      className="text-sm text-purple-300 text-right mb-4 cursor-pointer hover:underline hover:text-purple-200 transition-colors"
+                      className="text-sm text-[#c9c3ff] cursor-pointer hover:text-white hover:underline transition-colors"
                       onClick={() => {
-                        setStep("reset");
+                        setStep("forgot");
                         setError("");
                         setSuccess("");
                       }}
                     >
-                      Next: Set New Password →
-                    </div>
-                  </>
-                )}
-
-                {step === "reset" && (
-                  <>
-                    <div className="mb-4 p-3 bg-purple-500/10 border border-purple-500/30 rounded-md text-purple-200 text-sm">
-                      OTP: {formData.code}
+                      Forgot Password?
                     </div>
 
-                    <input
-                      type="password"
-                      name="newPassword"
-                      placeholder="New Password"
-                      value={formData.newPassword}
-                      onChange={handleChange}
-                      className="w-full mb-4 bg-black/60 border border-gray-700 p-3 rounded-md text-white placeholder-gray-400 focus:border-[#8B5CF6] focus:outline-none transition-colors"
-                      disabled={loading}
-                      autoComplete="new-password"
-                    />
+                    <div
+                      className="text-sm text-[#c9c3ff] cursor-pointer hover:text-white hover:underline transition-colors"
+                      onClick={() => {
+                        navigate("/register");
+                        setError("");
+                        setSuccess("");
+                      }}
+                    >
+                      Create Account
+                    </div>
+                  </div>
+                </div>
+              )}
 
-                    <input
-                      type="password"
-                      name="confirmPassword"
-                      placeholder="Confirm Password"
-                      value={formData.confirmPassword}
-                      onChange={handleChange}
-                      className="w-full mb-6 bg-black/60 border border-gray-700 p-3 rounded-md text-white placeholder-gray-400 focus:border-[#8B5CF6] focus:outline-none transition-colors"
-                      disabled={loading}
-                      autoComplete="new-password"
-                    />
-                  </>
-                )}
-              </>
-            )}
+              {/* FORGOT PASSWORD STEP */}
+              {step === "forgot" && (
+                <div className="space-y-4">
+                  <Input
+                    label="Email or UK ID"
+                    name="identifier"
+                    value={formData.identifier}
+                    onChange={handleChange}
+                    placeholder="Enter your email or UK ID..."
+                    disabled={loading}
+                  />
+                </div>
+              )}
 
-            {/* ERROR MESSAGE */}
-            {error && (
-              <div className="mb-4 p-3 bg-red-500/20 border border-red-500/50 rounded-md text-red-200 text-sm">
-                {error}
-              </div>
-            )}
+              {/* OTP STEP */}
+              {step === "otp" && (
+                <div className="space-y-4">
+                  <Input
+                    label="OTP Code"
+                    name="code"
+                    value={formData.code}
+                    onChange={handleChange}
+                    placeholder="Enter 6-digit OTP..."
+                    disabled={loading}
+                    maxLength="6"
+                  />
 
-            {/* SUCCESS MESSAGE */}
-            {success && (
-              <div className="mb-4 p-3 bg-green-500/20 border border-green-500/50 rounded-md text-green-200 text-sm">
-                {success}
-              </div>
-            )}
+                  <div
+                    className="text-sm text-[#c9c3ff] text-right cursor-pointer hover:text-white hover:underline transition-colors"
+                    onClick={() => {
+                      setStep("reset");
+                      setError("");
+                      setSuccess("");
+                    }}
+                  >
+                    Next: Set New Password →
+                  </div>
+                </div>
+              )}
 
-            {/* SUBMIT BUTTON */}
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-linear-to-r from-[#8B5CF6] to-[#7C4DFF] py-4 font-black italic tracking-widest uppercase text-white hover:from-[#7C4DFF] hover:to-[#6D3DFF] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 rounded-md shadow-lg hover:shadow-purple-500/30"
-            >
-              {loading
-                ? step === "login"
-                  ? "SIGNING IN..."
-                  : step === "register"
-                    ? "REGISTERING..."
+              {/* RESET PASSWORD STEP */}
+              {step === "reset" && (
+                <div className="space-y-4">
+                  <div className="p-3 bg-[#3a3763]/50 border border-white/20 rounded-md text-[#c9c3ff] text-sm">
+                    OTP: {formData.code}
+                  </div>
+
+                  <Input
+                    label="New Password"
+                    type="password"
+                    name="newPassword"
+                    value={formData.newPassword}
+                    onChange={handleChange}
+                    placeholder="Enter new password..."
+                    disabled={loading}
+                  />
+
+                  <Input
+                    label="Confirm Password"
+                    type="password"
+                    name="confirmPassword"
+                    value={formData.confirmPassword}
+                    onChange={handleChange}
+                    placeholder="Confirm new password..."
+                    disabled={loading}
+                  />
+                </div>
+              )}
+
+              {/* ERROR MESSAGE */}
+              {error && (
+                <div className="p-3 bg-red-500/20 border border-red-500/50 rounded-md text-red-200 text-sm">
+                  {error}
+                </div>
+              )}
+
+              {/* SUCCESS MESSAGE */}
+              {success && (
+                <div className="p-3 bg-green-500/20 border border-green-500/50 rounded-md text-green-200 text-sm">
+                  {success}
+                </div>
+              )}
+
+              {/* SUBMIT BUTTON */}
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full mt-4 py-2 rounded-md 
+                           bg-[#6c63ff] text-white text-sm font-semibold
+                           hover:bg-[#5b54e6] transition disabled:opacity-60"
+              >
+                {loading
+                  ? step === "login"
+                    ? "SIGNING IN..."
                     : step === "forgot"
                       ? "SENDING OTP..."
-                      : "RESETTING PASSWORD..."
-                : step === "login"
-                  ? "SIGN IN"
-                  : step === "register"
-                    ? "REGISTER"
+                      : "RESETTING..."
+                  : step === "login"
+                    ? "SIGN IN"
                     : step === "forgot"
                       ? "SEND OTP"
                       : "RESET PASSWORD"}
-            </button>
+              </button>
 
-            {/* BACK BUTTONS */}
-            {(step === "register" || step === "forgot" || step === "otp" || step === "reset") && (
-              <div className="mt-4">
-                <div
-                  className="text-sm text-center text-purple-300 cursor-pointer hover:text-purple-200 hover:underline transition-colors"
-                  onClick={() => {
-                    if (step === "register") setStep("login");
-                    if (step === "forgot") setStep("login");
-                    if (step === "otp") setStep("forgot");
-                    if (step === "reset") setStep("otp");
-                    setError("");
-                    setSuccess("");
-                  }}
-                >
-                  {step === "register" || step === "forgot" ? "Back to Login" : "Back"}
+              {/* BACK BUTTONS */}
+              {(step === "forgot" || step === "otp" || step === "reset") && (
+                <div className="mt-4">
+                  <div
+                    className="text-sm text-center text-[#c9c3ff] cursor-pointer hover:text-white hover:underline transition-colors"
+                    onClick={() => {
+                      if (step === "forgot") setStep("login");
+                      if (step === "otp") setStep("forgot");
+                      if (step === "reset") setStep("otp");
+                      setError("");
+                      setSuccess("");
+                    }}
+                  >
+                    {step === "forgot" ? "Back to Login" : "Back"}
+                  </div>
                 </div>
-              </div>
-            )}
-          </form>
+              )}
+            </form>
+          </div>
         </div>
       </div>
 
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Milonga&display=swap');
-        h1 { 
-          font-family: 'Orbitron', sans-serif; 
-          text-shadow: 0 0 20px rgba(139, 92, 246, 0.5);
-        }
-        
-        input[type="number"]::-webkit-inner-spin-button,
-        input[type="number"]::-webkit-outer-spin-button {
-          -webkit-appearance: none;
-          margin: 0;
-        }
-        
-        input[type="number"] {
-          -moz-appearance: textfield;
-        }
-      `}</style>
     </div>
   );
 };
+
+/* Input Component */
+const Input = ({
+  label,
+  type = "text",
+  name,
+  value,
+  onChange,
+  placeholder,
+  disabled,
+  maxLength,
+}) => (
+  <div>
+    <label className="text-xs text-white block mb-1">{label}</label>
+    <input
+      type={type}
+      name={name}
+      value={value}
+      onChange={onChange}
+      required
+      disabled={disabled}
+      maxLength={maxLength}
+      placeholder={placeholder}
+      className="w-full px-3 py-2 rounded text-sm
+                 bg-[#3a3763]/90 border border-white/40
+                 text-white placeholder:text-white/60
+                 focus:outline-none focus:border-white/60
+                 disabled:opacity-50 disabled:cursor-not-allowed"
+    />
+  </div>
+);
 
 export default LoginPage;

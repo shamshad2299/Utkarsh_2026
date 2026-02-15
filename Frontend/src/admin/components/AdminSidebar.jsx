@@ -73,7 +73,7 @@ const AdminSidebar = () => {
   return (
     <>
       {/* Mobile Header with Menu Button */}
-      <div className="md:hidden flex items-center justify-between bg-gradient-to-r from-teal-700 to-teal-800 text-white px-4 py-3 fixed top-0 left-0 right-0 z-30 shadow-lg">
+      <div className="md:hidden flex items-center justify-between bg-gradient-to-r from-teal-700 to-teal-800 text-white px-4 py-3 fixed top-0 left-0 right-0  shadow-lg z-50">
         <div className="flex items-center gap-3">
           <button 
             onClick={() => setOpen(true)}
@@ -124,19 +124,14 @@ const AdminSidebar = () => {
           </button>
         </div>
 
-        {/* Search Input */}
-        <div className="p-4 border-b border-gray-200">
-          <input
-            type="text"
-            placeholder="Search menu items..."
-            className="w-full px-4 py-2.5 text-sm rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-gray-50"
-          />
-        </div>
-
         {/* Navigation Sections */}
         <div className="p-3 pb-8">
           <Section title="Authentication and Authorization">
-            <Item label="Groups" to="/admin/dashboard/groups" />
+            <Item 
+              label="Throwback Image" 
+              to="/admin/dashboard/throwback"
+              addTo="/admin/dashboard/throwback/add"
+            />
           </Section>
 
           <Section title="Website">

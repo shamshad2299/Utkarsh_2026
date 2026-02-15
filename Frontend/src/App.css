@@ -874,3 +874,13 @@ body.sidebar-open {
     height: 40px;
   }
 }
+
+#event-section{
+  scroll-margin-top: 3vh;
+}
+
+@media (min-width: 768px) {
+  #events-section {
+    scroll-margin-top: 2vh;
+  }
+}

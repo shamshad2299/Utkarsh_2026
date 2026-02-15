@@ -37,6 +37,8 @@ import FoodStallRequests from "../pages/FoodStallRequests";
 const WebsiteTeamPage = lazy(() =>import("../pages/WebsiteTeamPage"));
 import SoloRegistrations from "../pages/SoloRegistrations";
 import TeamRegistrations from "../pages/TeamRegistrations";
+import Upload from "../components/Throwback/Upload";
+import AllThrowBackImages from "../components/Throwback/AllThrowbackImages";
 
 
 const AdminRoutes = () => {
@@ -53,6 +55,8 @@ const AdminRoutes = () => {
         }
       >
         <Route index element={<DashboardCard title="Total Events" value="12" />} />
+        <Route path="throwback/add" element={<Upload/>}/>
+         <Route path="throwback" element={<AllThrowBackImages/>}/>
 
         <Route path="users" element={<Alluser />} />
         <Route path="users/update/:id" element={<EditUser />} />

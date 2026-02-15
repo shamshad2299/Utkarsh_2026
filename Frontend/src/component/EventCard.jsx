@@ -32,7 +32,7 @@ const EventCard = ({ title, onClick, year = "2026" }) => {
 
       {/* Content */}
       <div className="absolute z-10 md:pb-[30px] text-[#080131] ml-2 sm:ml-3 ">
-        <h3 className="text-[12px] sm:text-[22px] font-bold tracking-wider truncate">
+        <h3 className="text-[10px] sm:text-[22px] font-bold tracking-wider truncate">
           {title}
         </h3>
         <p className="text-[8px] sm:text-[14px] mt-1 font-mono">
