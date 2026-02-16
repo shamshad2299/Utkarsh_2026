@@ -3,7 +3,7 @@ import EventCard from "./EventCard";
 import dividerImg from "../assets/div.png";
 import { useEffect, useState } from "react";
 import { api } from "../api/axios.js";
-import { useNavigate } from "react-router-dom"; // Add this
+import { useNavigate } from "react-router-dom"; 
 import Line from "../assets/line.svg"
 
 const EventsSection = () => {
@@ -13,7 +13,7 @@ const EventsSection = () => {
   const [error, setError] = useState(null);
   const [selectedCategory, setSelectedCategory] = useState("all");
   
-  const navigate = useNavigate(); // Add this for navigation
+  const navigate = useNavigate(); 
 
   useEffect(() => {
     fetchCategories();
@@ -31,8 +31,7 @@ const EventsSection = () => {
     try {
       const response = await api.get("/category/get");
       setCategories(response.data.data || []);
-      //console.log(response);
-      // Fetch all events initially
+
       fetchAllEvents();
     } catch (error) {
       console.error("Error fetching categories:", error);
@@ -75,7 +74,7 @@ const EventsSection = () => {
     
   };
 
-  // Add this new function to handle category click
+  // this is handling category
   const handleCategoryClick = (categ) => {
     // Navigate to events page with category ID
     navigate(`/events?filter=${categ?._id}`);
@@ -89,30 +88,30 @@ const EventsSection = () => {
   };
 
   return (
-    <section className="relative bg-[#080131] text-white px-6 md:px-16 py-28 overflow-hidden ">
-      {/* BACKGROUND GRID */}
+    <section className="relative bg-transparent text-white px-6 md:px-6 pt-10 bg-[radial-gradient(ellipse_at_center,_#4C2580_-100%,_#13092E_100%)]">
       <div
-        className="absolute inset-0 opacity-10 pointer-events-none"
+        className="absolute inset-0 opacity-[0.08] pointer-events-none"
         style={{
           backgroundImage:
-            "linear-gradient(#4c1d95 1px, transparent 1px), linear-gradient(90deg, #4c1d95 1px, transparent 1px)",
-          backgroundSize: "60px 60px",
+            "linear-gradient(#6d4cff 1px, transparent 1px), linear-gradient(90deg, #6d4cff 1px, transparent 1px)",
+          backgroundSize: "110px 300px",
         }}
       />
 
+      
       <div className="max-w-7xl mx-auto relative z-10">
-        <div className="absolute lg:-right-12  xl:-right-10 right-10 lg:top-4 md:-right-12 md:top-10 max-md:hidden ">
+        <div className="absolute mr-10 xl:-mt-16 md:-right-12 md:top-16 lg:top-10 max-md:hidden ">
           <img 
           className="w-450 "
           src={Line} alt="" />
         </div>
         {/* TOP HEADING */}
-        <div className="flex flex-col md:flex-row md:items-start justify-between mb-16 gap-6 relative md:ml-10">
+        <div className="flex flex-col items-center md:flex-row justify-between sm:mb-6 mx-10 relative lg:h-[123] ">
           {/* LEFT TEXT */}
           <div className="max-w-2xl ">
             <h2
               className="
-                text-5xl md:text-6xl font-semibold mb-6
+                text-[24px] sm:text-6xl text-center sm:text-start font-semibold mb-6
                 bg-linear-to-r
                 from-[#7070DE] via-[#FFFEFF] to-[#C8ABFE]
                 bg-clip-text text-transparent
@@ -122,22 +121,28 @@ const EventsSection = () => {
               Events List
             </h2>
 
-            <p className="text-gray-400 text-sm md:text-base leading-relaxed mb-6 milonga">
+            {/* Mobile: short text; Tablet+ : full text */}
+            <p className="text-white text-sm text-center leading-relaxed -mt-6 mb-3 milonga sm:hidden">
+              Experience a thrilling array of events
+            </p>
+
+            <p className="hidden sm:block text-white text-sm text-center sm:text-left md:text-base leading-relaxed md:text-3xl mb-6 milonga">
               Experience a thrilling array of events, from mind-bending coding
               competitions to electrifying dance performances, and showcase your
               talents on a stage that embraces innovation.
             </p>
           </div>
 
-          {/* RIGHT BUTTON - Changed to navigate to all events page */}
-          <div className="relative w-fit">
-            <button
-              onClick={handleSeeAll} // Changed this
-              className="flex items-center gap-2 bg-white text-black px-10 py-3 rounded-2xl font-medium hover:bg-gray-200 transition-colors w-fit relative z-20 text-lg max-md:w-40"
-            >
-              See all <ArrowUpRight size={18}  className="font-bold"/>
-            </button>
-          </div>
+          {/* RIGHT BUTTON */}
+            <div className="relative w:full lg:w-fit h-full  flex  text-[9px] justify-center md:justify-end sm:mb-10 md:mb-5 sm:text-[16px]  ">
+              <button
+                onClick={handleSeeAll} 
+                className="flex justify-center items-center gap-2 bg-white text-black sm:px-10 px-[6px] md:px-auto py-3 rounded hover:bg-gray-200 transition-colors relative z-20  h-[20px] "
+              >
+                See all <ArrowUpRight size={9} sm:size={18}  className="font-bold"/>
+              </button>
+            </div>
+
         </div>
 
         {/* Loading State */}
@@ -166,35 +171,57 @@ const EventsSection = () => {
           </div>
         )}
 
-        {/* Categories Grid - Display only categories */}
+        {/* Categories Grid */}
         {!loading && !error && (
           <>
-           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 
-                md:ml-12 lg:mt-2 xl:mt-35 md:-mt-10 
-                [direction:rtl]">
+          <div className="
+              grid
+              grid-cols-2
+              sm:grid-cols-2
+              lg:grid-cols-3
+              gap-2
+
+              /* Mobile size control */
+              w-[320px] h-[360px]
+              mx-auto -mb-25 mt-5
+
+              /* Reset size on tablet+ */
+              sm:w-auto sm:h-auto sm:-mb-0 
+
+              /* Existing desktop offsets */
+              md:ml-12
+              md:-mt-0
+              lg:mt-10
+              xl:mt-20
+            "
+          >
               {/* Display all categories */}
               {categories.slice(0, 9).map((categ, index) => (
                 <div
-                  key={categ._id}
-                  className={index % 2 ? "lg:translate-y-2 [direction:ltr] text-left" : "[direction:ltr] text-left"}
-                >
+                  key={categ._id}>
                   <EventCard
                     title={categ.name}
-                    onClick={() => handleCategoryClick(categ)} // Changed this
+                    onClick={() => handleCategoryClick(categ)} 
                     isActive={selectedCategory === categ._id}
                   />
                 </div>
               ))}
             </div>
-
-           
           </>
         )}
+        
+
       </div>
 
+      <div className="absolute xl:-bottom-65 z-1 right-8 lg:right-5 lg:-bottom-50 md:-bottom-20 max-md:hidden">
+        <img 
+        src={Line} alt="" className="xl:w-350 lg:w-282 md:w-230" />
+      </div>
+
+
       {/* DIVIDER IMAGE */}
-      <div className="relative w-screen left-1/2 -translate-x-1/2 mt-20 pointer-events-none select-none z-10">
-        <img src={dividerImg} alt="divider" className="w-full object-cover" />
+      <div className="overflow-visible h-20 relative w-screen left-1/2 -translate-x-1/2 mt-15 xl:mt-35 pointer-events-none select-none z-10">
+        <img src={dividerImg} alt="divider" className="w-full absolute -bottom-8 xl:-bottom-20 object-cover z-15" />
       </div>
     </section>
   );

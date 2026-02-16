@@ -1,27 +1,25 @@
-// website/AllEvent/components/UserRegisteredEvents.js
-import React, { useState, useEffect } from "react";
+import React, { useState, useMemo, useCallback, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Calendar,
   Users,
-  Clock,
-  MapPin,
   Search,
   AlertCircle,
-  CheckCircle,
-  User,
-  Award,
-  CalendarDays,
   Loader2,
-  IndianRupee,
-  XCircle,
-  Eye,
   ChevronRight,
   ExternalLink,
+  Hand,
+  Timer,
+  Trophy,
+  UserCircle,
+  UsersRound,
+  LogOut,
 } from "lucide-react";
+import Swal from "sweetalert2";
 import { api } from "../../../api/axios";
-import { useAuth } from "../../../context/AuthContext";
+import { useAuth } from "../../../Context/AuthContext";
 import EventDetailModal from "./EventDetailModal";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   getCategoryName,
   getSubCategory,
@@ -35,41 +33,358 @@ import {
   getCategoryColor,
 } from "../../utils/eventUtils";
 
+// Query Keys
+const REGISTRATION_KEYS = {
+  all: ["registrations"],
+  my: () => [...REGISTRATION_KEYS.all, "my"],
+};
+
+// Constants
+const FILTER_BUTTONS = [
+  { id: "all", label: "All types", icon: Hand, color: "bg-[#c4b5fd]", textColor: "text-[#1a1a3e]" },
+  { id: "upcoming", label: "Upcoming", icon: Timer, color: "bg-white", textColor: "text-[#1a1a3e]" },
+  { id: "past", label: "Past", icon: Trophy, color: "bg-white", textColor: "text-[#1a1a3e]" },
+  { id: "solo", label: "Solo", icon: UserCircle, color: "bg-white", textColor: "text-[#1a1a3e]" },
+  { id: "team", label: "Team", icon: UsersRound, color: "bg-white", textColor: "text-[#1a1a3e]" },
+];
+
+// ================ SWEETALERT2 CONFIGURATION ================
+const Toast = Swal.mixin({
+  toast: true,
+  position: "top-end",
+  showConfirmButton: false,
+  timer: 4000,
+  timerProgressBar: true,
+  didOpen: (toast) => {
+    toast.addEventListener("mouseenter", Swal.stopTimer);
+    toast.addEventListener("mouseleave", Swal.resumeTimer);
+  },
+});
+
+// Toast Helpers
+const showSuccessToast = (message) => {
+  Toast.fire({
+    icon: "success",
+    title: message,
+    background: "#1a1a3e",
+    color: "#ffffff",
+    iconColor: "#10b981",
+  });
+};
+
+const showErrorToast = (message) => {
+  Toast.fire({
+    icon: "error",
+    title: message,
+    background: "#1a1a3e",
+    color: "#ffffff",
+    iconColor: "#ef4444",
+  });
+};
+
+const showWarningToast = (message) => {
+  Toast.fire({
+    icon: "warning",
+    title: message,
+    background: "#1a1a3e",
+    color: "#ffffff",
+    iconColor: "#f59e0b",
+  });
+}
+
+// Confetti Effect
+const triggerConfetti = () => {
+  if (window.confetti) {
+    window.confetti({
+      particleCount: 150,
+      spread: 70,
+      origin: { y: 0.6 },
+      colors: ['#8b5cf6', '#6366f1', '#3b82f6', '#10b981', '#f59e0b']
+    });
+  }
+};
+
+// ================ CONFIRMATION MODALS ================
+const showUnenrollConfirmation = async (eventTitle) => {
+  const result = await Swal.fire({
+    title: "Are you sure?",
+    html: `
+      <div style="text-align: center; padding: 10px;">
+        <div style="font-size: 48px; margin-bottom: 20px;">⚠️</div>
+        <p style="color: #1a1a3e; font-size: 18px; margin-bottom: 15px; font-weight: 500;">
+          You are about to unenroll from:
+        </p>
+        <div style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); 
+                    padding: 16px; border-radius: 14px; margin: 15px 0;
+                    box-shadow: 0 10px 25px -5px rgba(239, 68, 68, 0.3);">
+          <p style="color: white; font-size: 20px; font-weight: bold; margin: 0;">
+            ${eventTitle}
+          </p>
+        </div>
+        <p style="color: #4b5563; font-size: 15px; margin-top: 20px;">
+          You can re-enroll later if spots are still available.
+        </p>
+        <p style="color: #6b7280; font-size: 13px; margin-top: 10px; font-style: italic;">
+          This action can be undone by re-enrolling.
+        </p>
+      </div>
+    `,
+    icon: "warning",
+    iconColor: "#ef4444",
+    showCancelButton: true,
+    confirmButtonColor: "#ef4444",
+    cancelButtonColor: "#6b7280",
+    confirmButtonText: "Yes, Unenroll",
+    cancelButtonText: "Keep Registration",
+    background: "#ffffff",
+    backdrop: "rgba(239, 68, 68, 0.2)",
+    customClass: {
+      popup: "rounded-3xl shadow-2xl",
+      confirmButton: "rounded-full px-6 py-2.5 font-semibold",
+      cancelButton: "rounded-full px-6 py-2.5 font-semibold",
+    },
+  });
+  return result.isConfirmed;
+};
+
+const showReenrollmentConfirmation = async (eventTitle) => {
+  const result = await Swal.fire({
+    title: "Welcome Back! 👋",
+    html: `
+      <div style="text-align: center; padding: 10px;">
+        <div style="font-size: 48px; margin-bottom: 20px;">🔄</div>
+        <p style="color: #1a1a3e; font-size: 18px; margin-bottom: 10px; font-weight: 500;">
+          You had previously unenrolled from:
+        </p>
+        <div style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); 
+                    padding: 16px; border-radius: 14px; margin: 15px 0;
+                    box-shadow: 0 10px 25px -5px rgba(245, 158, 11, 0.3);">
+          <p style="color: white; font-size: 20px; font-weight: bold; margin: 0;">
+            ${eventTitle}
+          </p>
+        </div>
+        <p style="color: #4b5563; font-size: 16px; margin-top: 20px; font-weight: 500;">
+          Would you like to re-enroll and secure your spot again?
+        </p>
+        <p style="color: #6b7280; font-size: 14px; margin-top: 10px;">
+          Your previous registration will be restored.
+        </p>
+      </div>
+    `,
+    icon: "question",
+    iconColor: "#f59e0b",
+    showCancelButton: true,
+    confirmButtonColor: "#10b981",
+    cancelButtonColor: "#6b7280",
+    confirmButtonText: "Yes, Re-enroll Now!",
+    cancelButtonText: "Not Now",
+    background: "#ffffff",
+    backdrop: "rgba(245, 158, 11, 0.2)",
+    customClass: {
+      popup: "rounded-3xl shadow-2xl",
+      confirmButton: "rounded-full px-6 py-2.5 font-semibold",
+      cancelButton: "rounded-full px-6 py-2.5 font-semibold",
+    },
+  });
+  return result.isConfirmed;
+};
+
+const showReenrollmentSuccess = async (eventTitle) => {
+  triggerConfetti();
+  
+  await Swal.fire({
+    title: "🎉 Welcome Back!",
+    html: `
+      <div style="text-align: center; padding: 15px;">
+        <div style="font-size: 64px; margin-bottom: 20px; animation: bounce 1s infinite;">✨</div>
+        <h3 style="color: #1a1a3e; font-size: 28px; margin-bottom: 15px; font-weight: bold;">
+          Successfully Re-enrolled!
+        </h3>
+        <p style="color: #4b5563; font-size: 16px; margin-bottom: 10px;">
+          You are now registered again for:
+        </p>
+        <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); 
+                    padding: 18px; border-radius: 16px; margin: 20px 0;
+                    box-shadow: 0 15px 30px -5px rgba(16, 185, 129, 0.4);">
+          <p style="color: white; font-size: 22px; font-weight: bold; margin: 0;">
+            ${eventTitle}
+          </p>
+        </div>
+        <p style="color: #6b7280; font-size: 15px; margin-top: 20px;">
+          Thank you for re-joining us! We're excited to have you back. 🌟
+        </p>
+      </div>
+    `,
+    icon: "success",
+    iconColor: "#10b981",
+    confirmButtonColor: "#8b5cf6",
+    confirmButtonText: "Continue",
+    background: "#ffffff",
+    backdrop: "rgba(16, 185, 129, 0.2)",
+    showClass: {
+      popup: 'animate__animated animate__zoomIn'
+    },
+    customClass: {
+      popup: "rounded-3xl shadow-2xl",
+      confirmButton: "rounded-full px-8 py-3 font-semibold",
+    },
+  });
+};
+
+// ================ MEMOIZED COMPONENTS ================
+const SearchBar = React.memo(({ searchTerm, setSearchTerm }) => (
+  <div className="mb-8">
+    <div className="relative max-w-4xl">
+      <Search className="absolute left-5 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+      <input
+        type="text"
+        placeholder="Search Your registered events"
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+        className="w-full pl-14 pr-6 py-3 bg-white rounded-2xl text-[#1a1a3e] placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#c4b5fd] text-base shadow-lg"
+        aria-label="Search registered events"
+      />
+    </div>
+  </div>
+));
+SearchBar.displayName = 'SearchBar';
+
+const FilterButtons = React.memo(({ filter, setFilter }) => (
+  <div className="mb-8">
+    <div className="flex flex-wrap gap-3 justify-center md:justify-start">
+      {FILTER_BUTTONS.map((btn) => {
+        const Icon = btn.icon;
+        const isActive = filter === btn.id;
+        return (
+          <button
+            key={btn.id}
+            onClick={() => setFilter(btn.id)}
+            className={`
+              ${isActive ? btn.color : "bg-white"} 
+              ${btn.textColor} 
+              px-6 py-4 rounded-2xl font-medium 
+              cursor-pointer
+              transition-all shadow-md hover:shadow-lg hover:scale-105 
+              flex flex-col items-center gap-2 min-w-[100px]
+              focus:outline-none focus:ring-2 focus:ring-[#c4b5fd]
+            `}
+            aria-pressed={isActive}
+          >
+            <Icon className="w-8 h-8" strokeWidth={1.5} />
+            <span className="text-sm">{btn.label}</span>
+          </button>
+        );
+      })}
+    </div>
+  </div>
+));
+FilterButtons.displayName = 'FilterButtons';
+
+const LoadingState = React.memo(() => (
+  <div className="min-h-screen bg-[#1a1a3e] p-4 md:p-8">
+    <div className="max-w-7xl mx-auto">
+      <div className="flex flex-col items-center justify-center h-64">
+        <Loader2 className="w-12 h-12 text-white animate-spin mb-4" />
+        <p className="text-white/80 text-lg">Loading your registered events...</p>
+      </div>
+    </div>
+  </div>
+));
+LoadingState.displayName = 'LoadingState';
+
+const EmptyState = React.memo(({ searchTerm, filter, onClear, onBrowse }) => {
+  const hasFilters = searchTerm || filter !== "all";
+  return (
+    <div className="text-center py-12 bg-white/10 backdrop-blur-sm rounded-2xl">
+      {hasFilters ? (
+        <>
+          <Search className="w-16 h-16 text-white/30 mx-auto mb-4" />
+          <h3 className="text-xl font-semibold text-white mb-2">No Events Found</h3>
+          <p className="text-white/60 mb-4">
+            {searchTerm
+              ? "No registered events match your search"
+              : `No ${filter} events found in your registrations`}
+          </p>
+          <button
+            onClick={onClear}
+            className="px-6 py-3 bg-white text-[#1a1a3e] rounded-xl hover:bg-gray-100 font-semibold shadow-lg transition-all"
+          >
+            Clear Filters
+          </button>
+        </>
+      ) : (
+        <>
+          <Calendar className="w-16 h-16 text-white/30 mx-auto mb-4" />
+          <h3 className="text-xl font-semibold text-white mb-2">No Registered Events</h3>
+          <p className="text-white/60 mb-6">You haven't registered for any events yet</p>
+          <button
+            onClick={onBrowse}
+            className="px-6 py-3 bg-white text-[#1a1a3e] rounded-xl hover:bg-gray-100 font-semibold shadow-lg transition-all inline-flex items-center gap-2"
+          >
+            Browse Events
+            <ExternalLink size={18} />
+          </button>
+        </>
+      )}
+    </div>
+  );
+});
+EmptyState.displayName = 'EmptyState';
+
+// ================ MAIN COMPONENT ================
 const UserRegisteredEvents = () => {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
+  const queryClient = useQueryClient();
 
-  // Check authentication
-  const isAuthenticated = !!localStorage.getItem("accessToken");
-  const token = localStorage.getItem("accessToken");
+  const isAuthenticated = useMemo(() => !!localStorage.getItem("accessToken"), []);
+  const token = useMemo(() => localStorage.getItem("accessToken"), []);
 
-  // States
-  const [registrations, setRegistrations] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [loadingDetails, setLoadingDetails] = useState(false);
-  const [error, setError] = useState("");
+  // Local state
   const [searchTerm, setSearchTerm] = useState("");
   const [filter, setFilter] = useState("all");
-  const [selectedEvent, setSelectedEvent] = useState(null);
-
-  // Modal states
+  const [selectedEventId, setSelectedEventId] = useState(null);
   const [showEventModal, setShowEventModal] = useState(false);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [expandedRules, setExpandedRules] = useState({
     general: false,
     event: false,
   });
+  const [unenrollLoading, setUnenrollLoading] = useState({});
+  const [enrollingEventId, setEnrollingEventId] = useState(null);
+  //const [registrations , setRegistrations] = useState([]);
 
-  // Stats
-  const [stats, setStats] = useState({
-    total: 0,
-    upcoming: 0,
-    past: 0,
-    solo: 0,
-    team: 0,
+  // Fetch user registrations with React Query
+  const { 
+    data: registrations = [], 
+    isLoading, 
+    error,
+    refetch 
+  } = useQuery({
+    queryKey: REGISTRATION_KEYS.my(),
+    queryFn: async () => {
+      if (!token) return [];
+      try {
+        const response = await api.get("/registrations/my", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        return response.data?.data || [];
+      } catch (err) {
+        if (err.response?.status === 401) {
+          logout();
+          navigate("/login");
+        }
+        throw err;
+      }
+    },
+    enabled: !!isAuthenticated && !!token,
+    staleTime: 5 * 60 * 1000,
+    cacheTime: 30 * 60 * 1000,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
   });
 
-  // Check authentication on mount
+  // Redirect if not authenticated
   useEffect(() => {
     if (!isAuthenticated) {
       navigate("/login", {
@@ -78,259 +393,223 @@ const UserRegisteredEvents = () => {
           message: "Please login to view your registered events",
         },
       });
-      return;
     }
-
-    fetchUserRegistrations();
-  }, [isAuthenticated, token, navigate]);
-
-  // Fetch user's registrations
-  const fetchUserRegistrations = async () => {
-    try {
-      setLoading(true);
-      setError("");
-
-      const response = await api.get("/registrations/my", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      // Get registrations array safely
-      const registrationsData = response.data?.data || [];
-      setRegistrations(registrationsData);
-
-      // Calculate stats from registrations
-      calculateStats(registrationsData);
-    } catch (error) {
-      console.error("Error fetching registrations:", error);
-
-      if (error.response?.status === 401) {
-        logout();
-        navigate("/login");
-        return;
-      }
-
-      setError("Failed to load your registrations. Please try again.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Calculate statistics
-  const calculateStats = (registrations) => {
-    const now = new Date();
-
-    const upcoming = registrations.filter(
-      (reg) => new Date(reg?.eventId?.startTime) >= now,
-    ).length;
-
-    const past = registrations.filter(
-      (reg) => new Date(reg?.eventId?.startTime) < now,
-    ).length;
-
-    const solo = registrations.filter(
-      (reg) =>
-        reg?.eventId?.eventType === "solo" ||
-        (reg?.teamId === null && reg?.team === null),
-    ).length;
-
-    const team = registrations.filter(
-      (reg) =>
-        reg?.eventId?.eventType !== "solo" ||
-        reg?.teamId !== null ||
-        reg?.team !== null,
-    ).length;
-
-    setStats({
-      total: registrations.length,
-      upcoming,
-      past,
-      solo,
-      team,
-    });
-  };
+  }, [isAuthenticated, navigate]);
 
   // Filter registrations
-  const filteredRegistrations = registrations.filter((registration) => {
-    const event = registration?.eventId;
-    if (!event) return false;
+  const filteredRegistrations = useMemo(() => {
+    if (!registrations.length) return [];
 
-    // Search filter
-    const matchesSearch =
-      searchTerm === "" ||
-      event.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      event.description?.toLowerCase().includes(searchTerm.toLowerCase());
+    return registrations.filter((registration) => {
+      const event = registration?.eventId;
+      if (!event) return false;
 
-    // Type filter
-    let matchesType = true;
-    if (filter === "solo") {
-      matchesType =
-        event.eventType === "solo" ||
-        (registration?.teamId === null && registration?.team === null);
-    }
-    if (filter === "team") {
-      matchesType =
-        event.eventType !== "solo" ||
-        registration?.teamId !== null ||
-        registration?.team !== null;
-    }
+      const matchesSearch = !searchTerm || 
+        event.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        event.description?.toLowerCase().includes(searchTerm.toLowerCase());
 
-    // Date filter
-    let matchesDate = true;
-    const now = new Date();
-    const eventDate = new Date(event.startTime);
+      let matchesType = true;
+      if (filter === "solo") matchesType = event.eventType === "solo";
+      if (filter === "team") matchesType = event.eventType !== "solo";
 
-    if (filter === "upcoming") matchesDate = eventDate >= now;
-    if (filter === "past") matchesDate = eventDate < now;
+      let matchesDate = true;
+      if (filter === "upcoming" || filter === "past") {
+        const now = new Date();
+        const eventDate = new Date(event.startTime);
+        matchesDate = filter === "upcoming" ? eventDate >= now : eventDate < now;
+      }
 
-    return matchesSearch && matchesType && matchesDate;
-  });
-
-  // Get event status
-  const getEventStatus = (event) => {
-    if (!event || !event.startTime)
-      return { text: "Unknown", color: "gray", icon: AlertCircle };
-
-    const now = new Date();
-    const eventDate = new Date(event.startTime);
-    const regDeadline = new Date(event.registrationDeadline);
-
-    if (now > eventDate)
-      return { text: "Completed", color: "gray", icon: CheckCircle };
-    if (now > regDeadline)
-      return { text: "Registration Closed", color: "red", icon: AlertCircle };
-    if (eventDate > now)
-      return { text: "Upcoming", color: "green", icon: Calendar };
-
-    return { text: "Ongoing", color: "blue", icon: Clock };
-  };
+      return matchesSearch && matchesType && matchesDate;
+    });
+  }, [registrations, searchTerm, filter]);
 
   // Get registration status
-  const getRegistrationStatus = (registration) => {
-    const status = registration?.status?.toLowerCase() || "pending";
-    const payment = registration?.paymentStatus?.toLowerCase() || "pending";
-    const checkedIn = registration?.checkedIn || false;
-
-    if (checkedIn) {
-      return { text: "Checked In", color: "green" };
-    } else if (status === "confirmed" && payment === "paid") {
-      return { text: "Confirmed & Paid", color: "green" };
-    } else if (status === "confirmed" && payment !== "paid") {
-      return { text: "Confirmed (Payment Pending)", color: "yellow" };
-    } else if (status === "pending") {
-      return { text: "Pending Approval", color: "orange" };
-    } else if (status === "cancelled") {
-      return { text: "Cancelled", color: "red" };
-    } else {
-      return { text: "Registered", color: "blue" };
+  const getRegistrationStatus = useCallback((registration) => {
+    if (registration.isDeleted && registration.status === "cancelled") {
+      return { text: "Cancelled", color: "red", bgClass: "bg-red-500 text-white" };
     }
-  };
-
-  // Handle event details view
-  const handleViewDetails = (event) => {
-    setSelectedEvent(event);
-    setSelectedImageIndex(0);
-    setExpandedRules({
-      general: false,
-      event: false,
-    });
-    setShowEventModal(true);
-  };
-
-  // Handle close modal
-  const handleCloseModal = () => {
-    setShowEventModal(false);
-    setSelectedEvent(null);
-  };
-
-  // Handle unregister/withdraw
-  const handleUnregister = async (registrationId) => {
-    if (
-      !window.confirm(
-        "Are you sure you want to unregister from this event? This action cannot be undone.",
-      )
-    ) {
-      return;
+    if (registration.checkedIn) {
+      return { text: "Checked In", color: "green", bgClass: "bg-green-600 text-white" };
     }
+    if (registration.status === "confirmed") {
+      return { text: "Confirmed", color: "green", bgClass: "bg-green-600 text-white" };
+    }
+    if (registration.status === "pending") {
+      return { text: "Pending", color: "orange", bgClass: "bg-orange-500 text-white" };
+    }
+    return { text: "Confirmed", color: "green", bgClass: "bg-green-600 text-white" };
+  }, []);
 
+  // ================ HANDLE UNENROLL ================
+const handleUnregister = useCallback(async (registrationId, eventTitle) => {
+  const confirmed = await showUnenrollConfirmation(eventTitle);
+  if (!confirmed) return;
+
+  setUnenrollLoading((prev) => ({ ...prev, [registrationId]: true }));
+
+  try {
+    // Try different endpoint patterns
+    let response;
+    
+    // Pattern 1: PATCH to /registrations/:id
     try {
-      setLoadingDetails(true);
+      response = await api.patch(
+        `/registrations/${registrationId}/cancel`,
+        { status: 'cancelled' }, // Some APIs expect the status in body
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+    } catch (err) {
+      if (err.response?.status === 404) {
+        // Pattern 2: DELETE to /registrations/:id
+        response = await api.delete(
+          `/registrations/${registrationId}`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+      } else {
+        throw err;
+      }
+    }
 
-      await api.patch(`/registrations/${registrationId}/cancel`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+    // Update React Query cache
+    queryClient.setQueryData(REGISTRATION_KEYS.my(), (oldData) => {
+      if (!oldData) return [];
+      return oldData.filter((reg) => reg._id !== registrationId);
+    });
+    
+    showSuccessToast(`Successfully unenrolled from "${eventTitle}"`);
+    
+  } catch (error) {
+    console.error("Error unregistering:", error);
+    
+    // Better error handling
+    if (error.response) {
+      // The request was made and the server responded with a status code
+      // that falls out of the range of 2xx
+      console.error("Error response:", error.response.data);
+      console.error("Error status:", error.response.status);
+      console.error("Error headers:", error.response.headers);
+      
+      const errorMsg = error.response?.data?.message || 
+                      error.response?.data?.error || 
+                      "Failed to unregister";
+      
+      if (error.response.status === 404) {
+        showErrorToast("Registration endpoint not found. Please contact support.");
+      } else if (errorMsg.includes("deadline")) {
+        showErrorToast("Registration deadline has passed! Cannot unenroll.");
+      } else if (errorMsg.includes("checked in")) {
+        showErrorToast("You have already checked in for this event!");
+      } else if (errorMsg.includes("started")) {
+        showErrorToast("Event has already started!");
+      } else {
+        showErrorToast(errorMsg);
+      }
+    } else if (error.request) {
+      // The request was made but no response was received
+      console.error("No response received:", error.request);
+      showErrorToast("No response from server. Please check your connection.");
+    } else {
+      // Something happened in setting up the request that triggered an Error
+      console.error("Error setting up request:", error.message);
+      showErrorToast("Failed to send request. Please try again.");
+    }
+  } finally {
+    setUnenrollLoading((prev) => ({ ...prev, [registrationId]: false }));
+  }
+}, [token, queryClient]);
 
-      // Remove from local state
-      setRegistrations((prev) =>
-        prev.filter((reg) => reg._id !== registrationId),
+  // ================ HANDLE RE-ENROLL ================
+  const handleReenroll = useCallback(async (registrationId, event, teamId = null) => {
+    try {
+      const confirmed = await showReenrollmentConfirmation(event.title);
+      if (!confirmed) return;
+
+      setEnrollingEventId(event._id);
+
+      const response = await api.patch(
+        `/registrations/${registrationId}/restore`,
+        { teamId },
+        { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      // Recalculate stats
-      calculateStats(registrations.filter((reg) => reg._id !== registrationId));
-
-      alert("Successfully unregistered from the event!");
+      // Refresh registrations
+      await refetch();
+      
+      // Show success modal with confetti
+      await showReenrollmentSuccess(event.title);
+      
     } catch (error) {
-      console.error("Error unregistering:", error);
-      const errorMsg = error.response?.data?.message || "Failed to unregister";
-
+      console.error("Re-enrollment error:", error);
+      const errorMsg = error.response?.data?.message || "Failed to re-enroll";
+      
       if (errorMsg.includes("deadline")) {
-        alert("Cannot unregister: Registration deadline has passed");
-      } else if (errorMsg.includes("checked in")) {
-        alert("Cannot unregister: You have already checked in for this event");
+        showErrorToast("Registration deadline has passed! Cannot re-enroll.");
+      } else if (errorMsg.includes("full")) {
+        showErrorToast("Event is now full! Cannot re-enroll.");
+      } else if (errorMsg.includes("team")) {
+        showWarningToast("Please select a valid team for re-enrollment");
       } else {
-        alert(errorMsg);
+        showErrorToast(errorMsg);
       }
     } finally {
-      setLoadingDetails(false);
+      setEnrollingEventId(null);
     }
-  };
+  }, [token, refetch]);
 
-  // Handle login redirect
-  const handleLoginRedirect = () => {
-    navigate("/login", {
-      state: {
-        from: "/events/my-registrations",
-        message: "Please login to view your registered events",
-      },
-    });
-  };
+  // Modal handlers
+  const handleViewDetails = useCallback((event) => {
+    document.body.style.overflow = "hidden";
+    setSelectedEventId(event._id);
+    setSelectedImageIndex(0);
+    setExpandedRules({ general: false, event: false });
+    setShowEventModal(true);
+  }, []);
 
-  if (!isAuthenticated) {
+  const handleCloseModal = useCallback(() => {
+    document.body.style.overflow = "auto";
+    setShowEventModal(false);
+    setSelectedEventId(null);
+  }, []);
+
+  const toggleRuleSection = useCallback((section) => {
+    setExpandedRules((prev) => ({
+      ...prev,
+      [section]: !prev[section],
+    }));
+  }, []);
+
+  const handleClearFilters = useCallback(() => {
+    setSearchTerm("");
+    setFilter("all");
+  }, []);
+
+  const handleBrowseEvents = useCallback(() => {
+    navigate("/events");
+  }, [navigate]);
+
+  // Get selected event from cache
+  const selectedEvent = useMemo(() => {
+    if (!selectedEventId || !registrations.length) return null;
+    const registration = registrations.find(reg => reg.eventId?._id === selectedEventId);
+    return registration?.eventId || null;
+  }, [selectedEventId, registrations]);
+
+  if (!isAuthenticated) return null;
+  if (isLoading) return <LoadingState />;
+
+  if (error) {
     return (
-      <div className="min-h-screen bg-linear-to-b from-[#f0e6ff] to-[#d9c8ff] p-4 md:p-8">
+      <div className="min-h-screen bg-[#1a1a3e] p-4 md:p-8">
         <div className="max-w-7xl mx-auto">
-          <div className="text-center py-12">
-            <AlertCircle className="w-16 h-16 text-[#8b5cf6] mx-auto mb-4" />
-            <h2 className="text-2xl font-bold text-[#2d1b69] mb-4">
-              Authentication Required
-            </h2>
-            <p className="text-[#2d1b69]/80 mb-8">
-              Please login to view your registered events
-            </p>
+          <div className="text-center py-12 bg-white/10 backdrop-blur-sm rounded-2xl">
+            <AlertCircle className="w-12 h-12 text-red-400 mx-auto mb-4" />
+            <p className="text-red-400 mb-4">{error.message || "Failed to load registrations"}</p>
             <button
-              onClick={handleLoginRedirect}
-              className="px-6 py-3 bg-linear-to-r from-[#7c3aed] to-[#8b5cf6] text-white rounded-lg hover:from-[#8b5cf6] hover:to-[#a78bfa] font-medium shadow-lg hover:shadow-xl transition-all"
+              onClick={() => refetch()}
+              className="px-6 py-3 bg-white text-[#1a1a3e] rounded-xl hover:bg-gray-100 font-semibold shadow-lg transition-all"
             >
-              Go to Login
+              Try Again
             </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-linear-to-b from-[#f0e6ff] to-[#d9c8ff] p-4 md:p-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex flex-col items-center justify-center h-64">
-            <Loader2 className="w-12 h-12 text-[#7c3aed] animate-spin mb-4" />
-            <p className="text-[#2d1b69]/80">
-              Loading your registered events...
-            </p>
           </div>
         </div>
       </div>
@@ -338,384 +617,109 @@ const UserRegisteredEvents = () => {
   }
 
   return (
-    <div className="min-h-screen bg-white text-[#2d1b69] p-4 md:p-8">
+    <div className="min-h-screen bg-[#1a1a3e] p-4 md:p-8">
       <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="mb-8">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-            <div>
-              <h1 className="text-3xl md:text-4xl font-bold text-[#2d1b69] mb-2 milonga">
-                My Registered Events
-              </h1>
-              <p className="text-[#2d1b69]/80">
-                Welcome back,{" "}
-                <span className="text-[#7c3aed] font-semibold">
-                  {user?.name || user?.email}
-                </span>
-                !
-              </p>
-            </div>
+        <SearchBar searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
+        <FilterButtons filter={filter} setFilter={setFilter} />
 
-            <button
-              onClick={() => navigate("/events")}
-              className="px-6 py-2.5 bg-white/80 backdrop-blur-sm border-2 border-[#7c3aed]/30 text-[#2d1b69] rounded-xl hover:bg-white hover:border-[#7c3aed] hover:shadow-lg transition-all font-medium flex items-center gap-2"
-            >
-              Browse All Events
-              <ChevronRight size={18} />
-            </button>
-          </div>
+        <h2 className="text-white text-2xl md:text-3xl font-serif mb-8 milonga">
+          See all your Registered events
+        </h2>
 
-          {/* Stats Cards */}
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-3 md:gap-4 mb-8">
-            {[
-              {
-                label: "Total",
-                value: stats.total,
-                icon: CalendarDays,
-                bg: "bg-linear-to-br from-purple-100 to-purple-200",
-                border: "border-purple-200",
-                text: "text-purple-700",
-              },
-              {
-                label: "Upcoming",
-                value: stats.upcoming,
-                icon: Clock,
-                bg: "bg-linear-to-br from-emerald-100 to-emerald-200",
-                border: "border-emerald-200",
-                text: "text-emerald-700",
-              },
-              {
-                label: "Completed",
-                value: stats.past,
-                icon: Award,
-                bg: "bg-linear-to-br from-blue-100 to-blue-200",
-                border: "border-blue-200",
-                text: "text-blue-700",
-              },
-              {
-                label: "Solo",
-                value: stats.solo,
-                icon: User,
-                bg: "bg-linear-to-br from-amber-100 to-amber-200",
-                border: "border-amber-200",
-                text: "text-amber-700",
-              },
-              {
-                label: "Team",
-                value: stats.team,
-                icon: Users,
-                bg: "bg-linear-to-br from-cyan-100 to-cyan-200",
-                border: "border-cyan-200",
-                text: "text-cyan-700",
-              },
-            ].map((stat) => (
-              <div
-                key={stat.label}
-                className={`rounded-2xl ${stat.bg} border ${stat.border} p-4 shadow-sm hover:shadow-md transition-shadow`}
-              >
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-xs font-medium text-[#2d1b69]/70">
-                      {stat.label}
-                    </p>
-                    <p className={`text-2xl font-bold ${stat.text}`}>
-                      {stat.value}
-                    </p>
-                  </div>
-                  <div className={`p-2 rounded-lg ${stat.text}/20`}>
-                    <stat.icon className={`w-6 h-6 ${stat.text}`} />
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Search and Filters */}
-          <div className="mb-8">
-            <div className="flex flex-col md:flex-row gap-4">
-              {/* Search */}
-              <div className="flex-1">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#7c3aed] w-5 h-5" />
-                  <input
-                    type="text"
-                    placeholder="Search your registered events..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-10 pr-4 py-3 bg-white/80 backdrop-blur-sm border-2 border-[#7c3aed]/30 rounded-xl text-[#2d1b69] placeholder-[#2d1b69]/60 focus:outline-none focus:border-[#7c3aed] focus:bg-white transition-colors"
-                  />
-                </div>
-              </div>
-
-              {/* Filter Buttons */}
-              <div className="flex flex-wrap gap-2">
-                {["all", "upcoming", "past", "solo", "team"].map(
-                  (filterType) => (
-                    <button
-                      key={filterType}
-                      onClick={() => setFilter(filterType)}
-                      className={`px-4 py-2 rounded-lg font-medium transition-all text-sm ${
-                        filter === filterType
-                          ? "bg-linear-to-r from-[#7c3aed] to-[#8b5cf6] text-white shadow-md"
-                          : "bg-white/80 backdrop-blur-sm text-[#2d1b69]/80 hover:text-[#2d1b69] border-2 border-[#7c3aed]/30 hover:border-[#7c3aed] hover:shadow-sm"
-                      }`}
-                    >
-                      {filterType.charAt(0).toUpperCase() + filterType.slice(1)}
-                    </button>
-                  ),
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Content */}
-        {error ? (
-          <div className="text-center py-12  bg-white/50 backdrop-blur-sm rounded-2xl border border-[#7c3aed]/30">
-            <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
-            <p className="text-red-600">{error}</p>
-            <button
-              onClick={fetchUserRegistrations}
-              className="mt-4 px-6 py-2 bg-linear-to-r from-[#7c3aed] to-[#8b5cf6] text-white rounded-lg hover:from-[#8b5cf6] hover:to-[#a78bfa] shadow-md hover:shadow-lg transition-all"
-            >
-              Try Again
-            </button>
-          </div>
-        ) : filteredRegistrations.length === 0 ? (
-          <div className="text-center py-12  border-2 border-dashed border-[#7c3aed]/30 rounded-2xl bg-white/50 backdrop-blur-sm">
-            {searchTerm || filter !== "all" ? (
-              <>
-                <Search className="w-16 h-16 text-[#7c3aed]/30 mx-auto mb-4" />
-                <h3 className="text-xl font-semibold text-[#2d1b69]/80 mb-2">
-                  No Events Found
-                </h3>
-                <p className="text-[#2d1b69]/60 mb-4">
-                  {searchTerm
-                    ? "No registered events match your search"
-                    : `No ${filter} events found in your registrations`}
-                </p>
-                <button
-                  onClick={() => {
-                    setSearchTerm("");
-                    setFilter("all");
-                  }}
-                  className="px-4 py-2 text-[#7c3aed] hover:text-[#8b5cf6] font-medium"
-                >
-                  Clear Filters
-                </button>
-              </>
-            ) : (
-              <>
-                <Calendar className="w-16 h-16 text-[#7c3aed]/30 mx-auto mb-4" />
-                <h3 className="text-xl font-semibold text-[#2d1b69]/80 mb-2">
-                  No Registered Events
-                </h3>
-                <p className="text-[#2d1b69]/60 mb-6">
-                  You haven't registered for any events yet
-                </p>
-                <button
-                  onClick={() => navigate("/events")}
-                  className="px-6 py-3 bg-linear-to-r from-[#7c3aed] to-[#8b5cf6] text-white rounded-lg hover:from-[#8b5cf6] hover:to-[#a78bfa] font-medium shadow-md hover:shadow-lg transition-all flex items-center gap-2 mx-auto"
-                >
-                  Browse Events
-                  <ExternalLink size={18} />
-                </button>
-              </>
-            )}
-          </div>
+        {filteredRegistrations.length === 0 ? (
+          <EmptyState
+            searchTerm={searchTerm}
+            filter={filter}
+            onClear={handleClearFilters}
+            onBrowse={handleBrowseEvents}
+          />
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6 ">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredRegistrations.map((registration) => {
               const event = registration?.eventId;
               if (!event) return null;
 
-              const eventStatus = getEventStatus(event);
-              const registrationStatus = getRegistrationStatus(registration);
-              const categoryName = getCategoryName(event.category);
-              const categoryIcon = getCategoryIcon(categoryName);
-              const categoryColor = getCategoryColor(categoryName);
-              const eventTypeText = getEventTypeText(
-                event.teamSize,
-                event.eventType,
-              );
-              const imageUrl = getImageUrl(event.images);
-
-              // Check if unregister is allowed
-              const now = new Date();
-              const eventDate = new Date(event.startTime);
-              const canUnregister =
-                now < eventDate &&
-                registration.status !== "cancelled" &&
-                !registration.checkedIn;
+              const status = getRegistrationStatus(registration);
+              const isLoading = unenrollLoading[registration._id];
+              const isDeleted = registration.isDeleted && registration.status === "cancelled";
 
               return (
                 <div
                   key={registration._id}
-                  className="
-    bg-linear-to-br 
-    from-[#cfd9f1] via-[#807cb3] to-[#84b823]
-    backdrop-blur-xl
-    rounded-2xl
-    border border-violet-500/30
-    shadow-[0_0_30px_rgba(124,58,237,0.25)]
-    hover:shadow-[0_0_45px_rgba(124,58,237,0.45)]
-    hover:border-violet-400/60
-    transition-all duration-300
-    group cursor-pointer
-  "
-                  onClick={() => handleViewDetails(event)}
+                  className={`bg-white rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-300 overflow-hidden ${
+                    isDeleted ? 'opacity-75 border-2 border-red-300' : ''
+                  }`}
                 >
-                  {/* Event Image */}
-                  <div className="relative h-48 overflow-hidden">
-                    {imageUrl ? (
-                      <img
-                        src={imageUrl}
-                        alt={event.title}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                      />
-                    ) : (
-                      <div className="w-full h-full bg-linear-to-r from-[#7c3aed]/20 to-[#8b5cf6]/20 flex items-center justify-center">
-                        <Calendar className="w-16 h-16 " />
-                      </div>
-                    )}
-                    {/* Category Badge */}
-                    <div className="absolute top-3 left-3">
-                      <span
-                        className="px-3 py-1.5 rounded-full text-xs font-bold flex items-center gap-1.5 backdrop-blur-md bg-white/90 shadow-md"
-                        style={{
-                          color: categoryColor,
-                        }}
-                      >
-                        {React.createElement(categoryIcon, { size: 14 })}
-                        {categoryName}
+                  <div className="p-5 pb-3">
+                    <div className="flex items-start justify-between mb-3">
+                      <span className="text-sm text-gray-600 font-medium">
+                        {getCategoryName(event.category)}
                       </span>
-                    </div>
-                    {/* Status Badge */}
-                    <div className="absolute top-3 right-3">
-                      <span
-                        className={`px-3 py-1.5 rounded-full text-xs font-bold backdrop-blur-md shadow-md ${
-                          registrationStatus.color === "green"
-                            ? "bg-green-500/90 text-white"
-                            : registrationStatus.color === "yellow"
-                              ? "bg-yellow-500/90 text-white"
-                              : registrationStatus.color === "orange"
-                                ? "bg-orange-500/90 text-white"
-                                : registrationStatus.color === "red"
-                                  ? "bg-red-500/90 text-white"
-                                  : "bg-blue-500/90 text-white"
-                        }`}
-                      >
-                        {registrationStatus.text}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Event Content */}
-                  <div className="p-5">
-                    {/* Event Type Badge */}
-                    <div className="mb-3">
-                      <span className="px-2.5 py-1 bg-[#7c3aed]/10  rounded-full text-xs font-semibold">
-                        {eventTypeText}
+                      <span className={`px-3 py-1.5 rounded-full text-xs font-bold ${status.bgClass}`}>
+                        {status.text}
                       </span>
                     </div>
 
-                    {/* Event Title - Larger */}
-                    <h3 className="text-xl font-bold text-[#2d1b69] mb-3 line-clamp-2 group-hover:text-[#7c3aed] transition-colors">
+                    <h3 className="text-xl font-bold text-[#1a1a3e] mb-2 line-clamp-2">
                       {event.title}
                     </h3>
 
-                    {/* Event Info Grid */}
-                    <div className="grid grid-cols-2 gap-3 mb-4">
-                      <div className="flex items-center gap-2">
-                        <Calendar className="w-4 h-4 text-[#7c3aed] shrink-0" />
-                        <div>
-                          <p className="text-xs text-[#2d1b69]/70">Date</p>
-                          <p className="text-sm font-medium text-[#2d1b69]">
-                            {formatDate(event.startTime)}
-                          </p>
-                        </div>
-                      </div>
+                    <p className="text-sm text-gray-600 mb-4">
+                      Date:{" "}
+                      <span className="font-semibold text-[#1a1a3e]">
+                        {formatDate(event.startTime)}
+                      </span>
+                    </p>
+                  </div>
 
-                      <div className="flex items-center gap-2">
-                        <Clock className="w-4 h-4 text-[#7c3aed] shrink-0" />
-                        <div>
-                          <p className="text-xs text-[#2d1b69]/70">Time</p>
-                          <p className="text-sm font-medium text-[#2d1b69]">
-                            {formatTime(event.startTime)}
-                          </p>
-                        </div>
-                      </div>
-
-                      {event.venueName && (
-                        <div className="flex items-center gap-2 col-span-2">
-                          <MapPin className="w-4 h-4 text-[#7c3aed] shrink-0" />
-                          <div>
-                            <p className="text-xs text-[#2d1b69]/70">Venue</p>
-                            <p className="text-sm font-medium text-[#2d1b69] truncate">
-                              {event.venueName}
-                            </p>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Fee and Action Buttons */}
-                    <div className="flex items-center justify-between pt-4 border-t border-[#7c3aed]/20">
-                      <div className="flex items-center gap-2">
-                        <IndianRupee className="w-5 h-5 text-[#7c3aed]" />
-                        <span className="text-lg font-bold text-[#2d1b69]">
-                          ₹{event.fee || 0}
-                        </span>
-                        {event.fee === 0 && (
-                          <span className="text-xs bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full">
-                            Free
-                          </span>
+                  <div className="px-5 pb-5 flex gap-2">
+                    {isDeleted ? (
+                      // Show Re-enroll button for cancelled registrations
+                      <button
+                        onClick={() => handleReenroll(registration._id, event)}
+                        disabled={enrollingEventId === event._id}
+                        className="flex-1 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-full py-3 px-4 font-semibold hover:from-amber-600 hover:to-orange-600 transition-all flex items-center justify-center gap-2 shadow-md"
+                      >
+                        {enrollingEventId === event._id ? (
+                          <>
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                            Re-enrolling...
+                          </>
+                        ) : (
+                          <>
+                            <ExternalLink className="w-4 h-4" />
+                            Re-enroll Now
+                          </>
                         )}
-                      </div>
-
-                      <div className="flex items-center gap-2">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleViewDetails(event);
-                          }}
-                          className="px-3 py-1.5 bg-[#7c3aed]/10 text-[#7c3aed] rounded-lg hover:bg-[#7c3aed] hover:text-white transition-colors text-xs font-medium flex items-center gap-1.5"
-                        >
-                          <Eye size={14} />
-                          View
-                        </button>
-
-                        {canUnregister && (
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleUnregister(registration._id);
-                            }}
-                            disabled={loadingDetails}
-                            className="px-3 py-1.5 bg-red-100 text-red-600 rounded-lg hover:bg-red-600 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-xs font-medium flex items-center gap-1.5"
-                          >
-                            {loadingDetails ? (
-                              <Loader2 size={14} className="animate-spin" />
-                            ) : (
-                              <XCircle size={14} />
-                            )}
-                            Unregister
-                          </button>
+                      </button>
+                    ) : (
+                      // Show Unenroll button for active registrations
+                      <button
+                        onClick={() => handleUnregister(registration._id, event.title)}
+                        disabled={isLoading}
+                        className="flex-1 bg-red-600 text-white rounded-full py-3 px-4 font-semibold hover:bg-red-700 transition-all flex items-center justify-center gap-2 shadow-md"
+                      >
+                        {isLoading ? (
+                          <>
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                            Processing...
+                          </>
+                        ) : (
+                          <>
+                            <LogOut className="w-4 h-4" />
+                            Unenroll
+                          </>
                         )}
-                      </div>
-                    </div>
-
-                    {/* Team Info (if applicable) */}
-                    {registration.teamId && (
-                      <div className="mt-3 pt-3 border-t border-blue-200">
-                        <div className="flex items-center gap-2">
-                          <Users className="w-4 h-4 text-blue-600" />
-                          <span className="text-xs font-medium text-blue-600">
-                            Team Registration
-                          </span>
-                        </div>
-                      </div>
+                      </button>
                     )}
+                    
+                    <button
+                      onClick={() => handleViewDetails(event)}
+                      className="flex-1 bg-white border-2 border-black text-black rounded-full py-3 px-4 font-semibold hover:bg-gray-50 transition-all flex items-center justify-center gap-2 shadow-md"
+                    >
+                      Details
+                      <ChevronRight className="w-4 h-4" />
+                    </button>
                   </div>
                 </div>
               );
@@ -725,19 +729,14 @@ const UserRegisteredEvents = () => {
       </div>
 
       {/* Event Detail Modal */}
-      {showEventModal && selectedEvent && (
+      {showEventModal && selectedEventId && selectedEvent && (
         <EventDetailModal
-          selectedEvent={selectedEvent}
+          eventId={selectedEventId}
           handleCloseModal={handleCloseModal}
           selectedImageIndex={selectedImageIndex}
           setSelectedImageIndex={setSelectedImageIndex}
           expandedRules={expandedRules}
-          toggleRuleSection={(section) => {
-            setExpandedRules((prev) => ({
-              ...prev,
-              [section]: !prev[section],
-            }));
-          }}
+          toggleRuleSection={toggleRuleSection}
           getCategoryName={getCategoryName}
           getSubCategory={getSubCategory}
           getAllImages={getAllImages}
@@ -746,6 +745,10 @@ const UserRegisteredEvents = () => {
           getEventTypeText={getEventTypeText}
           formatDate={formatDate}
           formatTime={formatTime}
+          handleEnroll={() => {}}
+          isAuthenticated={isAuthenticated}
+          token={token}
+          user={user}
         />
       )}
     </div>

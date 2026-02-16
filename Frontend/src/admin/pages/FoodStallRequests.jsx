@@ -1,6 +1,8 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { foodStallService } from "../api/axios";
-import { Trash2, RefreshCcw } from "lucide-react";
+import { Trash2, RefreshCcw, Download } from "lucide-react";
+import * as XLSX from "xlsx";
+import { saveAs } from "file-saver";
 
 const FoodStallRequests = () => {
   const [loading, setLoading] = useState(true);
@@ -73,6 +75,34 @@ const FoodStallRequests = () => {
     }
   };
 
+  // ✅ EXPORT EXCEL
+  const exportToExcel = () => {
+    const data = filtered.map((x, i) => ({
+      "S.No": i + 1,
+      "Business Name": x.businessName || "",
+      "Owner Name": x.ownerName || "",
+      Email: x.email || "",
+      "Phone Number": x.phoneNumber || "",
+      "Permanent Address": x.permanentAddress || "",
+      "Food Items": x.foodItems || "",
+      "No. of Stalls": x.numberOfStalls || "",
+      Status: x.status || "",
+      "Created At": x.createdAt ? new Date(x.createdAt).toLocaleString() : "",
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(data);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "FoodStallRequests");
+
+    const excelBuffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
+
+    const fileData = new Blob([excelBuffer], {
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    });
+
+    saveAs(fileData, `FoodStallRequests_${Date.now()}.xlsx`);
+  };
+
   return (
     <div className="p-6 text-gray-900">
       <div className="flex items-start justify-between gap-4 mb-6">
@@ -85,13 +115,23 @@ const FoodStallRequests = () => {
           </p>
         </div>
 
-        <button
-          onClick={fetchData}
-          className="flex items-center gap-2 px-4 py-2 rounded-xl border bg-white hover:bg-gray-50 text-gray-900"
-        >
-          <RefreshCcw size={18} />
-          Refresh
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={exportToExcel}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl border bg-white hover:bg-gray-50 text-gray-900"
+          >
+            <Download size={18} />
+            Export Excel
+          </button>
+
+          <button
+            onClick={fetchData}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl border bg-white hover:bg-gray-50 text-gray-900"
+          >
+            <RefreshCcw size={18} />
+            Refresh
+          </button>
+        </div>
       </div>
 
       <div className="bg-white rounded-2xl border p-4 mb-6">

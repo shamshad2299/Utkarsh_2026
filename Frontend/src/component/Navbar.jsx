@@ -1,65 +1,78 @@
-import React, { useState } from "react";
-import utkarshLogo from "../assets/utkarsh_logo_new.png";
+import React, { useEffect, useState } from "react";
+import utkarshLogo from "../assets/utkarsh_logo_new.webp";
 import bbdLogo from "../assets/bbd-logo.png";
-import rulebookPdf from "../assets/rulebook.pdf";
+import rulebookPdf from "../assets/newrulebook.pdf";
+import schedulePdf from "../assets/sch.pdf";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../Context/AuthContext";
 
 const Navbar = () => {
   const { user, logout } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+
   const navigate = useNavigate();
   const location = useLocation();
 
   const isLoggedIn = !!user;
 
-  const handleNavClick = (item) => {
-    if (item === "Rulebook") {
-      window.open(rulebookPdf, "_blank");
-      setIsMenuOpen(false);
-      return;
-    }
-
-    if (item === "Sponsorship_form") {
-      navigate("/sponsorship_form");
-      setIsMenuOpen(false);
-      return;
-    }
-
-    if (item === "Food_stall_form") {
-      navigate("/food_stall_form");
-      setIsMenuOpen(false);
-      return;
-    }
-
-    if (item === "Profile") {
-      navigate("/profile");
-      setIsMenuOpen(false);
-      return;
-    }
-
-    if (item === "About") {
-      navigate("/about");
-      setIsMenuOpen(false);
-      return;
-    }
-
-    const sectionMap = {
-      Events: "events",
-      Schedule: "schedule",
-    };
-
-    const sectionId = sectionMap[item];
-    if (!sectionId) return;
-
-    if (location.pathname === "/") {
-      document.getElementById(sectionId)?.scrollIntoView({ behavior: "smooth" });
-    } else {
-      navigate("/", { state: { scrollTo: sectionId } });
-    }
-
+  useEffect(() => {
     setIsMenuOpen(false);
-  };
+  }, [location.pathname]);
+
+const handleNavClick = (item) => {
+  if (item === "Home") {
+    if (location.pathname === "/") {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    } else {
+      navigate("/");
+    }
+    setIsMenuOpen(false);
+    return;
+  }
+
+  if (item === "Events") {
+    navigate("/events");
+    setIsMenuOpen(false);
+    return;
+  }
+
+  if (item === "Rulebook") {
+    window.open(rulebookPdf, "_blank");
+    setIsMenuOpen(false);
+    return;
+  }
+
+  if (item === "Schedule") {
+    window.open(schedulePdf, "_blank");
+    setIsMenuOpen(false);
+    return;
+  }
+
+  if (item === "Sponsorship form") {
+    navigate("/sponsorship_form");
+    setIsMenuOpen(false);
+    return;
+  }
+
+  if (item === "Food stall form") {
+    navigate("/food_stall_form");
+    setIsMenuOpen(false);
+    return;
+  }
+
+  if (item === "Profile") {
+    navigate("/profile");
+    setIsMenuOpen(false);
+    return;
+  }
+
+  if (item === "About") {
+    navigate("/about");
+    setIsMenuOpen(false);
+    return;
+  }
+};
+
 
   const handleLogout = () => {
     logout();
@@ -68,68 +81,72 @@ const Navbar = () => {
   };
 
   const navItems = [
+    "Home",
     "Events",
     "About",
     "Schedule",
     "Rulebook",
-    "Sponsorship_form",
-    "Food_stall_form",
+    "Sponsorship form",
+    "Food stall form",
     ...(isLoggedIn ? ["Profile"] : []),
   ];
 
   return (
     <nav
-      className="fixed top-0 w-full inset-x-0 px-4 sm:px-6 lg:px-8 py-6 z-50 bg-[#080131]"
+      className="fixed top-0 inset-x-0 w-full z-50 bg-[#080131]"
       style={{ fontFamily: "Milonga" }}
     >
-      <div className="mx-auto">
-        <div className="flex items-center justify-between">
-          {/* Left Logos */}
-          <div className="flex items-center gap-4 sm:gap-6 md:gap-10">
-            <div
-              className="bg-white p-1 rounded-sm cursor-pointer"
+      <div className="w-full px-3 sm:px-6 lg:px-10 py-4 sm:py-5">
+        <div className="flex items-center justify-between gap-3">
+          {/* LEFT LOGOS */}
+          <div className="flex items-center gap-3 sm:gap-5 md:gap-8 shrink-0">
+            <button
+              className="bg-white p-1 rounded-sm cursor-pointer shrink-0"
               onClick={() => navigate("/")}
             >
               <img
                 src={utkarshLogo}
                 alt="Utkarsh Logo"
-                className="h-10 w-10 sm:h-12 sm:w-12 object-contain"
+                className="h-9 w-9 sm:h-11 sm:w-11 md:h-12 md:w-12 object-contain"
               />
-            </div>
+            </button>
 
-            <div className="bg-white px-2 py-1 rounded-sm flex items-center gap-2">
+            <div className="bg-white px-2 py-1 rounded-sm flex items-center gap-2 shrink-0">
               <img
                 src={bbdLogo}
                 alt="BBD Logo"
-                className="h-10 sm:h-12 object-contain"
+                className="h-9 sm:h-11 md:h-12 object-contain"
               />
             </div>
           </div>
 
-          {/* Desktop Menu */}
-          <div className="hidden lg:flex absolute left-1/2 -translate-x-1/2 gap-10">
-            {navItems.map((item) => (
-              <button
-                key={item}
-                onClick={() => handleNavClick(item)}
-                className="text-lg font-medium hover:text-purple-400 transition"
-              >
-                {item}
-              </button>
-            ))}
+          {/* DESKTOP MENU (XL+) */}
+          <div className="hidden xl:flex flex-1 justify-center min-w-0">
+            <div className="flex items-center gap-7 xl:gap-8 flex-wrap justify-center">
+              {navItems.map((item) => (
+                <button
+                  key={item}
+                  onClick={() => handleNavClick(item)}
+                  className="text-base xl:text-lg font-medium text-white hover:text-purple-400 transition whitespace-nowrap cursor-pointer"
+                >
+                  {item}
+                </button>
+              ))}
+            </div>
           </div>
 
-          {/* Right Side */}
-          <div className="flex items-center gap-4">
+          {/* RIGHT SIDE */}
+          <div className="flex items-center gap-3 sm:gap-4 shrink-0">
+            {/* Login / Logout (ONLY from md) */}
             {isLoggedIn ? (
-              <div className="flex items-center gap-4">
-                <span className="hidden sm:block text-sm text-white/80">
+              <div className="hidden md:flex items-center gap-4">
+                <span className="text-sm text-white/80 max-w-[170px] truncate">
                   Hello, {user.name || user.username || "User"}
                 </span>
 
                 <button
                   onClick={handleLogout}
-                  className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-full font-bold text-sm transition"
+                  className="bg-red-600 hover:bg-red-700 text-white px-5 md:px-6 py-2 rounded-full font-bold text-sm transition active:scale-95"
                 >
                   Logout
                 </button>
@@ -137,29 +154,30 @@ const Navbar = () => {
             ) : (
               <Link
                 to="/login"
-                className="hidden sm:block bg-white text-[#050214] px-6 py-2 rounded-full font-bold text-sm hover:bg-gray-200 transition"
+                className="hidden md:inline-flex bg-white text-[#050214] px-5 md:px-6 py-2 rounded-full font-bold text-sm hover:bg-gray-200 transition active:scale-95"
               >
                 Login
               </Link>
             )}
 
-            {/* Hamburger */}
+            {/* HAMBURGER (Below XL) */}
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="lg:hidden flex flex-col justify-center w-10 h-10"
+              className="xl:hidden flex flex-col justify-center items-center w-10 h-10 rounded-md active:scale-95 transition"
+              aria-label="Toggle menu"
             >
               <span
-                className={`w-6 h-0.5 bg-white mb-1 transition ${
+                className={`w-6 h-0.5 bg-white mb-1 transition-all duration-300 ${
                   isMenuOpen ? "rotate-45 translate-y-1.5" : ""
                 }`}
               />
               <span
-                className={`w-6 h-0.5 bg-white mb-1 transition ${
+                className={`w-6 h-0.5 bg-white mb-1 transition-all duration-300 ${
                   isMenuOpen ? "opacity-0" : ""
                 }`}
               />
               <span
-                className={`w-6 h-0.5 bg-white transition ${
+                className={`w-6 h-0.5 bg-white transition-all duration-300 ${
                   isMenuOpen ? "-rotate-45 -translate-y-1.5" : ""
                 }`}
               />
@@ -167,10 +185,10 @@ const Navbar = () => {
           </div>
         </div>
 
-        {/* Mobile Menu */}
+        {/* MOBILE MENU (Below XL) */}
         <div
-          className={`lg:hidden overflow-hidden transition-all duration-300 ${
-            isMenuOpen ? "max-h-96 mt-4 opacity-100" : "max-h-0 opacity-0"
+          className={`xl:hidden overflow-hidden transition-all duration-300 ${
+            isMenuOpen ? "max-h-[560px] mt-4 opacity-100" : "max-h-0 opacity-0"
           }`}
         >
           <div className="border-t border-purple-500/30 pt-4 flex flex-col gap-4">
@@ -178,14 +196,15 @@ const Navbar = () => {
               <button
                 key={item}
                 onClick={() => handleNavClick(item)}
-                className="text-left text-base font-medium hover:text-purple-400 transition"
+                className="text-left text-base font-medium text-white hover:text-purple-400 transition"
               >
                 {item}
               </button>
             ))}
 
+            {/* Login/Logout inside mobile */}
             {isLoggedIn ? (
-              <div className="flex flex-col gap-3">
+              <div className="flex flex-col gap-3 pt-2">
                 <div className="text-sm text-white/80 border-b border-purple-500/30 pb-2">
                   Logged in as:{" "}
                   <span className="font-semibold">
@@ -195,7 +214,7 @@ const Navbar = () => {
 
                 <button
                   onClick={handleLogout}
-                  className="bg-red-600 hover:bg-red-700 text-white px-8 py-2 rounded-full font-bold text-sm text-center"
+                  className="bg-red-600 hover:bg-red-700 text-white px-8 py-2 rounded-full font-bold text-sm text-center active:scale-95 transition"
                 >
                   Logout
                 </button>
@@ -203,7 +222,7 @@ const Navbar = () => {
             ) : (
               <Link
                 to="/login"
-                className="sm:hidden bg-white text-[#050214] px-8 py-2 rounded-full font-bold text-sm text-center"
+                className="md:hidden inline-flex justify-center bg-white text-[#050214] px-8 py-2 rounded-full font-bold text-sm text-center active:scale-95 transition"
               >
                 Login
               </Link>

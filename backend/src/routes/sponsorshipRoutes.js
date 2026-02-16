@@ -7,9 +7,9 @@ import {
   deleteSponsorship,
 } from "../controllers/sponsorshipController.js";
 
-import { verifyJWT } from "../middleWares/authMiddleWare.js";
-import adminAuth from "../middleWares/adminAuth.js";
-import { asyncHandler } from "../middleWares/asyncErrorHandlerMiddleWare.js";
+import { verifyJWT } from "../middlewares/authMiddleWare.js";
+import adminAuth from "../middlewares/adminAuth.js";
+import { asyncHandler } from "../middlewares/asyncErrorHandlerMiddleWare.js";
 
 const router = express.Router();
 

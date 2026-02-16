@@ -1,122 +1,215 @@
-import React, { useState } from "react";
+import React, { useState, useMemo, useCallback } from "react";
 import {
   Calendar,
   MapPin,
   Users,
-  IndianRupee,
-  ChevronRight,
   CheckCircle,
   Music,
   Mic,
   Award,
   Users as UsersIcon,
   ArrowUpRight,
+  RefreshCw,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+
+// Constants
+const ICON_SIZES = {
+  small: 12,
+  medium: 14,
+  large: 16,
+};
+
+const TRUNCATE_LENGTH = 100;
+
+// Helper functions
+const getCategoryDetailIcon = (categoryName) => {
+  const name = categoryName?.toLowerCase() || "";
+  if (name.includes("music")) return <Music size={ICON_SIZES.small} className="sm:w-[18px] sm:h-[18px]" />;
+  if (name.includes("dance")) return <Mic size={ICON_SIZES.small} className="sm:w-[18px] sm:h-[18px]" />;
+  if (name.includes("drama")) return <Award size={ICON_SIZES.small} className="sm:w-[18px] sm:h-[18px]" />;
+  return <UsersIcon size={ICON_SIZES.small} className="sm:w-[18px] sm:h-[18px]" />;
+};
+
+const truncateText = (text, maxLength) => {
+  if (!text) return "No description available";
+  return text.length > maxLength ? `${text.substring(0, maxLength)}...` : text;
+};
+
+// Memoized icon components
+const CategoryDetailIcon = React.memo(({ categoryName }) => getCategoryDetailIcon(categoryName));
+CategoryDetailIcon.displayName = 'CategoryDetailIcon';
 
 const EventCard = ({
   event,
   handleViewDetails,
   handleEnroll,
+  handleRestoreRegistration,
   getCategoryName,
   getSubCategory,
   getImageUrl,
-  getEventTypeIcon,
-  getCategoryIcon,
   getEventTypeText,
-  getCategoryColor,
   formatDate,
   formatTime,
   isAuthenticated,
   userRegistrations = [],
+  isEnrolling = false,
+  isEnrolled = false,
+  isRegistrationOpen = true,
+  isEventFull = false,
+  hasDeletedRegistration = false,
+  deletedRegistrationId = null,
 }) => {
-  const [isEnrolling, setIsEnrolling] = useState(false);
+  const [localEnrolling, setLocalEnrolling] = useState(false);
   const navigate = useNavigate();
 
-  const isEnrolled = userRegistrations.some(
-    (reg) => reg.eventId?._id === event._id || reg.eventId === event._id,
-  );
+  // Determine loading state
+  const isLoading = isEnrolling || localEnrolling;
 
-  const isRegistrationOpen = new Date() <= new Date(event.registrationDeadline);
-  const isFull = event.currentParticipants >= event.capacity;
+  // Memoized computed values
+  const categoryName = useMemo(() => 
+    getCategoryName(event.category), [getCategoryName, event.category]);
 
-  const categoryName = getCategoryName(event.category);
-  const subCategory = getSubCategory(event.subCategory);
-  const imageUrl = getImageUrl(event.images);
-  const eventTypeText = getEventTypeText(event.teamSize, event.eventType);
+  const subCategory = useMemo(() => 
+    getSubCategory(event.subCategory), [getSubCategory, event.subCategory]);
 
-  // Get icons based on category/subcategory
-  const getCategoryDetailIcon = () => {
-    if (categoryName?.toLowerCase().includes("music"))
-      return <Music size={16} className="sm:size-[18px]" />;
-    if (categoryName?.toLowerCase().includes("dance"))
-      return <Mic size={16} className="sm:size-[18px]" />;
-    if (categoryName?.toLowerCase().includes("drama"))
-      return <Award size={16} className="sm:size-[18px]" />;
-    return <UsersIcon size={16} className="sm:size-[18px]" />;
-  };
+  const imageUrl = useMemo(() => 
+    getImageUrl(event.images), [getImageUrl, event.images]);
 
-  const handleEnrollClick = async () => {
+  const eventTypeText = useMemo(() => 
+    getEventTypeText(event.teamSize, event.eventType), [getEventTypeText, event.teamSize, event.eventType]);
+
+  const shortDescription = useMemo(() => 
+    truncateText(event.description, TRUNCATE_LENGTH), [event.description]);
+
+  const venueShortName = useMemo(() => 
+    event.venueName?.split(" ")[0] || "TBA", [event.venueName]);
+
+  const currentParticipants = useMemo(() => 
+    event.currentParticipants || 0, [event.currentParticipants]);
+
+  // Determine button configuration
+  const getButtonConfig = useCallback(() => {
     if (!isAuthenticated) {
-      navigate("/login");
-      return;
+      return {
+        text: "Login to Enroll",
+        action: () => navigate("/login"),
+        disabled: false,
+        icon: null
+      };
     }
 
+    if (isLoading) {
+      return {
+        text: "Processing...",
+        action: null,
+        disabled: true,
+        icon: <div className="animate-spin rounded-full h-4 w-4 border-2 border-[#4b1b7a] border-t-transparent" />
+      };
+    }
+
+    // PRIORITY 1: Has soft-deleted registration → Show "Re-enroll"
+    if (hasDeletedRegistration && deletedRegistrationId) {
+      return {
+        text: "Re-enroll Now",
+        action: () => handleRestoreRegistration(deletedRegistrationId, event, null),
+        disabled: false,
+        icon: <RefreshCw size={14} className="mr-1" />
+      };
+    }
+
+    // PRIORITY 2: Already enrolled → Show "Enrolled"
     if (isEnrolled) {
-      navigate("/my-registrations")
-      return;
+      return {
+        text: "Enrolled",
+        action: () => navigate("/my-registrations"),
+        disabled: false,
+        icon: <CheckCircle size={14} className="mr-1" />
+      };
     }
 
+    // PRIORITY 3: Registration closed
     if (!isRegistrationOpen) {
-      alert("Registration deadline has passed");
-      return;
+      return {
+        text: "Registration Closed",
+        action: null,
+        disabled: true,
+        icon: null
+      };
     }
 
-    if (isFull) {
-      alert("Event is full");
-      return;
+    // PRIORITY 4: Event full
+    if (isEventFull) {
+      return {
+        text: "Event Full",
+        action: null,
+        disabled: true,
+        icon: null
+      };
     }
 
-    try {
-      setIsEnrolling(true);
-      await handleEnroll(event);
-    } catch (error) {
-      console.error("Enrollment error:", error);
-      alert(error.message || "Failed to enroll");
-    } finally {
-      setIsEnrolling(false);
-    }
-  };
+    // DEFAULT: Enroll Now
+    return {
+      icon: <ArrowUpRight size={14} />,
+      text: "Enroll Now",
+      action: () => handleEnroll(event),
+      disabled: false,
+    
+    };
+  }, [
+    isAuthenticated,
+    isLoading,
+    hasDeletedRegistration,
+    deletedRegistrationId,
+    isEnrolled,
+    isRegistrationOpen,
+    isEventFull,
+    handleRestoreRegistration,
+    handleEnroll,
+    event,
+    navigate
+  ]);
 
-  const shortDescription = event.description
-    ? event.description.length > 100
-      ? event.description.substring(0, 100) + "..."
-      : event.description
-    : "No description available";
+  const buttonConfig = getButtonConfig();
+
+  // Handle button click
+  const handleButtonClick = useCallback(async () => {
+    if (buttonConfig.action && !buttonConfig.disabled) {
+      setLocalEnrolling(true);
+      try {
+        await buttonConfig.action();
+      } finally {
+        setLocalEnrolling(false);
+      }
+    }
+  }, [buttonConfig]);
 
   return (
-    <div className="w-full max-w-90 sm:max-w-100 md:max-w-105 rounded-[20px] sm:rounded-[26px] p-0.5 bg-linear-to-b from-[#C8ABFE] to-[#b18cff] shadow-lg sm:shadow-2xl hover:shadow-xl sm:hover:shadow-2xl transition-shadow duration-300 outline-6 mx-4">
-      {/* dashed border */}
+    <div className="w-full max-w-[320px] sm:max-w-[350px] md:max-w-[380px] mx-auto rounded-[20px] sm:rounded-[26px] p-0.5 bg-linear-to-b from-[#C8ABFE] to-[#b18cff] shadow-lg sm:shadow-2xl hover:shadow-xl sm:hover:shadow-2xl transition-shadow duration-300 back outline-6 outline-white">
+      {/* Dashed border */}
       <div className="h-full w-full rounded-[18px] sm:rounded-3xl border-2 border-dashed border-black/60 bg-linear-to-b from-[#C8ABFE] to-[#b692ff] p-3 sm:p-4 md:p-5 font-sans">
+        
         {/* Top white box with image */}
-        <div className="bg-white rounded-[14px] sm:rounded-[18px] p-2 sm:p-3 h-30 sm:h-35 md:h-40 relative overflow-hidden">
-          {/* Solo/Team Badge - Top left corner */}
-          <span className="absolute top-2 sm:top-3 left-2 sm:left-3 bg-black text-white text-[10px] sm:text-xs font-medium px-2 sm:px-3 py-1 rounded-full poppin z-50">
+        <div className="bg-white rounded-[14px] sm:rounded-[18px] p-2 sm:p-3 h-[120px] sm:h-[140px] md:h-[160px] relative overflow-hidden">
+          
+          {/* Solo/Team Badge */}
+          <span className="absolute top-2 sm:top-3 left-2 sm:left-3 bg-black text-white text-[10px] sm:text-xs font-medium px-2 sm:px-3 py-1 rounded-full z-10 poppin">
             {eventTypeText}
           </span>
 
-          {/* Category Badge - Top right corner */}
-          <div className="absolute top-2 sm:top-3 right-2 sm:right-3 flex items-center gap-1 bg-black/80 text-white text-[10px] sm:text-xs font-medium px-2 sm:px-3 py-1 rounded-full font-poppins backdrop-blur-sm">
-            {getCategoryDetailIcon()}
-            <span className="hidden xs:inline milonga ">{categoryName}</span>
+          {/* Category Badge */}
+          <div className="absolute top-2 sm:top-3 right-2 sm:right-3 flex items-center gap-1 bg-black/80 text-white text-[10px] sm:text-xs font-medium px-2 sm:px-3 py-1 rounded-full backdrop-blur-sm z-10">
+            <CategoryDetailIcon categoryName={categoryName} />
+            <span className="hidden xs:inline milonga">{categoryName}</span>
           </div>
 
           {/* Event Image */}
-          <div className="absolute inset-0">
+          <div className="absolute inset-0 cursor-pointer" onClick={() => handleViewDetails(event)}>
             <img
               src={imageUrl}
               alt={event.title}
               className="w-full h-full object-cover"
+              loading="lazy"
             />
             <div className="absolute inset-0 bg-linear-to-t from-black/80 via-transparent to-transparent" />
           </div>
@@ -124,25 +217,25 @@ const EventCard = ({
 
         {/* Title and Subcategory */}
         <div className="mt-2 sm:mt-3">
-          <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-[#2b123f] font-poppins line-clamp-1 milonga">
+          <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-[#2b123f] milonga line-clamp-1">
             {event.title}
           </h2>
           {subCategory && (
             <div className="flex items-center gap-2 mt-0.5 sm:mt-1">
-              <div className="text-sm sm:text-lg text-[#2b123f] font-medium font-poppins flex items-center gap-1">
+              <div className="text-sm sm:text-base text-[#2b123f] font-medium flex items-center gap-1">
                 <span>•</span>
-                <span className="line-clamp-1">{subCategory}</span>
+                <span className="line-clamp-1 font-poppins">{subCategory}</span>
               </div>
             </div>
           )}
         </div>
 
         {/* Short Description */}
-        <p className="text-xs sm:text-sm text-[#2b123f]/80 mt-1 sm:mt-2 leading-relaxed tracking-tight min-h-[32px] sm:min-h-[40px] font-poppins line-clamp-3">
+        <p className="text-xs sm:text-sm text-[#2b123f]/80 mt-1 sm:mt-2 leading-relaxed min-h-[48px] sm:min-h-[56px] font-poppins line-clamp-3">
           {shortDescription}
         </p>
 
-        {/* Date strip - EXACT SHAPE FROM IMAGE */}
+        {/* Date strip */}
         <div className="mt-3 sm:mt-4 relative">
           <div
             className="relative bg-[#12002b] text-white px-3 sm:px-4 py-2 sm:py-3"
@@ -159,88 +252,69 @@ const EventCard = ({
               )`,
             }}
           >
-            <span className="inline-block bg-white text-black text-[10px] sm:text-xs px-2 sm:px-3 py-1 rounded-full mb-1 font-medium font-poppins">
+            <span className="inline-block bg-white text-black text-[10px] sm:text-xs px-2 sm:px-3 py-1 rounded-full mb-1 font-medium">
               Date & time
             </span>
             <div className="flex items-center gap-1 sm:gap-2 p-2 mt-1">
-              <Calendar size={12} className="sm:size-[10px] text-purple-300" />
-              <p
-                className=" text-sm font-medium truncate flex-1 milonga"
-                
-              >
-                {formatDate(event.startTime)} • {formatTime(event.startTime)}
+              <Calendar size={ICON_SIZES.small} className="sm:w-[14px] sm:h-[14px] text-purple-300 flex-shrink-0" />
+              <p className="text-xs sm:text-sm font-medium truncate milonga py-1">
+                {formatDate?.(event.startTime) || new Date(event.startTime).toLocaleDateString()} • {formatTime?.(event.startTime) || new Date(event.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
               </p>
             </div>
           </div>
         </div>
 
-        {/* Venue, Fee, and Capacity in one row with icons */}
+        {/* Venue and Capacity */}
         <div className="mt-3 sm:mt-4 flex items-center justify-between text-[#2b123f] text-xs sm:text-sm">
-          <div className="flex items-center gap-1">
-            <MapPin size={12} className="sm:size-[14px] text-blue-500" />
-            <span className="font-medium font-poppins truncate max-w-[60px] sm:max-w-[80px]">
-              {event.venueName?.split(" ")[0] || "TBA"}
+          <div className="flex items-center gap-1 min-w-0">
+            <MapPin size={ICON_SIZES.small} className="sm:w-[14px] sm:h-[14px] text-blue-500 flex-shrink-0" />
+            <span className="font-medium truncate max-w-[60px] sm:max-w-[80px] font-poppins">
+              {venueShortName}
             </span>
           </div>
-         
+          
           <div className="flex items-center gap-1">
-            <Users size={12} className="sm:size-[14px] text-orange-500" />
+            <Users size={ICON_SIZES.small} className="sm:w-[14px] sm:h-[14px] text-orange-500 flex-shrink-0" />
             <span className="font-medium font-poppins">
-              {event.currentParticipants || 0}/{event.capacity}
+              {currentParticipants}/{event.capacity}
             </span>
           </div>
         </div>
 
-        {/* Buttons with Poppins font and functional styling */}
-        <div className="mt-4 sm:mt-5 flex gap-2 sm:gap-3 max-xl:flex-col">
+        {/* Buttons */}
+        <div className="mt-4 sm:mt-5 flex gap-2 sm:gap-3 flex-col xl:flex-row">
           <button
             onClick={() => handleViewDetails(event)}
-            className="flex-1 bg-white border-2 border-[#b692ff] rounded-full py-2 sm:py-2.5 flex items-center justify-center gap-1 sm:gap-2  text-xs sm:text-sm hover:bg-gray-50 cursor-pointer transition-colors milonga font-bold"
+            className="flex-1 bg-white border-2 border-[#b692ff] rounded-full py-2 sm:py-2.5 flex items-center justify-center gap-1 sm:gap-2 text-xs sm:text-sm hover:bg-gray-50 transition-colors milonga font-bold group"
           >
-            <span className="truncate text-[#2b123f] font-bold ">View Detail</span>
-            <span className="w-5 h-5 sm:w-7 sm:h-7 bg-[#4b1b7a] text-white rounded-full flex items-center justify-center text-sm sm:text-lg shrink-0">
+            <span className="truncate text-[#2b123f] font-bold">View Detail</span>
+            <span className="w-6 h-6 sm:w-7 sm:h-7 bg-[#4b1b7a] text-white rounded-full flex items-center justify-center text-sm sm:text-lg shrink-0 group-hover:translate-x-1 transition-transform">
               →
             </span>
           </button>
 
           <button
-            onClick={handleEnrollClick}
-            disabled={
-              isEnrolling ||
-              (!isRegistrationOpen && !isEnrolled) ||
-              (isFull && !isEnrolled)
-            }
-            className={`flex items-center justify-center gap-1 sm:gap-2 px-2 sm:px-3 py-2 sm:py-2.5 rounded-full font-semibold text-xs sm:text-sm transition-all duration-300 flex-1 font-poppins cursor-pointer milonga ${
-              isEnrolled
-                ? "bg-green-600 hover:bg-green-600/30  border border-green-500/50"
-                : isRegistrationOpen && !isFull
-                  ? "bg-white hover:bg-white/20 text-[#2b123f] border border-[#b692ff] hover:border-purple-500/50"
-                  : "bg-gray-800/50 text-gray-500 border border-gray-700/50 cursor-not-allowed"
-            }`}
+            onClick={handleButtonClick}
+            disabled={buttonConfig.disabled}
+            className={`
+              flex-1 flex items-center justify-center gap-1 sm:gap-2 px-2 sm:px-3 py-2 sm:py-2.5 rounded-full font-semibold text-xs sm:text-sm transition-all duration-300 milonga
+              ${buttonConfig.text === "Enrolled" 
+                ? "bg-green-600 hover:bg-green-700 text-white border border-green-500/50" 
+                : buttonConfig.text === "Re-enroll Now"
+                  ? "bg-purple-600 hover:bg-purple-700 text-white border border-purple-500/50"
+                  : buttonConfig.text === "Enroll Now" || buttonConfig.text === "Login to Enroll"
+                    ? "bg-white hover:bg-purple-50 text-[#2b123f] border-2 border-[#b692ff] hover:border-purple-500"
+                    : "bg-gray-200 text-gray-500 border-2 border-gray-300 cursor-not-allowed opacity-60"
+              }
+            `}
           >
-            {isEnrolling ? (
-              <>
-                <div className="animate-spin milonga rounded-full h-3 w-3 sm:h-4 poppin sm:w-4 border-b-2 border-[#4b1b7a]"></div>
-                <span className="hidden xs:inline">Enrolling...</span>
-              </>
-            ) : isEnrolled ? (
-              <>
-                <CheckCircle size={12} className="sm:size-[14px]" />
-                <span className="xs:inline milonga text-white ">Enrolled</span>
-              </>
-            ) : !isRegistrationOpen ? (
-              <span className="truncate">Closed</span>
-            ) : isFull ? (
-              <span className="truncate">Full</span>
-            ) : (
-              <>
-                <span className="truncate milonga flex justify-between items-center gap-4">Enroll Now 
-                  <span className="bg-[#431865] rounded-full text-white p-1">
-                    <ArrowUpRight/> 
-                  </span>
-                </span>
-                <Users size={12} className="sm:size-[14px] hidden xs:inline" />
-              </>
+           
+            <span className="truncate">{buttonConfig.text}</span>
+            {buttonConfig.text === "Enroll Now" && (
+              <Users size={ICON_SIZES.small} className="sm:w-[14px] sm:h-[14px] hidden xs:inline flex-shrink-0" />
+            )}
+             {buttonConfig.icon && (
+              <span className="flex items-center bg w-6 h-6 sm:w-7 sm:h-7 bg-[#4b1b7a] text-white rounded-full flex items-center justify-center text-sm sm:text-lg shrink-0 group-hover:translate-x-1 transition-transform">{buttonConfig.icon}</span>
             )}
           </button>
         </div>
@@ -249,4 +323,23 @@ const EventCard = ({
   );
 };
 
-export default EventCard;
+// Default props
+EventCard.defaultProps = {
+  formatDate: (date) => new Date(date).toLocaleDateString('en-US', { 
+    day: 'numeric', 
+    month: 'short', 
+    year: 'numeric' 
+  }),
+  formatTime: (date) => new Date(date).toLocaleTimeString('en-US', { 
+    hour: '2-digit', 
+    minute: '2-digit',
+    hour12: true 
+  }),
+  isEnrolled: false,
+  isRegistrationOpen: true,
+  isEventFull: false,
+  hasDeletedRegistration: false,
+  deletedRegistrationId: null,
+};
+
+export default React.memo(EventCard);

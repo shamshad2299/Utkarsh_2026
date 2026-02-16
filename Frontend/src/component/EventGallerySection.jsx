@@ -1,6 +1,58 @@
+import { useState, useEffect } from "react";
 import GalleryGrid from "../component/GalleryGrid";
+import { api } from "../api/axios";
 
 const EventGallerySection = () => {
+  const [images, setImages] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchThrowbackImages = async () => {
+      try {
+        setLoading(true);
+        const response = await api.get('/throwbacks'); 
+      
+        const imageUrls = response.data.data.map(item => item.imageUrl);
+        setImages(imageUrls);
+      } catch (err) {
+        setError(err.message);
+        console.error('Error fetching throwback images:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchThrowbackImages();
+  }, []);
+
+  if (loading) {
+    return (
+      <section className="relative bg-[#080131] text-white px-6 md:px-16 pt-2 pb-24 overflow-hidden min-h-[400px] flex items-center justify-center">
+        <div className="text-center">
+          <div className="inline-block h-12 w-12 border-4 border-[#7070DE] border-t-transparent rounded-full animate-spin mb-4"></div>
+          <p className="text-white/80">Loading throwback images...</p>
+        </div>
+      </section>
+    );
+  }
+
+  if (error) {
+    return (
+      <section className="relative bg-[#080131] text-white px-6 md:px-16 pt-2 pb-24 overflow-hidden min-h-[400px] flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-400 mb-2">Error: {error}</p>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="px-4 py-2 bg-[#7070DE] text-white rounded-lg hover:bg-[#5a5ab0] transition-colors"
+          >
+            Try Again
+          </button>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section className="relative bg-[#080131] text-white px-6 md:px-16 pt-2 pb-24 overflow-hidden">
       
@@ -17,11 +69,10 @@ const EventGallerySection = () => {
       {/* CONTENT */}
       <div className="max-w-7xl mx-auto relative z-10 mb-8">
         
-        {/* THROWBACK HEADING */}
         <h2
           className="
             text-5xl md:text-6xl font-semibold mb-6
-            bg-linear-to-r
+            bg-gradient-to-r
             from-[#7070DE] via-[#FFFEFF] to-[#C8ABFE]
             bg-clip-text text-transparent
           "
@@ -30,7 +81,7 @@ const EventGallerySection = () => {
           Throwback
         </h2>
 
-        <p className="text-gray-400 max-w-3xl text-sm md:text-base leading-relaxed milonga">
+        <p className="text-white max-w-3xl text-sm md:text-[20px] leading-relaxed">
           Experience a thrilling array of events, from mind-bending coding
           competitions to electrifying dance performances, and showcase your
           talents on a stage that embraces innovation.
@@ -39,7 +90,13 @@ const EventGallerySection = () => {
 
       {/* GALLERY */}
       <div className="relative z-10 flex justify-center">
-        <GalleryGrid />
+        {images.length > 0 ? (
+          <GalleryGrid images={images} />
+        ) : (
+          <div className="text-center py-12">
+            <p className="text-white/60">No throwback images available yet.</p>
+          </div>
+        )}
       </div>
     </section>
   );

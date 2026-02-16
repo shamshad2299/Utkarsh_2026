@@ -40,6 +40,7 @@ const TeamCard = ({ member }) => {
         w-[255px]
         h-[390px]
         overflow-hidden
+        border border-dashed border-purple-900
       "
     >
       {/* ===== ROLE HEADER ===== */}
@@ -73,7 +74,7 @@ const TeamCard = ({ member }) => {
       </div>
 
       {/* ===== DETAILS ===== */}
-      <div className="px-6 mt-4 space-y-0.5 flex-1 items-center">
+      <div className="px-6 mt-2 space-y-0.1 flex-1 items-center">
         <DottedRow label="Name" value={name} />
         <DottedRow label="College" value={college} />
         <DottedRow label="Course" value={course} />

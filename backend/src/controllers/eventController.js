@@ -33,7 +33,7 @@ export const createEvent = async (req, res) => {
     !venueName ||
     !startTime ||
     !endTime ||
-    !event_rule,
+    !event_rule ||
     !registrationDeadline ||
     !capacity ||
     !eventType
@@ -103,6 +103,8 @@ export const getAllEvents = async (req, res) => {
     .populate("subCategory", "title slug")
     .sort({ startTime: 1 });
 
+     res.set("Cache-Control", "public, max-age=600");
+
   res.status(200).json({
     success: true,
     count: events.length,
@@ -129,6 +131,7 @@ export const getEventById = async (req, res) => {
   });
 };
 
+
 /* ================= UPDATE EVENT (ADMIN) ================= */
 export const updateEvent = async (req, res) => {
   const { id } = req.params;
@@ -152,6 +155,7 @@ export const updateEvent = async (req, res) => {
     "fee",
     "eventType",
     "teamSize",
+    "event_rule", // 👈 NEW FIELD ADDED
   ];
 
   for (const field of allowedFields) {
@@ -168,7 +172,23 @@ export const updateEvent = async (req, res) => {
     }
   }
 
+  // Handle category update if provided
+  if (req.body.category !== undefined) {
+    const categoryExists = await Category.findById(req.body.category);
+    if (!categoryExists) throw new ApiError(404, "Category not found");
+    event.category = req.body.category;
+  }
+
+  // Handle subCategory update if provided
+  if (req.body.subCategory !== undefined) {
+    const subCategoryExists = await SubCategory.findById(req.body.subCategory);
+    if (!subCategoryExists) throw new ApiError(404, "SubCategory not found");
+    event.subCategory = req.body.subCategory;
+  }
+
+  // Handle image updates
   if (req.files && req.files.length > 0) {
+    // Delete old images from cloudinary
     for (const img of event.images) {
       await cloudinary.uploader.destroy(img.publicId);
     }
@@ -190,6 +210,15 @@ export const updateEvent = async (req, res) => {
     event.images = images;
   }
 
+  // Handle existing image IDs to keep (if sent from frontend)
+  if (req.body.existingImageIds) {
+    const existingImageIds = JSON.parse(req.body.existingImageIds);
+    // Filter out images that are not in existingImageIds
+    event.images = event.images.filter(img => 
+      existingImageIds.includes(img._id?.toString() || img.toString())
+    );
+  }
+
   await event.save();
 
   // AUDIT LOG
@@ -208,7 +237,6 @@ export const updateEvent = async (req, res) => {
     data: event,
   });
 };
-
 /* ================= DELETE EVENT (ADMIN – SOFT DELETE) ================= */
 export const deleteEvent = async (req, res) => {
   const { id } = req.params;
