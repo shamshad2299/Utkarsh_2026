@@ -79,6 +79,7 @@ const showErrorToast = (message) => {
     iconColor: "#ef4444",
   });
 };
+
 const showInfoToast = (message) => {
   Toast.fire({
     icon: "info",
@@ -325,41 +326,10 @@ const AllEvents = () => {
   const isUserEnrolled = useCallback(
     (eventId) => {
       return userRegistrations.some((reg) => {
-        if (!reg || reg.isDeleted) return false;
+        if (!reg) return false;
         const regEventId = reg.eventId?._id || reg.eventId;
         return regEventId === eventId;
       });
-    },
-    [userRegistrations],
-  );
-
-  const hasDeletedRegistration = useCallback(
-    (eventId) => {
-      return userRegistrations.some((reg) => {
-        if (!reg) return false;
-        const regEventId = reg.eventId?._id || reg.eventId;
-        return (
-          regEventId === eventId &&
-          reg.isDeleted === true &&
-          reg.status === "cancelled"
-        );
-      });
-    },
-    [userRegistrations],
-  );
-
-  const getDeletedRegistrationId = useCallback(
-    (eventId) => {
-      const reg = userRegistrations.find((reg) => {
-        if (!reg) return false;
-        const regEventId = reg.eventId?._id || reg.eventId;
-        return (
-          regEventId === eventId &&
-          reg.isDeleted === true &&
-          reg.status === "cancelled"
-        );
-      });
-      return reg?._id;
     },
     [userRegistrations],
   );
@@ -390,38 +360,6 @@ const AllEvents = () => {
     [queryClient],
   );
 
-  // ================ RESTORE REGISTRATION HANDLER ================
-  const handleRestoreRegistration = useCallback(
-    async (registrationId, event, teamId = null) => {
-      try {
-        setEnrollingEventId(event._id);
-
-        const response = await api.patch(
-          `/registrations/${registrationId}/restore`,
-          { teamId },
-          { headers: { Authorization: `Bearer ${token}` } },
-        );
-
-        // Optimistic update
-        setUserRegistrations((prev) => {
-          const filtered = prev.filter((reg) => reg._id !== registrationId);
-          return [...filtered, response.data.data];
-        });
-
-        updateEventCapacity(event._id, 1);
-        triggerConfetti();
-        showSuccessToast(`🎉 Successfully re-enrolled in "${event.title}"!`);
-      } catch (error) {
-        console.error("Restore error:", error);
-        const message = error.response?.data?.message || "Failed to re-enroll";
-        showErrorToast(message);
-      } finally {
-        setEnrollingEventId(null);
-      }
-    },
-    [token, updateEventCapacity],
-  );
-
   // ================ ENROLLMENT HANDLER ================
   const handleEnroll = useCallback(
     async (event, teamId = null) => {
@@ -430,57 +368,27 @@ const AllEvents = () => {
         return;
       }
 
+      // Check if already enrolled
+      if (isUserEnrolled(event._id)) {
+        showInfoToast("You are already enrolled in this event!");
+        return;
+      }
+
+      // Deadline check
+      if (new Date() > new Date(event.registrationDeadline)) {
+        showErrorToast("Registration deadline has passed!");
+        return;
+      }
+
+      // Capacity check
+      if ((event.currentParticipants || 0) >= event.capacity) {
+        showErrorToast("Event is full!");
+        return;
+      }
+
       setEnrollingEventId(event._id);
 
       try {
-        // Check for soft-deleted registration first
-        const deletedRegistration = userRegistrations.find((reg) => {
-          if (!reg) return false;
-          const regEventId = reg.eventId?._id || reg.eventId;
-          return (
-            regEventId === event._id &&
-            reg.isDeleted === true &&
-            reg.status === "cancelled"
-          );
-        });
-
-        if (deletedRegistration) {
-          await handleRestoreRegistration(
-            deletedRegistration._id,
-            event,
-            teamId,
-          );
-          return;
-        }
-
-        // Check active registration
-        const activeRegistration = userRegistrations.find((reg) => {
-          if (!reg) return false;
-          const regEventId = reg.eventId?._id || reg.eventId;
-          return (
-            regEventId === event._id &&
-            reg.isDeleted === false &&
-            reg.status !== "cancelled"
-          );
-        });
-
-        if (activeRegistration) {
-          showInfoToast("You are already enrolled in this event!");
-          return;
-        }
-
-        // Deadline check
-        if (new Date() > new Date(event.registrationDeadline)) {
-          showErrorToast("Registration deadline has passed!");
-          return;
-        }
-
-        // Capacity check
-        if ((event.currentParticipants || 0) >= event.capacity) {
-          showErrorToast("Event is full!");
-          return;
-        }
-
         // Solo event confirmation
         if (event.eventType === "solo") {
           const confirmed = await showSoloEnrollmentConfirmation(event);
@@ -502,6 +410,9 @@ const AllEvents = () => {
         updateEventCapacity(event._id, 1);
         triggerConfetti();
         showSuccessToast(`✅ Successfully enrolled in "${event.title}"!`);
+        
+        // Close registration modal if open
+        setShowRegistrationModal(false);
       } catch (error) {
         console.error("Enrollment error:", error);
         const message = error.response?.data?.message || "Failed to enroll";
@@ -512,8 +423,7 @@ const AllEvents = () => {
     },
     [
       isAuthenticated,
-      userRegistrations,
-      handleRestoreRegistration,
+      isUserEnrolled,
       token,
       navigate,
       location,
@@ -572,13 +482,6 @@ const AllEvents = () => {
 
       setSelectedEventId(event._id);
 
-      // Check for soft-deleted registration
-      if (hasDeletedRegistration(event._id)) {
-        const deletedRegId = getDeletedRegistrationId(event._id);
-        await handleRestoreRegistration(deletedRegId, event);
-        return;
-      }
-
       if (isUserEnrolled(event._id)) {
         showInfoToast("You are already enrolled in this event!");
         return;
@@ -609,12 +512,9 @@ const AllEvents = () => {
     [
       isAuthenticated,
       isUserEnrolled,
-      hasDeletedRegistration,
-      getDeletedRegistrationId,
       isRegistrationOpen,
       hasCapacity,
       handleEnroll,
-      handleRestoreRegistration,
       navigate,
       location,
     ],
@@ -636,8 +536,7 @@ const AllEvents = () => {
     <div className="min-h-screen bg-linear-to-b from-[#080131] to-[#0a051a] text-white">
       {/* Header */}
       <div className="relative">
-      
-        <div className="relative w-full mx-auto  py-12">
+        <div className="relative w-full mx-auto py-12">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-12">
             <div className="flex max-sm:flex-col max-sm:gap-10 items-center">
               <div>
@@ -711,7 +610,6 @@ const AllEvents = () => {
         setSearchQuery={setSearchQuery}
         handleViewDetails={handleViewDetails}
         handleEnroll={openRegistrationModal}
-        handleRestoreRegistration={handleRestoreRegistration}
         isAuthenticated={isAuthenticated}
         userRegistrations={userRegistrations}
         enrollingEventId={enrollingEventId}
@@ -744,7 +642,6 @@ const AllEvents = () => {
           formatDate={formatDate}
           formatTime={formatTime}
           handleEnroll={handleEnroll}
-          handleRestoreRegistration={handleRestoreRegistration}
           isAuthenticated={isAuthenticated}
           token={token}
           user={user}
@@ -761,7 +658,6 @@ const AllEvents = () => {
           event={selectedEvent}
           userTeams={userTeams}
           onEnroll={handleEnroll}
-          onRestore={handleRestoreRegistration}
           loading={enrollingEventId === selectedEvent._id}
           isAuthenticated={isAuthenticated}
           token={token}

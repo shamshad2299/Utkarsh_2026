@@ -226,7 +226,7 @@ export default function SummaryCard() {
         Swal.fire({
           icon: 'warning',
           title: 'Note',
-          text: 'You cannot enroll again in this event',
+          text: 'You can enroll again in this event',
           timer: 3000,
           showConfirmButton: false
         });
@@ -252,7 +252,7 @@ export default function SummaryCard() {
       }
 
       const response = await api.patch(
-        `/registrations/${registrationId}/cancel`,
+        `/registrations/${registrationId}`,
         {},
         {
           headers: {

@@ -1,4 +1,10 @@
-import React, { useState, useEffect, useCallback, useMemo } from "react";
+import React, {
+  useState,
+  useEffect,
+  useCallback,
+  useMemo,
+  useRef,
+} from "react";
 import {
   Calendar,
   MapPin,
@@ -16,19 +22,45 @@ import {
   useCategories,
   useSubCategories,
 } from "../../../features/eventsAPI";
+import {useNavigate} from "react-router-dom"
 
-// Memoized sub-components
-const EventImage = React.memo(({ src, title }) => (
-  <img
-    src={src}
-    alt={title}
-    className="w-full h-full object-cover"
-    loading="lazy"
-  />
-));
+// ================ MEMOIZED SUB-COMPONENTS ================
 
+// Optimized Image Component with blur-up loading
+const EventImage = React.memo(({ src, title }) => {
+  const [isLoaded, setIsLoaded] = useState(false);
+  const imgRef = useRef(null);
+
+  useEffect(() => {
+    if (imgRef.current?.complete) {
+      setIsLoaded(true);
+    }
+  }, []);
+
+  return (
+    <div className="relative w-full h-full bg-linear-to-br from-[#C8ABFE] to-[#b18cff]">
+      {!isLoaded && (
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="w-8 h-8 border-2 border-[#4b1b7a] border-t-transparent rounded-full animate-spin" />
+        </div>
+      )}
+      <img
+        ref={imgRef}
+        src={src}
+        alt={title}
+        className={`w-full h-full object-cover transition-opacity duration-300 ${
+          isLoaded ? "opacity-100" : "opacity-0"
+        }`}
+        onLoad={() => setIsLoaded(true)}
+        loading="lazy"
+        decoding="async"
+      />
+    </div>
+  );
+});
 EventImage.displayName = "EventImage";
 
+// Optimized Badge Component
 const EventBadge = React.memo(({ children, className }) => (
   <div
     className={`inline-flex items-center gap-1.5 sm:gap-2 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full backdrop-blur-sm border border-white/30 ${className}`}
@@ -36,13 +68,13 @@ const EventBadge = React.memo(({ children, className }) => (
     {children}
   </div>
 ));
-
 EventBadge.displayName = "EventBadge";
 
+// Optimized Accordion with useCallback
 const AccordionSection = React.memo(
   ({ title, subtitle, icon, color, isExpanded, onToggle, children }) => {
-    // Fix for dynamic color classes - Tailwind doesn't support dynamic strings
-    const getColorClasses = () => {
+    // Memoized color classes
+    const colorClasses = useMemo(() => {
       switch (color) {
         case "purple":
           return "from-purple-500/30 to-purple-600/30 text-purple-600";
@@ -53,7 +85,7 @@ const AccordionSection = React.memo(
         default:
           return "from-purple-500/30 to-purple-600/30 text-purple-600";
       }
-    };
+    }, [color]);
 
     return (
       <div className="bg-white/80 backdrop-blur-sm rounded-xl border-2 border-black/30 overflow-hidden">
@@ -64,10 +96,10 @@ const AccordionSection = React.memo(
         >
           <div className="flex items-center gap-3 sm:gap-4">
             <div
-              className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-r ${getColorClasses().split(" ")[0]} ${getColorClasses().split(" ")[1]} flex items-center justify-center`}
+              className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-linear-to-r ${colorClasses.split(" ")[0]} ${colorClasses.split(" ")[1]} flex items-center justify-center`}
             >
               <span
-                className={`${getColorClasses().split(" ")[2]} font-bold text-base sm:text-lg milonga`}
+                className={`${colorClasses.split(" ")[2]} font-bold text-base sm:text-lg milonga`}
               >
                 {icon}
               </span>
@@ -95,11 +127,78 @@ const AccordionSection = React.memo(
     );
   },
 );
-
 AccordionSection.displayName = "AccordionSection";
 
+// Optimized Loading Spinner
+const LoadingSpinner = React.memo(({ message }) => (
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80">
+    <div className="bg-white rounded-xl p-8 flex flex-col items-center">
+      <div className="w-12 h-12 border-4 border-[#4b1b7a] border-t-transparent rounded-full animate-spin mb-4" />
+      <p className="text-[#2b123f] font-medium milonga">{message}</p>
+    </div>
+  </div>
+));
+LoadingSpinner.displayName = "LoadingSpinner";
+
+// Optimized Error Display
+const ErrorDisplay = React.memo(({ message, onClose }) => (
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80">
+    <div className="bg-white rounded-xl p-8 flex flex-col items-center cursor-pointer">
+      <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4 cursor-pointer">
+        <X size={32} className="text-red-600" />
+      </div>
+      <p className="text-[#2b123f] font-medium milonga text-center">
+        {message}
+      </p>
+      <button
+        onClick={onClose}
+        className="mt-6 px-6 py-2 bg-[#4b1b7a] text-white rounded-full hover:bg-[#6b2bb9] transition-colors"
+      >
+        Close
+      </button>
+    </div>
+  </div>
+));
+ErrorDisplay.displayName = "ErrorDisplay";
+
+// ================ UTILITY FUNCTIONS ================
+
+// Parse string rules into array (handles both string and array formats)
+const parseRules = (rules) => {
+  if (!rules) return [];
+
+  // If it's already an array, return it
+  if (Array.isArray(rules)) {
+    return rules.filter((rule) => rule && typeof rule === "string");
+  }
+
+  // If it's a string, split by newlines or numbers
+  if (typeof rules === "string") {
+    // Try to split by numbered format (1., 2., etc.)
+    const numberedMatches = rules.match(/\d+\.\s*[^.]*(?:\.(?!\d)|[^.])*/g);
+    if (numberedMatches && numberedMatches.length > 0) {
+      return numberedMatches.map((rule) =>
+        rule.replace(/^\d+\.\s*/, "").trim(),
+      );
+    }
+
+    // Split by newlines
+    const lines = rules.split("\n").filter((line) => line.trim());
+    if (lines.length > 0) {
+      return lines.map((line) => line.trim());
+    }
+
+    // Single rule
+    return [rules.trim()];
+  }
+
+  return [];
+};
+
+// ================ MAIN COMPONENT ================
+
 const EventDetailModal = ({
-  eventId, // Accept eventId instead of selectedEvent
+  eventId,
   handleCloseModal,
   selectedImageIndex = 0,
   setSelectedImageIndex,
@@ -113,7 +212,6 @@ const EventDetailModal = ({
   getEventTypeText,
   formatDate,
   formatTime,
-  // Enroll functionality props
   handleEnroll,
   isAuthenticated,
   token,
@@ -123,150 +221,105 @@ const EventDetailModal = ({
 }) => {
   const [showRegistrationModal, setShowRegistrationModal] = useState(false);
   const [isEnrolling, setIsEnrolling] = useState(false);
+  const modalRef = useRef(null);
+  const navigate = useNavigate();
 
-  // Debug: Log the eventId to check if it's being passed
-
-  // Fetch event data using React Query - cached for 1 hour
+  // Fetch data with optimized caching
   const {
     data: selectedEvent,
     isLoading: eventLoading,
     error: eventError,
   } = useEvent(eventId, {
-    enabled: !!eventId, // Only fetch if eventId exists
+    enabled: !!eventId,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    cacheTime: 10 * 60 * 1000, // 10 minutes
   });
 
-  // Fetch categories for rule lookup - cached for 24 hours
-  const { data: categories = [], isLoading: categoriesLoading } =
-    useCategories();
+  const { data: categories = [] } = useCategories({
+    staleTime: 24 * 60 * 60 * 1000, // 24 hours
+  });
 
-  // Fetch subcategories when category is available
   const categoryId = selectedEvent?.category?._id;
-  const { data: subCategories = [], isLoading: subCategoriesLoading } =
-    useSubCategories(categoryId, {
-      enabled: !!categoryId,
-    });
+  const { data: subCategories = [] } = useSubCategories(categoryId, {
+    enabled: !!categoryId,
+    staleTime: 24 * 60 * 60 * 1000, // 24 hours
+  });
 
-  // Find current category and subcategory data
+  // ================ MEMOIZED VALUES ================
+
   const currentCategory = useMemo(
     () => categories.find((cat) => cat._id === selectedEvent?.category?._id),
     [categories, selectedEvent?.category?._id],
   );
 
-  const parseNumberedRules = (text) => {
-  if (!text) return [];
-
-  return text
-    .split(/\s(?=\d+\.\s)/)   // split before 1. 2. 3.
-    .map(rule => rule.replace(/^\d+\.\s*/, "").trim())
-    .filter(Boolean);
-};
-
-
-  const currentSubCategory = useMemo(
-    () =>
-      subCategories.find((sub) => sub._id === selectedEvent?.subCategory?._id),
-    [subCategories, selectedEvent?.subCategory?._id],
-  );
-
-  // Get rules from category and subcategory
-  const categoryRules = useMemo(() => {
+  // FIXED: Handle subCategories safely
+  const currentSubCategory = useMemo(() => {
     if (
-      currentCategory?.rules &&
-      Array.isArray(currentCategory.rules) &&
-      currentCategory.rules.length > 0
+      !subCategories ||
+      !Array.isArray(subCategories) ||
+      !selectedEvent?.subCategory?._id
     ) {
-      return currentCategory.rules;
+      return null;
     }
-    // Default category rules if none provided
-    return [" Rule is not given "];
+    return subCategories.find(
+      (sub) => sub?._id === selectedEvent?.subCategory?._id,
+    );
+  }, [subCategories, selectedEvent?.subCategory?._id]);
+
+  // FIXED: Parse rules properly (handles strings and arrays)
+  const categoryRules = useMemo(() => {
+    const rules = parseRules(currentCategory?.rules);
+    return rules.length > 0 ? rules : ["General rules apply"];
   }, [currentCategory]);
 
   const subCategoryRules = useMemo(() => {
-    if (
-      currentSubCategory?.rules &&
-      Array.isArray(currentSubCategory.rules) &&
-      currentSubCategory.rules.length > 0
-    ) {
-      return currentSubCategory.rules;
-    }
-    // Default subcategory rules if none provided
-    return [
-     
-    ];
+    return parseRules(currentSubCategory?.rules);
   }, [currentSubCategory]);
 
-  // Combine event description with rules
-const eventSpecificRules = useMemo(() => {
-  const rules = [];
+  const eventSpecificRules = useMemo(() => {
+    const rules = [];
 
-  if (selectedEvent?.description) {
-    const parsedRules = parseNumberedRules(selectedEvent.description);
-    rules.push(...parsedRules);
-  }
+    // Parse event description if it exists and isn't already used elsewhere
+    if (selectedEvent?.description) {
+      // Check if description might contain rules
+      const description = selectedEvent.description.trim();
+      if (
+        description.toLowerCase().includes("rule") ||
+        description.match(/\d+\./) ||
+        description.includes("\n")
+      ) {
+        const parsedRules = parseRules(description);
+        rules.push(...parsedRules);
+      }
+    }
 
-  if (subCategoryRules.length > 0) {
-    rules.push(...subCategoryRules);
-  }
+    // Add subcategory rules
+    if (subCategoryRules.length > 0) {
+      rules.push(...subCategoryRules);
+    }
 
-  if (rules.length === 0) {
-    rules.push("No specific rules defined for this event.");
-  }
+    // If no rules found, add default message
+    if (rules.length === 0) {
+      rules.push("No specific rules defined for this event.");
+    }
 
-  return rules;
-}, [selectedEvent?.description, subCategoryRules]);
+    return rules;
+  }, [selectedEvent?.description, subCategoryRules]);
 
-
-  // Format category rules for display
   const formattedCategoryRules = useMemo(() => {
-    return categoryRules.map((rule) => `📌 ${rule}`);
+    return categoryRules.map((rule) => `${rule}`);
   }, [categoryRules]);
 
-  // Prevent body scroll when modal is open
-  useEffect(() => {
-    const preventBodyScroll = () => {
-      document.body.style.overflow = "hidden";
-      document.documentElement.style.overflow = "hidden";
-      document.body.style.paddingRight = "15px";
-    };
+  // Memoized enrollment checks
+  const isAlreadyEnrolled = useMemo(() => {
+    if (!userRegistrations?.length || !selectedEvent?._id) return false;
+    return userRegistrations.some(
+      (reg) =>
+        reg?.eventId === selectedEvent._id ||
+        reg?.event?._id === selectedEvent._id,
+    );
+  }, [userRegistrations, selectedEvent?._id]);
 
-    const restoreBodyScroll = () => {
-      document.body.style.overflow = "auto";
-      document.documentElement.style.overflow = "auto";
-      document.body.style.paddingRight = "0";
-    };
-
-    preventBodyScroll();
-
-    return () => {
-      restoreBodyScroll();
-    };
-  }, []); // Remove dependency on selectedEvent
-
-  // Handle Escape key to close modal
-  useEffect(() => {
-    const handleEscape = (e) => {
-      if (e.key === "Escape") {
-        handleCloseModal();
-      }
-    };
-
-    window.addEventListener("keydown", handleEscape);
-
-    return () => window.removeEventListener("keydown", handleEscape);
-  }, [handleCloseModal]);
-
-  // Check if user is already enrolled
-  const isAlreadyEnrolled = useMemo(
-    () =>
-      userRegistrations?.some(
-        (reg) =>
-          reg.eventId === selectedEvent?._id ||
-          reg.event?._id === selectedEvent?._id,
-      ),
-    [userRegistrations, selectedEvent?._id],
-  );
-
-  // Check registration deadline
   const isRegistrationOpen = useMemo(
     () =>
       selectedEvent
@@ -275,7 +328,6 @@ const eventSpecificRules = useMemo(() => {
     [selectedEvent],
   );
 
-  // Check event capacity
   const isFull = useMemo(
     () =>
       selectedEvent
@@ -284,21 +336,51 @@ const eventSpecificRules = useMemo(() => {
     [selectedEvent],
   );
 
-  // Handle click outside to close
+  // Memoized derived values
+  const images = useMemo(
+    () => (selectedEvent ? getAllImages(selectedEvent.images) : []),
+    [selectedEvent, getAllImages],
+  );
+
+  // ================ EFFECTS ================
+
+  // Optimized scroll lock with cleanup
+  useEffect(() => {
+    const scrollbarWidth =
+      window.innerWidth - document.documentElement.clientWidth;
+
+    document.body.style.overflow = "hidden";
+    document.documentElement.style.overflow = "hidden";
+    document.body.style.paddingRight = `${scrollbarWidth}px`;
+
+    return () => {
+      document.body.style.overflow = "auto";
+      document.documentElement.style.overflow = "auto";
+      document.body.style.paddingRight = "0";
+    };
+  }, []);
+
+  // Optimized escape key handler
+  useEffect(() => {
+    const handleEscape = (e) => {
+      if (e.key === "Escape") handleCloseModal();
+    };
+    window.addEventListener("keydown", handleEscape);
+    return () => window.removeEventListener("keydown", handleEscape);
+  }, [handleCloseModal]);
+
+  // ================ HANDLERS ================
+
   const handleBackdropClick = useCallback(
     (e) => {
-      if (e.target === e.currentTarget) {
-        handleCloseModal();
-      }
+      if (e.target === e.currentTarget) handleCloseModal();
     },
     [handleCloseModal],
   );
 
-  // Enroll click handler
   const handleEnrollClick = useCallback(() => {
     if (!isAuthenticated) {
-      alert("Please login to enroll in events");
-      window.location.href = "/login";
+      navigate("/login");
       return;
     }
 
@@ -320,7 +402,6 @@ const eventSpecificRules = useMemo(() => {
     setShowRegistrationModal(true);
   }, [isAuthenticated, isAlreadyEnrolled, isRegistrationOpen, isFull]);
 
-  // Handle enroll from RegistrationModal
   const handleEnrollSubmit = useCallback(
     async (event, teamId = null) => {
       try {
@@ -336,57 +417,28 @@ const eventSpecificRules = useMemo(() => {
     [handleEnroll],
   );
 
-  // Loading state - show if event is loading or no eventId
+  // ================ EARLY RETURNS ================
+
   if (!eventId) {
-    return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80">
-        <div className="bg-white rounded-xl p-8 flex flex-col items-center">
-          <div className="w-12 h-12 border-4 border-[#4b1b7a] border-t-transparent rounded-full animate-spin mb-4"></div>
-          <p className="text-[#2b123f] font-medium milonga">
-            No event selected...
-          </p>
-        </div>
-      </div>
-    );
+    return <LoadingSpinner message="No event selected..." />;
   }
 
   if (eventLoading) {
-    return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80">
-        <div className="bg-white rounded-xl p-8 flex flex-col items-center">
-          <div className="w-12 h-12 border-4 border-[#4b1b7a] border-t-transparent rounded-full animate-spin mb-4"></div>
-          <p className="text-[#2b123f] font-medium milonga">
-            Loading event details...
-          </p>
-        </div>
-      </div>
-    );
+    return <LoadingSpinner message="Loading event details..." />;
   }
 
   if (eventError || !selectedEvent) {
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80">
-        <div className="bg-white rounded-xl p-8 flex flex-col items-center cursor-pointer">
-          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4 ">
-            <X size={32} className="text-red-600" />
-          </div>
-          <p className="text-[#2b123f] font-medium milonga text-center">
-            {eventError?.message || "Failed to load event details"}
-          </p>
-          <button
-            onClick={handleCloseModal}
-            className="mt-6 px-6 py-2 bg-[#4b1b7a] text-white rounded-full hover:bg-[#6b2bb9] transition-colors"
-          >
-            Close
-          </button>
-        </div>
-      </div>
+      <ErrorDisplay
+        message={eventError?.message || "Failed to load event details"}
+        onClose={handleCloseModal}
+      />
     );
   }
 
+  // Memoized display values
   const categoryName = getCategoryName(selectedEvent.category);
   const subCategory = getSubCategory(selectedEvent.subCategory);
-  const images = getAllImages(selectedEvent.images);
   const categoryColor = getCategoryColor(categoryName);
   const EventTypeIcon = getEventTypeIcon(selectedEvent.eventType);
   const eventTypeText = getEventTypeText(
@@ -394,17 +446,20 @@ const eventSpecificRules = useMemo(() => {
     selectedEvent.eventType,
   );
 
+  // ================ RENDER ================
+
   return (
     <>
       <div
-        className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/80 backdrop-blur-sm overflow-hidden no-scrollbar"
+        ref={modalRef}
+        className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/80 backdrop-blur-sm overflow-hidden will-change-transform"
         onClick={handleBackdropClick}
       >
-        <div className="relative w-full max-w-6xl max-h-[95vh] sm:max-h-[90vh] overflow-y-auto bg-gradient-to-b from-[#eadbff] to-[#b692ff] rounded-[24px] border-2 border-dashed border-black/60 shadow-2xl no-scrollbar">
-          {/* Close Button - Responsive */}
+        <div className="relative w-full max-w-6xl max-h-[95vh] sm:max-h-[90vh] overflow-y-auto bg-linear-to-b from-[#eadbff] to-[#b692ff] rounded-[24px] border-2 border-dashed border-black/60 shadow-2xl will-change-transform scroll-smooth no-scrollbar">
+          {/* Close Button */}
           <button
             onClick={handleCloseModal}
-            className="absolute top-3 right-3 sm:top-4 sm:right-4 z-10 p-2 bg-white/80 hover:bg-white rounded-full backdrop-blur-sm border border-black/30 transition-all hover:scale-110"
+            className="absolute top-3 right-3 sm:top-4 sm:right-4 z-10 p-2 bg-white/80 hover:bg-white rounded-full backdrop-blur-sm border border-black/30 transition-all hover:scale-110  cursor-pointer"
             aria-label="Close modal"
           >
             <X size={20} className="sm:size-[24px] text-[#2b123f]" />
@@ -412,15 +467,16 @@ const eventSpecificRules = useMemo(() => {
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8 p-4 sm:p-6 lg:p-8">
             {/* Left Column - Images */}
-            <div className="lg:col-span-1">
-              <div className="relative h-48 sm:h-56 lg:h-64 xl:h-80 mb-3 sm:mb-4 rounded-[18px] overflow-hidden border-2 border-black/30 bg-white">
+            <div className="lg:col-span-1 space-y-4">
+              {/* Main Image */}
+              <div className="relative h-48 sm:h-56 lg:h-64 xl:h-80 rounded-[18px] overflow-hidden border-2 border-black/30 bg-white">
                 {images.length > 0 ? (
                   <EventImage
                     src={images[selectedImageIndex]}
                     title={selectedEvent.title}
                   />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#C8ABFE] to-[#b18cff]">
+                  <div className="w-full h-full flex items-center justify-center bg-linear-to-br from-[#C8ABFE] to-[#b18cff]">
                     <ImageIcon
                       size={40}
                       className="sm:size-[64px] text-[#2b123f]"
@@ -429,8 +485,9 @@ const eventSpecificRules = useMemo(() => {
                 )}
               </div>
 
+              {/* Image Gallery */}
               {images.length > 1 && (
-                <div className="mb-6 sm:mb-8">
+                <div>
                   <h4 className="text-[#2b123f] font-medium mb-2 sm:mb-3 flex items-center gap-2 milonga">
                     <ImageIcon size={16} className="sm:size-[18px]" />
                     <span className="text-sm sm:text-base">
@@ -439,57 +496,36 @@ const eventSpecificRules = useMemo(() => {
                   </h4>
 
                   <div className="flex gap-2 sm:gap-4 overflow-x-auto pb-2 sm:pb-3 scrollbar-thin scrollbar-thumb-[#4b1b7a]/20">
-                    {images
-                      .map((img, index) => ({ img, index }))
-                      .filter(({ index }) => index !== selectedImageIndex)
-                      .map(({ img, index }) => (
-                        <button
-                          key={index}
-                          onClick={() => setSelectedImageIndex(index)}
-                          className="
-                            shrink-0
-                            w-16 h-16
-                            sm:w-20 sm:h-20
-                            md:w-24 md:h-24
-                            lg:w-28 lg:h-28
-                            xl:w-36 xl:h-36
-                            rounded-lg sm:rounded-xl lg:rounded-2xl
-                            overflow-hidden
-                            border-2 border-black/30
-                            bg-white
-                            hover:border-[#4b1b7a]
-                            hover:scale-[1.03]
-                            transition-all
-                          "
-                          aria-label={`View image ${index + 1}`}
-                        >
-                          <img
-                            src={img}
-                            alt={`Thumbnail ${index + 1}`}
-                            className="w-full h-full object-cover"
-                            loading="lazy"
-                          />
-                        </button>
-                      ))}
+                    {images.map(
+                      (img, index) =>
+                        index !== selectedImageIndex && (
+                          <button
+                            key={index}
+                            onClick={() => setSelectedImageIndex(index)}
+                            className="shrink-0 w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 lg:w-28 lg:h-28 xl:w-36 xl:h-36 rounded-lg sm:rounded-xl lg:rounded-2xl overflow-hidden border-2 border-black/30 bg-white hover:border-[#4b1b7a] hover:scale-[1.03] transition-all"
+                            aria-label={`View image ${index + 1}`}
+                          >
+                            <img
+                              src={img}
+                              alt={`Thumbnail ${index + 1}`}
+                              className="w-full h-full object-cover cursor-pointer"
+                              loading="lazy"
+                              decoding="async"
+                            />
+                          </button>
+                        ),
+                    )}
                   </div>
                 </div>
               )}
 
+              {/* Event Info Cards */}
               <div className="space-y-3 sm:space-y-4">
-                {/* Date & Time - Purple shape container */}
+                {/* Date & Time */}
                 <div
                   className="relative text-white px-3 sm:px-4 py-3"
                   style={{
-                    clipPath: `polygon(
-                      0% 0%,
-                      4% 8%,
-                      18% 7%,
-                      30% 10%,
-                      100% 20%,
-                      90% 100%,
-                      20% 100%,
-                      0% 90%
-                    )`,
+                    clipPath: `polygon(0% 0%, 4% 8%, 18% 7%, 30% 10%, 100% 20%, 90% 100%, 20% 100%, 0% 90%)`,
                     backgroundColor: "#12002b",
                   }}
                 >
@@ -508,8 +544,6 @@ const eventSpecificRules = useMemo(() => {
                     </p>
                     <p className="text-purple-300">
                       {formatTime(selectedEvent.startTime)}
-                      {selectedEvent.endTime &&
-                        ` - ${formatTime(selectedEvent.endTime)}`}
                     </p>
                   </div>
                 </div>
@@ -532,7 +566,7 @@ const eventSpecificRules = useMemo(() => {
                   </div>
                 )}
 
-                {/* Fee & Team - Responsive Grid */}
+                {/* Fee & Team */}
                 <div className="grid grid-cols-2 gap-3 sm:gap-4">
                   <div className="bg-white/80 backdrop-blur-sm rounded-lg sm:rounded-xl p-3 sm:p-4 border-2 border-black/30">
                     <div className="flex items-center gap-2 sm:gap-3 mb-1 sm:mb-2">
@@ -573,53 +607,47 @@ const eventSpecificRules = useMemo(() => {
 
             {/* Right Column - Details */}
             <div className="lg:col-span-1">
-              <div className="mb-4 sm:mb-6">
-                {/* Event Badges */}
-                <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
-                  <EventBadge className="bg-gradient-to-r from-[#4b1b7a] to-[#6b2bb9]">
-                    <EventTypeIcon
-                      size={12}
-                      className="sm:size-[14px] text-white"
-                    />
-                    <span className="text-xs font-bold text-white milonga">
-                      {eventTypeText}
+              {/* Event Badges */}
+              <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
+                <EventBadge className="bg-linear-to-r from-[#4b1b7a] to-[#6b2bb9]">
+                  <EventTypeIcon
+                    size={12}
+                    className="sm:size-[14px] text-white"
+                  />
+                  <span className="text-xs font-bold text-white milonga">
+                    {eventTypeText}
+                  </span>
+                </EventBadge>
+                <EventBadge className="bg-[#2b123f]">
+                  <span className="text-xs font-medium text-white milonga">
+                    {categoryName}
+                  </span>
+                </EventBadge>
+                {subCategory && (
+                  <EventBadge className="bg-purple-500/20 border border-purple-500/30">
+                    <Tag size={10} className="sm:size-[12px] text-purple-700" />
+                    <span className="text-xs font-medium text-purple-700 milonga">
+                      {subCategory}
                     </span>
                   </EventBadge>
-                  <EventBadge className="bg-[#2b123f]">
-                    <span className="text-xs font-medium text-white milonga">
-                      {categoryName}
-                    </span>
-                  </EventBadge>
-                  {subCategory && (
-                    <EventBadge className="bg-purple-500/20 border border-purple-500/30">
-                      <Tag
-                        size={10}
-                        className="sm:size-[12px] text-purple-700"
-                      />
-                      <span className="text-xs font-medium text-purple-700 milonga">
-                        {subCategory}
-                      </span>
-                    </EventBadge>
-                  )}
-                </div>
-
-                {/* Event Title */}
-                <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-[#2b123f] mb-2 sm:mb-3 milonga">
-                  {selectedEvent.title}
-                </h2>
-
-                {/* Short Description Preview - Only show first 200 chars if description is used in rules */}
-                {selectedEvent.description &&
-                  selectedEvent.description.length > 200 && (
-                    <div className="mb-4 sm:mb-6">
-                      <p className="text-[#2b123f]/70 text-sm sm:text-base italic border-l-3 border-[#4b1b7a] pl-3">
-                        {selectedEvent.description.substring(0, 200)}...
-                      </p>
-                    </div>
-                  )}
+                )}
               </div>
 
-              {/* Rules & Guidelines Section - Now with Category & Subcategory Rules */}
+              {/* Title */}
+              <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-[#2b123f] mb-2 sm:mb-3 milonga">
+                {selectedEvent.title}
+              </h2>
+
+              {/* Full Description */}
+              {selectedEvent.description && (
+                <div className="mb-4 sm:mb-6">
+                  <p className="text-[#2b123f]/80 text-sm sm:text-base leading-relaxed line-clamp-4">
+                    {selectedEvent.description}
+                  </p>
+                </div>
+              )}
+
+              {/* Rules Sections */}
               <div className="space-y-3 sm:space-y-4 mb-6 sm:mb-8">
                 <h3 className="text-lg sm:text-xl lg:text-2xl font-bold text-[#2b123f] mb-4 sm:mb-6 flex items-center gap-2 milonga">
                   <svg
@@ -633,61 +661,62 @@ const eventSpecificRules = useMemo(() => {
                   Rules & Guidelines
                 </h3>
 
-                {/* Category Rules Accordion */}
-                <AccordionSection
-                  title={`${categoryName} Rules`}
-                  subtitle={`Rules for ${categoryName} category`}
-                  icon="1"
-                  color="purple"
-                  isExpanded={expandedRules?.general || false}
-                  onToggle={() => toggleRuleSection("general")}
-                >
-                  <ul className="space-y-2 sm:space-y-3">
-                    {formattedCategoryRules.map((rule, index) => (
-                      <li
-                        key={index}
-                        className="flex items-start gap-2 sm:gap-3 text-[#2b123f]/80 text-xs sm:text-sm p-2 hover:bg-white/50 rounded-lg transition-colors"
-                      >
-                        <span className="text-purple-600 mt-0.5 sm:mt-1 min-w-5 sm:min-w-6 text-center font-bold">
-                          {index + 1}.
-                        </span>
-                        <span className="wrap-break-word">{rule}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </AccordionSection>
+                {/* Category Rules */}
+                {categoryRules.length > 0 && (
+                  <AccordionSection
+                    title={`${categoryName} Rules`}
+                    subtitle={`Rules for ${categoryName} category`}
+                    icon="1"
+                    color="purple"
+                    isExpanded={expandedRules?.general || false}
+                    onToggle={() => toggleRuleSection("general")}
+                  >
+                    <ul className="space-y-2 sm:space-y-3 max-h-64 overflow-y-auto pr-2 no-scrollbar">
+                      {formattedCategoryRules.map((rule, index) => (
+                        <li
+                          key={index}
+                          className="flex items-start gap-2 sm:gap-3 text-[#2b123f]/80 text-xs sm:text-sm p-2 hover:bg-white/50 rounded-lg transition-colors"
+                        >
+                          <span className="text-purple-600 mt-0.5 sm:mt-1 min-w-5 sm:min-w-6 text-center font-bold">
+                            {index + 1}.
+                          </span>
+                          <span className="break-words">{rule}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </AccordionSection>
+                )}
 
-                {/* Event Specific Rules Accordion - Includes Description + Subcategory Rules */}
-                <AccordionSection
-                  title="Event Specific Rules"
-                  subtitle="Description & rules for this event"
-                  icon="2"
-                  color="blue"
-                  isExpanded={expandedRules?.event || false}
-                  onToggle={() => toggleRuleSection("event")}
-                >
-                  <ul className="space-y-2 sm:space-y-3">
-                    <div className="space-y-4">
+                {/* Event Specific Rules */}
+                {eventSpecificRules.length > 0 && (
+                  <AccordionSection
+                    title="Event Specific Rules"
+                    subtitle="Rules for this event"
+                    icon="2"
+                    color="blue"
+                    isExpanded={expandedRules?.event || false}
+                    onToggle={() => toggleRuleSection("event")}
+                  >
+                    <ul className="space-y-2 sm:space-y-3 max-h-64 overflow-y-auto pr-2 no-scrollbar">
                       {eventSpecificRules.map((rule, index) => (
-                        <div
+                        <li
                           key={index}
                           className="bg-white/60 p-3 sm:p-4 rounded-xl border border-blue-200"
                         >
                           <h4 className="text-blue-600 font-bold text-sm sm:text-base mb-2">
-                            Rule ({index + 1}):
+                            Rule {index + 1}:
                           </h4>
-
                           <p className="text-[#2b123f]/80 text-xs sm:text-sm leading-relaxed break-words">
                             {rule}
                           </p>
-                        </div>
+                        </li>
                       ))}
-                    </div>
-                  </ul>
-                </AccordionSection>
+                    </ul>
+                  </AccordionSection>
+                )}
               </div>
 
-              {/* Additional Information */}
+              {/* Additional Info */}
               <div className="mb-6 sm:mb-8">
                 <h4 className="text-lg sm:text-xl font-bold text-[#2b123f] mb-3 sm:mb-4 flex items-center gap-2 milonga">
                   <svg
@@ -725,7 +754,7 @@ const eventSpecificRules = useMemo(() => {
                 </div>
               </div>
 
-              {/* Action Buttons - Responsive */}
+              {/* Action Buttons */}
               <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-4 sm:pt-6 border-t border-black/30">
                 <button
                   onClick={handleEnrollClick}
@@ -734,10 +763,11 @@ const eventSpecificRules = useMemo(() => {
                     flex-1 px-4 sm:px-6 py-2.5 sm:py-3 
                     rounded-xl font-semibold text-sm sm:text-base lg:text-lg 
                     transition-all duration-300 milonga
+                    cursor-pointer
                     ${
                       !isRegistrationOpen || isFull || isAlreadyEnrolled
                         ? "bg-gray-400 text-white cursor-not-allowed opacity-60"
-                        : "bg-gradient-to-r from-[#4b1b7a] to-[#6b2bb9] text-white hover:scale-[1.02] hover:shadow-xl"
+                        : "bg-linear-to-r from-[#4b1b7a] to-[#6b2bb9] text-white hover:scale-[1.02] hover:shadow-xl"
                     }
                   `}
                 >
@@ -752,7 +782,7 @@ const eventSpecificRules = useMemo(() => {
 
                 <button
                   onClick={handleCloseModal}
-                  className="flex-1 px-4 sm:px-6 py-2.5 sm:py-3 bg-white/80 hover:bg-white text-[#2b123f] rounded-xl font-semibold text-sm sm:text-base lg:text-lg transition-all duration-300 border-2 border-black/30 hover:border-[#4b1b7a] hover:scale-[1.02] milonga"
+                  className="flex-1 px-4 cursor-pointer sm:px-6 py-2.5 sm:py-3 bg-white/80 hover:bg-white text-[#2b123f] rounded-xl font-semibold text-sm sm:text-base lg:text-lg transition-all duration-300 border-2 border-black/30 hover:border-[#4b1b7a] hover:scale-[1.02] milonga"
                 >
                   Close
                 </button>
@@ -781,4 +811,17 @@ const eventSpecificRules = useMemo(() => {
   );
 };
 
-export default React.memo(EventDetailModal);
+// Custom comparison for memo
+const areEqual = (prevProps, nextProps) => {
+  return (
+    prevProps.eventId === nextProps.eventId &&
+    prevProps.selectedImageIndex === nextProps.selectedImageIndex &&
+    prevProps.expandedRules?.general === nextProps.expandedRules?.general &&
+    prevProps.expandedRules?.event === nextProps.expandedRules?.event &&
+    prevProps.isAuthenticated === nextProps.isAuthenticated &&
+    prevProps.userRegistrations === nextProps.userRegistrations &&
+    prevProps.userTeams === nextProps.userTeams
+  );
+};
+
+export default React.memo(EventDetailModal, areEqual);

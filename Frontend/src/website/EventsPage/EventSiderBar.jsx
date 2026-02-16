@@ -241,7 +241,7 @@ const EventsSidebar = () => {
       </div>
 
       {/* Scrollable Content - WHITE BACKGROUND */}
-      <div className="flex-1 min-h-0 overflow-y-auto px-6 py-6 scrollbar-thin scrollbar-thumb-[#4b1b7a]/20 scrollbar-track-transparent bg-white">
+      <div className="flex-1 min-h-0 overflow-y-auto no-scrollbar px-6 py-6 scrollbar-thin scrollbar-thumb-[#4b1b7a]/20 scrollbar-track-transparent bg-white">
         {/* EVENT TYPE SECTION */}
         <div className="mb-10">
           <h3 className="flex items-center gap-3 text-lg font-semibold mb-4 text-[#2b123f] milonga">

@@ -57,7 +57,6 @@ registrationSchema.index(
     unique: true, 
     partialFilterExpression: { 
       userId: { $exists: true },
-      isDeleted: false
     } 
   }
 );
@@ -69,7 +68,6 @@ registrationSchema.index(
     unique: true, 
     partialFilterExpression: { 
       teamId: { $exists: true },
-      isDeleted: false
     } 
   }
 );

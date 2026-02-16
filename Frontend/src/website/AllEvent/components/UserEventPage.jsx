@@ -2,7 +2,6 @@ import React, { useState, useMemo, useCallback, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Calendar,
-  Users,
   Search,
   AlertCircle,
   Loader2,
@@ -19,13 +18,12 @@ import Swal from "sweetalert2";
 import { api } from "../../../api/axios";
 import { useAuth } from "../../../Context/AuthContext";
 import EventDetailModal from "./EventDetailModal";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   getCategoryName,
   getSubCategory,
   getImageUrl,
   getAllImages,
-  getCategoryIcon,
   getEventTypeIcon,
   getEventTypeText,
   formatDate,
@@ -39,7 +37,7 @@ const REGISTRATION_KEYS = {
   my: () => [...REGISTRATION_KEYS.all, "my"],
 };
 
-// Constants
+// Constants - EXACTLY SAME UI
 const FILTER_BUTTONS = [
   { id: "all", label: "All types", icon: Hand, color: "bg-[#c4b5fd]", textColor: "text-[#1a1a3e]" },
   { id: "upcoming", label: "Upcoming", icon: Timer, color: "bg-white", textColor: "text-[#1a1a3e]" },
@@ -48,7 +46,7 @@ const FILTER_BUTTONS = [
   { id: "team", label: "Team", icon: UsersRound, color: "bg-white", textColor: "text-[#1a1a3e]" },
 ];
 
-// ================ SWEETALERT2 CONFIGURATION ================
+// ================ SWEETALERT2 CONFIGURATION - EXACTLY SAME ================
 const Toast = Swal.mixin({
   toast: true,
   position: "top-end",
@@ -61,7 +59,7 @@ const Toast = Swal.mixin({
   },
 });
 
-// Toast Helpers
+// Toast Helpers - EXACTLY SAME
 const showSuccessToast = (message) => {
   Toast.fire({
     icon: "success",
@@ -82,29 +80,7 @@ const showErrorToast = (message) => {
   });
 };
 
-const showWarningToast = (message) => {
-  Toast.fire({
-    icon: "warning",
-    title: message,
-    background: "#1a1a3e",
-    color: "#ffffff",
-    iconColor: "#f59e0b",
-  });
-}
-
-// Confetti Effect
-const triggerConfetti = () => {
-  if (window.confetti) {
-    window.confetti({
-      particleCount: 150,
-      spread: 70,
-      origin: { y: 0.6 },
-      colors: ['#8b5cf6', '#6366f1', '#3b82f6', '#10b981', '#f59e0b']
-    });
-  }
-};
-
-// ================ CONFIRMATION MODALS ================
+// ================ CONFIRMATION MODAL - SIMPLIFIED BUT SAME STYLING ================
 const showUnenrollConfirmation = async (eventTitle) => {
   const result = await Swal.fire({
     title: "Are you sure?",
@@ -122,10 +98,7 @@ const showUnenrollConfirmation = async (eventTitle) => {
           </p>
         </div>
         <p style="color: #4b5563; font-size: 15px; margin-top: 20px;">
-          You can re-enroll later if spots are still available.
-        </p>
-        <p style="color: #6b7280; font-size: 13px; margin-top: 10px; font-style: italic;">
-          This action can be undone by re-enrolling.
+          This action cannot be undone.
         </p>
       </div>
     `,
@@ -147,91 +120,7 @@ const showUnenrollConfirmation = async (eventTitle) => {
   return result.isConfirmed;
 };
 
-const showReenrollmentConfirmation = async (eventTitle) => {
-  const result = await Swal.fire({
-    title: "Welcome Back! 👋",
-    html: `
-      <div style="text-align: center; padding: 10px;">
-        <div style="font-size: 48px; margin-bottom: 20px;">🔄</div>
-        <p style="color: #1a1a3e; font-size: 18px; margin-bottom: 10px; font-weight: 500;">
-          You had previously unenrolled from:
-        </p>
-        <div style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); 
-                    padding: 16px; border-radius: 14px; margin: 15px 0;
-                    box-shadow: 0 10px 25px -5px rgba(245, 158, 11, 0.3);">
-          <p style="color: white; font-size: 20px; font-weight: bold; margin: 0;">
-            ${eventTitle}
-          </p>
-        </div>
-        <p style="color: #4b5563; font-size: 16px; margin-top: 20px; font-weight: 500;">
-          Would you like to re-enroll and secure your spot again?
-        </p>
-        <p style="color: #6b7280; font-size: 14px; margin-top: 10px;">
-          Your previous registration will be restored.
-        </p>
-      </div>
-    `,
-    icon: "question",
-    iconColor: "#f59e0b",
-    showCancelButton: true,
-    confirmButtonColor: "#10b981",
-    cancelButtonColor: "#6b7280",
-    confirmButtonText: "Yes, Re-enroll Now!",
-    cancelButtonText: "Not Now",
-    background: "#ffffff",
-    backdrop: "rgba(245, 158, 11, 0.2)",
-    customClass: {
-      popup: "rounded-3xl shadow-2xl",
-      confirmButton: "rounded-full px-6 py-2.5 font-semibold",
-      cancelButton: "rounded-full px-6 py-2.5 font-semibold",
-    },
-  });
-  return result.isConfirmed;
-};
-
-const showReenrollmentSuccess = async (eventTitle) => {
-  triggerConfetti();
-  
-  await Swal.fire({
-    title: "🎉 Welcome Back!",
-    html: `
-      <div style="text-align: center; padding: 15px;">
-        <div style="font-size: 64px; margin-bottom: 20px; animation: bounce 1s infinite;">✨</div>
-        <h3 style="color: #1a1a3e; font-size: 28px; margin-bottom: 15px; font-weight: bold;">
-          Successfully Re-enrolled!
-        </h3>
-        <p style="color: #4b5563; font-size: 16px; margin-bottom: 10px;">
-          You are now registered again for:
-        </p>
-        <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); 
-                    padding: 18px; border-radius: 16px; margin: 20px 0;
-                    box-shadow: 0 15px 30px -5px rgba(16, 185, 129, 0.4);">
-          <p style="color: white; font-size: 22px; font-weight: bold; margin: 0;">
-            ${eventTitle}
-          </p>
-        </div>
-        <p style="color: #6b7280; font-size: 15px; margin-top: 20px;">
-          Thank you for re-joining us! We're excited to have you back. 🌟
-        </p>
-      </div>
-    `,
-    icon: "success",
-    iconColor: "#10b981",
-    confirmButtonColor: "#8b5cf6",
-    confirmButtonText: "Continue",
-    background: "#ffffff",
-    backdrop: "rgba(16, 185, 129, 0.2)",
-    showClass: {
-      popup: 'animate__animated animate__zoomIn'
-    },
-    customClass: {
-      popup: "rounded-3xl shadow-2xl",
-      confirmButton: "rounded-full px-8 py-3 font-semibold",
-    },
-  });
-};
-
-// ================ MEMOIZED COMPONENTS ================
+// ================ MEMOIZED COMPONENTS - EXACTLY SAME UI ================
 const SearchBar = React.memo(({ searchTerm, setSearchTerm }) => (
   <div className="mb-8">
     <div className="relative max-w-4xl">
@@ -319,7 +208,7 @@ const EmptyState = React.memo(({ searchTerm, filter, onClear, onBrowse }) => {
           <p className="text-white/60 mb-6">You haven't registered for any events yet</p>
           <button
             onClick={onBrowse}
-            className="px-6 py-3 bg-white text-[#1a1a3e] rounded-xl hover:bg-gray-100 font-semibold shadow-lg transition-all inline-flex items-center gap-2"
+            className="px-6 py-3 bg-white text-[#1a1a3e] cursor-pointer rounded-xl hover:bg-gray-100 font-semibold shadow-lg transition-all inline-flex items-center gap-2"
           >
             Browse Events
             <ExternalLink size={18} />
@@ -340,7 +229,7 @@ const UserRegisteredEvents = () => {
   const isAuthenticated = useMemo(() => !!localStorage.getItem("accessToken"), []);
   const token = useMemo(() => localStorage.getItem("accessToken"), []);
 
-  // Local state
+  // Local state - EXACTLY SAME
   const [searchTerm, setSearchTerm] = useState("");
   const [filter, setFilter] = useState("all");
   const [selectedEventId, setSelectedEventId] = useState(null);
@@ -351,10 +240,8 @@ const UserRegisteredEvents = () => {
     event: false,
   });
   const [unenrollLoading, setUnenrollLoading] = useState({});
-  const [enrollingEventId, setEnrollingEventId] = useState(null);
-  //const [registrations , setRegistrations] = useState([]);
 
-  // Fetch user registrations with React Query
+  // Fetch user registrations with React Query - OPTIMIZED
   const { 
     data: registrations = [], 
     isLoading, 
@@ -379,7 +266,7 @@ const UserRegisteredEvents = () => {
     },
     enabled: !!isAuthenticated && !!token,
     staleTime: 5 * 60 * 1000,
-    cacheTime: 30 * 60 * 1000,
+    gcTime: 30 * 60 * 1000, // renamed from cacheTime
     refetchOnWindowFocus: false,
     refetchOnMount: false,
   });
@@ -396,7 +283,7 @@ const UserRegisteredEvents = () => {
     }
   }, [isAuthenticated, navigate]);
 
-  // Filter registrations
+  // Filter registrations - EXACTLY SAME LOGIC but without soft delete
   const filteredRegistrations = useMemo(() => {
     if (!registrations.length) return [];
 
@@ -423,78 +310,44 @@ const UserRegisteredEvents = () => {
     });
   }, [registrations, searchTerm, filter]);
 
-  // Get registration status
-  const getRegistrationStatus = useCallback((registration) => {
-    if (registration.isDeleted && registration.status === "cancelled") {
-      return { text: "Cancelled", color: "red", bgClass: "bg-red-500 text-white" };
-    }
-    if (registration.checkedIn) {
-      return { text: "Checked In", color: "green", bgClass: "bg-green-600 text-white" };
-    }
-    if (registration.status === "confirmed") {
-      return { text: "Confirmed", color: "green", bgClass: "bg-green-600 text-white" };
-    }
-    if (registration.status === "pending") {
-      return { text: "Pending", color: "orange", bgClass: "bg-orange-500 text-white" };
-    }
+  // Get registration status - SIMPLIFIED but returns same structure
+  const getRegistrationStatus = useCallback(() => {
     return { text: "Confirmed", color: "green", bgClass: "bg-green-600 text-white" };
   }, []);
 
-  // ================ HANDLE UNENROLL ================
-const handleUnregister = useCallback(async (registrationId, eventTitle) => {
-  const confirmed = await showUnenrollConfirmation(eventTitle);
-  if (!confirmed) return;
+  // ================ HANDLE UNENROLL - HARD DELETE ================
+  const handleUnregister = useCallback(async (registrationId, eventTitle) => {
+    const confirmed = await showUnenrollConfirmation(eventTitle);
+    if (!confirmed) return;
 
-  setUnenrollLoading((prev) => ({ ...prev, [registrationId]: true }));
+    setUnenrollLoading((prev) => ({ ...prev, [registrationId]: true }));
 
-  try {
-    // Try different endpoint patterns
-    let response;
-    
-    // Pattern 1: PATCH to /registrations/:id
     try {
-      response = await api.patch(
-        `/registrations/${registrationId}/cancel`,
-        { status: 'cancelled' }, // Some APIs expect the status in body
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-    } catch (err) {
-      if (err.response?.status === 404) {
-        // Pattern 2: DELETE to /registrations/:id
-        response = await api.delete(
-          `/registrations/${registrationId}`,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-      } else {
-        throw err;
-      }
-    }
+      // HARD DELETE - Single API call
+      await api.patch(`/registrations/${registrationId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
 
-    // Update React Query cache
-    queryClient.setQueryData(REGISTRATION_KEYS.my(), (oldData) => {
-      if (!oldData) return [];
-      return oldData.filter((reg) => reg._id !== registrationId);
-    });
-    
-    showSuccessToast(`Successfully unenrolled from "${eventTitle}"`);
-    
-  } catch (error) {
-    console.error("Error unregistering:", error);
-    
-    // Better error handling
-    if (error.response) {
-      // The request was made and the server responded with a status code
-      // that falls out of the range of 2xx
-      console.error("Error response:", error.response.data);
-      console.error("Error status:", error.response.status);
-      console.error("Error headers:", error.response.headers);
+      // Update React Query cache optimistically
+      queryClient.setQueryData(REGISTRATION_KEYS.my(), (oldData) => {
+        if (!oldData) return [];
+        return oldData.filter((reg) => reg._id !== registrationId);
+      });
       
-      const errorMsg = error.response?.data?.message || 
-                      error.response?.data?.error || 
-                      "Failed to unregister";
+      showSuccessToast(`Successfully unenrolled from "${eventTitle}"`);
       
-      if (error.response.status === 404) {
-        showErrorToast("Registration endpoint not found. Please contact support.");
+    } catch (error) {
+      console.error("Error unregistering:", error);
+      
+      const errorMsg = error.response?.data?.message || "Failed to unregister";
+      
+      if (error.response?.status === 404) {
+        // If registration not found, remove from cache
+        queryClient.setQueryData(REGISTRATION_KEYS.my(), (oldData) => {
+          if (!oldData) return [];
+          return oldData.filter((reg) => reg._id !== registrationId);
+        });
+        showErrorToast("Registration not found");
       } else if (errorMsg.includes("deadline")) {
         showErrorToast("Registration deadline has passed! Cannot unenroll.");
       } else if (errorMsg.includes("checked in")) {
@@ -504,59 +357,12 @@ const handleUnregister = useCallback(async (registrationId, eventTitle) => {
       } else {
         showErrorToast(errorMsg);
       }
-    } else if (error.request) {
-      // The request was made but no response was received
-      console.error("No response received:", error.request);
-      showErrorToast("No response from server. Please check your connection.");
-    } else {
-      // Something happened in setting up the request that triggered an Error
-      console.error("Error setting up request:", error.message);
-      showErrorToast("Failed to send request. Please try again.");
-    }
-  } finally {
-    setUnenrollLoading((prev) => ({ ...prev, [registrationId]: false }));
-  }
-}, [token, queryClient]);
-
-  // ================ HANDLE RE-ENROLL ================
-  const handleReenroll = useCallback(async (registrationId, event, teamId = null) => {
-    try {
-      const confirmed = await showReenrollmentConfirmation(event.title);
-      if (!confirmed) return;
-
-      setEnrollingEventId(event._id);
-
-      const response = await api.patch(
-        `/registrations/${registrationId}/restore`,
-        { teamId },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-
-      // Refresh registrations
-      await refetch();
-      
-      // Show success modal with confetti
-      await showReenrollmentSuccess(event.title);
-      
-    } catch (error) {
-      console.error("Re-enrollment error:", error);
-      const errorMsg = error.response?.data?.message || "Failed to re-enroll";
-      
-      if (errorMsg.includes("deadline")) {
-        showErrorToast("Registration deadline has passed! Cannot re-enroll.");
-      } else if (errorMsg.includes("full")) {
-        showErrorToast("Event is now full! Cannot re-enroll.");
-      } else if (errorMsg.includes("team")) {
-        showWarningToast("Please select a valid team for re-enrollment");
-      } else {
-        showErrorToast(errorMsg);
-      }
     } finally {
-      setEnrollingEventId(null);
+      setUnenrollLoading((prev) => ({ ...prev, [registrationId]: false }));
     }
-  }, [token, refetch]);
+  }, [token, queryClient]);
 
-  // Modal handlers
+  // Modal handlers - EXACTLY SAME
   const handleViewDetails = useCallback((event) => {
     document.body.style.overflow = "hidden";
     setSelectedEventId(event._id);
@@ -641,14 +447,11 @@ const handleUnregister = useCallback(async (registrationId, eventTitle) => {
 
               const status = getRegistrationStatus(registration);
               const isLoading = unenrollLoading[registration._id];
-              const isDeleted = registration.isDeleted && registration.status === "cancelled";
 
               return (
                 <div
                   key={registration._id}
-                  className={`bg-white rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-300 overflow-hidden ${
-                    isDeleted ? 'opacity-75 border-2 border-red-300' : ''
-                  }`}
+                  className="bg-white rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-300 overflow-hidden"
                 >
                   <div className="p-5 pb-3">
                     <div className="flex items-start justify-between mb-3">
@@ -673,49 +476,28 @@ const handleUnregister = useCallback(async (registrationId, eventTitle) => {
                   </div>
 
                   <div className="px-5 pb-5 flex gap-2">
-                    {isDeleted ? (
-                      // Show Re-enroll button for cancelled registrations
-                      <button
-                        onClick={() => handleReenroll(registration._id, event)}
-                        disabled={enrollingEventId === event._id}
-                        className="flex-1 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-full py-3 px-4 font-semibold hover:from-amber-600 hover:to-orange-600 transition-all flex items-center justify-center gap-2 shadow-md"
-                      >
-                        {enrollingEventId === event._id ? (
-                          <>
-                            <Loader2 className="w-4 h-4 animate-spin" />
-                            Re-enrolling...
-                          </>
-                        ) : (
-                          <>
-                            <ExternalLink className="w-4 h-4" />
-                            Re-enroll Now
-                          </>
-                        )}
-                      </button>
-                    ) : (
-                      // Show Unenroll button for active registrations
-                      <button
-                        onClick={() => handleUnregister(registration._id, event.title)}
-                        disabled={isLoading}
-                        className="flex-1 bg-red-600 text-white rounded-full py-3 px-4 font-semibold hover:bg-red-700 transition-all flex items-center justify-center gap-2 shadow-md"
-                      >
-                        {isLoading ? (
-                          <>
-                            <Loader2 className="w-4 h-4 animate-spin" />
-                            Processing...
-                          </>
-                        ) : (
-                          <>
-                            <LogOut className="w-4 h-4" />
-                            Unenroll
-                          </>
-                        )}
-                      </button>
-                    )}
+                    {/* Only Unenroll button - no re-enroll */}
+                    <button
+                      onClick={() => handleUnregister(registration._id, event.title)}
+                      disabled={isLoading}
+                      className="flex-1 bg-red-600 text-white cursor-pointer rounded-full py-3 px-4 font-semibold hover:bg-red-700 transition-all flex items-center justify-center gap-2 shadow-md"
+                    >
+                      {isLoading ? (
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          Processing...
+                        </>
+                      ) : (
+                        <>
+                          <LogOut className="w-4 h-4" />
+                          Unenroll
+                        </>
+                      )}
+                    </button>
                     
                     <button
                       onClick={() => handleViewDetails(event)}
-                      className="flex-1 bg-white border-2 border-black text-black rounded-full py-3 px-4 font-semibold hover:bg-gray-50 transition-all flex items-center justify-center gap-2 shadow-md"
+                      className="flex-1 bg-white border-2 cursor-pointer border-black text-black rounded-full py-3 px-4 font-semibold hover:bg-gray-50 transition-all flex items-center justify-center gap-2 shadow-md"
                     >
                       Details
                       <ChevronRight className="w-4 h-4" />
@@ -749,10 +531,11 @@ const handleUnregister = useCallback(async (registrationId, eventTitle) => {
           isAuthenticated={isAuthenticated}
           token={token}
           user={user}
+          userRegistrations={registrations}
         />
       )}
     </div>
   );
 };
 
-export default UserRegisteredEvents;
+export default React.memo(UserRegisteredEvents);
