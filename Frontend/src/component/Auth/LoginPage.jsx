@@ -1,14 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../Context/AuthContext";
-import BackgroundGlow from "../BackgroundGlow";
 
 const LoginPage = () => {
   const { login, requestPassword, resetPassword } = useAuth();
   const navigate = useNavigate();
 
-  const [show, setShow] = useState(false);
-  const [step, setStep] = useState("login"); // login | forgot | otp | reset
+  const [step, setStep] = useState("login");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -21,11 +19,6 @@ const LoginPage = () => {
     confirmPassword: "",
   });
 
-  useEffect(() => {
-    const t = setTimeout(() => setShow(true), 120);
-    return () => clearTimeout(t);
-  }, []);
-
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((p) => ({ ...p, [name]: value }));
@@ -35,7 +28,6 @@ const LoginPage = () => {
 
   const handleLoginSubmit = async (e) => {
     e.preventDefault();
-    e.stopPropagation();
     setError("");
     setSuccess("");
 
@@ -51,15 +43,9 @@ const LoginPage = () => {
         password: formData.password,
       });
       setSuccess("Login successful! Redirecting...");
-      setTimeout(() => {
-        navigate("/profile");
-      }, 1000);
+      setTimeout(() => navigate("/profile"), 1000);
     } catch (err) {
-      console.error("Login failed", err);
-      setError(
-        err.response?.data?.message ||
-          "Login failed. Please check your credentials."
-      );
+      setError(err.response?.data?.message || "Login failed. Please check your credentials.");
     } finally {
       setLoading(false);
     }
@@ -77,23 +63,14 @@ const LoginPage = () => {
 
     try {
       setLoading(true);
-      const response = await requestPassword({
-        identifier: formData.identifier,
-      });
-      console.log("Forgot password response:", response);
+      const response = await requestPassword({ identifier: formData.identifier });
 
       if (response.success) {
-        setSuccess(
-          response.message ||
-            "OTP sent to your registered email. Please check your inbox."
-        );
+        setSuccess("OTP sent to your registered email. Please check your inbox.");
         setStep("otp");
       }
     } catch (err) {
-      console.error("Forgot password failed", err);
-      setError(
-        err.response?.data?.message || "Failed to send OTP. Please try again."
-      );
+      setError(err.response?.data?.message || "Failed to send OTP. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -127,8 +104,6 @@ const LoginPage = () => {
         newPassword: formData.newPassword,
       });
 
-      console.log("Reset password response:", response);
-
       setFormData({
         identifier: "",
         password: "",
@@ -139,11 +114,7 @@ const LoginPage = () => {
       setSuccess("Password reset successful! Please login with your new password.");
       setStep("login");
     } catch (err) {
-      console.error("Reset password failed", err);
-      setError(
-        err.response?.data?.message ||
-          "Failed to reset password. Please check OTP and try again."
-      );
+      setError(err.response?.data?.message || "Failed to reset password. Please check OTP and try again.");
     } finally {
       setLoading(false);
     }
@@ -155,66 +126,33 @@ const LoginPage = () => {
 
   const handleFormSubmit = (e) => {
     e.preventDefault();
-    e.stopPropagation();
     switch (step) {
-      case "login":
-        return handleLoginSubmit(e);
-      case "forgot":
-        return handleForgotPassword(e);
+      case "login": return handleLoginSubmit(e);
+      case "forgot": return handleForgotPassword(e);
       case "otp":
-      case "reset":
-        return handleResetPassword(e);
-      default:
-        e.preventDefault();
+      case "reset": return handleResetPassword(e);
+      default: e.preventDefault();
     }
   };
 
   return (
-    <div className="h-screen relative overflow-hidden flex flex-col">
-      {/* Background Glow */}
-      <div className="absolute inset-0 pointer-events-none">
-        <BackgroundGlow />
-      </div>
-
+    <div className="min-h-screen bg-linear-to-br from-[#010103] via-[#241f4a] to-[#0b0618]">
       {/* Home Button */}
-      <div
-        className="absolute top-6 left-6 flex items-center gap-2 cursor-pointer z-20 hover:text-purple-300 transition-colors text-white/80 hover:text-white"
+      <button
         onClick={handleBackToHome}
+        className="absolute top-6 left-6 flex items-center gap-2 text-white/80 hover:text-white z-10 transition-colors cursor-pointer"
       >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="20"
-          height="20"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
           <path d="M19 12H5M12 19l-7-7 7-7" />
         </svg>
         <span className="tracking-widest font-semibold">Home</span>
-      </div>
+      </button>
 
-      {/* Center Content */}
-      <div className="relative z-10 flex-1 flex items-center justify-center px-4">
-        <div className="relative w-full max-w-2xl flex justify-center">
-          {/* Top Left Image */}
-        
-
+      {/* Main Content */}
+      <div className="flex items-center justify-center min-h-screen px-4">
+        <div className="w-full max-w-md">
           {/* Card */}
-          <div
-            className={`
-              relative w-full rounded-xl
-              lg:px-12 md:px-8 px-4 py-6
-              bg-gradient-to-br from-[#241f4a]/90 via-[#2b255f]/90 to-[#1b1738]/90
-              backdrop-blur-md border border-white/20
-              shadow-[0_10px_40px_rgba(0,0,0,0.8)]
-              transition-all duration-700
-              ${show ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}
-            `}
-          >
+          <div className="w-full rounded-xl bg-[#241f4a] bg-opacity-90 border border-white/20 shadow-lg p-6 md:p-8">
             <div className="text-center mb-6">
               <h1 className="text-2xl md:text-3xl font-semibold text-[#e4e1ff]">
                 {step === "login" && "Welcome Back"}
@@ -253,27 +191,29 @@ const LoginPage = () => {
                   />
 
                   <div className="flex justify-between items-center pt-2">
-                    <div
-                      className="text-sm text-[#c9c3ff] cursor-pointer hover:text-white hover:underline transition-colors"
+                    <button
+                      type="button"
                       onClick={() => {
                         setStep("forgot");
                         setError("");
                         setSuccess("");
                       }}
+                      className="text-sm text-[#c9c3ff] hover:text-white hover:underline transition-colors cursor-pointer"
                     >
                       Forgot Password?
-                    </div>
+                    </button>
 
-                    <div
-                      className="text-sm text-[#c9c3ff] cursor-pointer hover:text-white hover:underline transition-colors"
+                    <button
+                      type="button"
                       onClick={() => {
                         navigate("/register");
                         setError("");
                         setSuccess("");
                       }}
+                      className="text-sm text-[#c9c3ff] hover:text-white hover:underline transition-colors cursor-pointer"
                     >
                       Create Account
-                    </div>
+                    </button>
                   </div>
                 </div>
               )}
@@ -305,23 +245,24 @@ const LoginPage = () => {
                     maxLength="6"
                   />
 
-                  <div
-                    className="text-sm text-[#c9c3ff] text-right cursor-pointer hover:text-white hover:underline transition-colors"
+                  <button
+                    type="button"
                     onClick={() => {
                       setStep("reset");
                       setError("");
                       setSuccess("");
                     }}
+                    className="text-sm text-[#c9c3ff] text-right w-full hover:text-white hover:underline transition-colors"
                   >
                     Next: Set New Password →
-                  </div>
+                  </button>
                 </div>
               )}
 
               {/* RESET PASSWORD STEP */}
               {step === "reset" && (
                 <div className="space-y-4">
-                  <div className="p-3 bg-[#3a3763]/50 border border-white/20 rounded-md text-[#c9c3ff] text-sm">
+                  <div className="p-3 bg-[#3a3763] border border-white/20 rounded-md text-[#c9c3ff] text-sm">
                     OTP: {formData.code}
                   </div>
 
@@ -347,46 +288,41 @@ const LoginPage = () => {
                 </div>
               )}
 
-              {/* ERROR MESSAGE */}
+              {/* Error Message */}
               {error && (
                 <div className="p-3 bg-red-500/20 border border-red-500/50 rounded-md text-red-200 text-sm">
                   {error}
                 </div>
               )}
 
-              {/* SUCCESS MESSAGE */}
+              {/* Success Message */}
               {success && (
                 <div className="p-3 bg-green-500/20 border border-green-500/50 rounded-md text-green-200 text-sm">
                   {success}
                 </div>
               )}
 
-              {/* SUBMIT BUTTON */}
+              {/* Submit Button */}
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full mt-4 py-2 rounded-md 
-                           bg-[#6c63ff] text-white text-sm font-semibold
-                           hover:bg-[#5b54e6] transition disabled:opacity-60"
+                className="w-full mt-4 py-2.5 rounded-md bg-[#6c63ff] text-white text-sm font-semibold hover:bg-[#5b54e6] transition disabled:opacity-60 cursor-pointer"
               >
-                {loading
-                  ? step === "login"
-                    ? "SIGNING IN..."
-                    : step === "forgot"
-                      ? "SENDING OTP..."
-                      : "RESETTING..."
-                  : step === "login"
-                    ? "SIGN IN"
-                    : step === "forgot"
-                      ? "SEND OTP"
-                      : "RESET PASSWORD"}
+                {loading ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                    {step === "login" ? "SIGNING IN..." : step === "forgot" ? "SENDING OTP..." : "RESETTING..."}
+                  </span>
+                ) : (
+                  step === "login" ? "SIGN IN" : step === "forgot" ? "SEND OTP" : "RESET PASSWORD"
+                )}
               </button>
 
-              {/* BACK BUTTONS */}
+              {/* Back Buttons */}
               {(step === "forgot" || step === "otp" || step === "reset") && (
                 <div className="mt-4">
-                  <div
-                    className="text-sm text-center text-[#c9c3ff] cursor-pointer hover:text-white hover:underline transition-colors"
+                  <button
+                    type="button"
                     onClick={() => {
                       if (step === "forgot") setStep("login");
                       if (step === "otp") setStep("forgot");
@@ -394,21 +330,21 @@ const LoginPage = () => {
                       setError("");
                       setSuccess("");
                     }}
+                    className="text-sm text-center w-full text-[#c9c3ff] hover:text-white hover:underline transition-colors"
                   >
                     {step === "forgot" ? "Back to Login" : "Back"}
-                  </div>
+                  </button>
                 </div>
               )}
             </form>
           </div>
         </div>
       </div>
-
     </div>
   );
 };
 
-/* Input Component */
+// Input Component
 const Input = ({
   label,
   type = "text",
@@ -420,7 +356,7 @@ const Input = ({
   maxLength,
 }) => (
   <div>
-    <label className="text-xs text-white block mb-1">{label}</label>
+    <label className="text-xs text-white/80 block mb-1">{label}</label>
     <input
       type={type}
       name={name}
@@ -430,11 +366,7 @@ const Input = ({
       disabled={disabled}
       maxLength={maxLength}
       placeholder={placeholder}
-      className="w-full px-3 py-2 rounded text-sm
-                 bg-[#3a3763]/90 border border-white/40
-                 text-white placeholder:text-white/60
-                 focus:outline-none focus:border-white/60
-                 disabled:opacity-50 disabled:cursor-not-allowed"
+      className="w-full px-3 py-2.5 rounded-lg text-sm bg-[#3a3763] border border-white/30 text-white placeholder:text-white/50 focus:outline-none focus:border-[#6c63ff] disabled:opacity-50 disabled:cursor-not-allowed"
     />
   </div>
 );

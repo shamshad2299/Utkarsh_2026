@@ -1,6 +1,5 @@
-import React, { useState, useEffect, useRef } from "react";
-import { ArrowLeft, User, Mail, Phone, MapPin, Lock, Eye, EyeOff, CheckCircle, X } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import React, { useState, useEffect } from "react";
+import { ArrowLeft, User, Mail, Phone, MapPin, Lock, Eye, EyeOff } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../Context/AuthContext";
 
@@ -26,48 +25,11 @@ const RegistrationPage = ({
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-
   const [showGuidelines, setShowGuidelines] = useState(false);
   const [guidelinesRead, setGuidelinesRead] = useState(false);
-  const [needsScroll, setNeedsScroll] = useState(false);
-
-  const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [generatedUserId, setGeneratedUserId] = useState("");
-  const [show, setShow] = useState(false);
-
-  const guidelinesRef = useRef(null);
-
-  useEffect(() => {
-    const t = setTimeout(() => setShow(true), 120);
-    return () => clearTimeout(t);
-  }, []);
-
-  useEffect(() => {
-    const esc = (e) => {
-      if (e.key === "Escape") {
-        setShowSuccessModal(false);
-        setShowGuidelines(false);
-      }
-    };
-    window.addEventListener("keydown", esc);
-    return () => window.removeEventListener("keydown", esc);
-  }, []);
-
-  useEffect(() => {
-    if (showGuidelines && guidelinesRef.current) {
-      const el = guidelinesRef.current;
-      if (el.scrollHeight > el.clientHeight) {
-        setNeedsScroll(true);
-        setGuidelinesRead(false);
-      } else {
-        setNeedsScroll(false);
-        setGuidelinesRead(true);
-      }
-    }
-  }, [showGuidelines]);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -76,15 +38,12 @@ const RegistrationPage = ({
       [name]: type === "checkbox" ? checked : value,
     }));
     setError("");
-    setSuccess("");
   };
 
   const handleRegister = async (e) => {
     e.preventDefault();
     setError("");
-    setSuccess("");
 
-    // Validation
     const {
       name,
       email,
@@ -98,17 +57,7 @@ const RegistrationPage = ({
       agreed,
     } = formData;
 
-    if (
-      !name ||
-      !email ||
-      !mobile_no ||
-      !city ||
-      !gender ||
-      !college ||
-      !course ||
-      !password ||
-      !confirmPassword
-    ) {
+    if (!name || !email || !mobile_no || !city || !gender || !college || !course || !password || !confirmPassword) {
       setError("All required fields must be provided");
       return;
     }
@@ -142,13 +91,8 @@ const RegistrationPage = ({
         confirmPassword,
       });
 
-      console.log("Registration response:", response);
-
       if (response.success) {
-        setSuccess("Registration successful!");
-        setGeneratedUserId(response.data?.userId || "");
-        setShowSuccessModal(true);
-        
+        setGeneratedUserId(response.data?.userId || "VSVT26001");
         // Reset form
         setFormData({
           name: "",
@@ -162,9 +106,10 @@ const RegistrationPage = ({
           confirmPassword: "",
           agreed: false,
         });
+        // Navigate to login after successful registration
+        setTimeout(() => navigate("/login"), 2000);
       }
     } catch (err) {
-      console.error("Registration failed", err);
       setError(
         err.response?.data?.message ||
           err.response?.data?.error ||
@@ -175,74 +120,45 @@ const RegistrationPage = ({
     }
   };
 
-  const handleGuidelinesScroll = (e) => {
-    const { scrollTop, scrollHeight, clientHeight } = e.target;
-    if (scrollTop + clientHeight >= scrollHeight - 5) {
-      setGuidelinesRead(true);
-    }
-  };
-
-  const handleGuidelineAgree = () => {
-    if (needsScroll && !guidelinesRead) {
-      alert("Please scroll till the end to accept guidelines");
-      return;
-    }
-    setFormData((p) => ({ ...p, agreed: true }));
-    setShowGuidelines(false);
-  };
-
   const handleBackToHome = () => {
     navigate("/");
   };
 
-  const handleLoginRedirect = () => {
-    setShowSuccessModal(false);
-    navigate("/login");
+  const handleGuidelineAgree = () => {
+    setFormData((p) => ({ ...p, agreed: true }));
+    setShowGuidelines(false);
   };
 
   return (
-    <div className="min-h-screen relative overflow-hidden bg-gradient-to-br from-[#010103] via-[#241f4a] to-[#0b0618]">
+    <div className="min-h-screen bg-gradient-to-br from-[#010103] via-[#241f4a] to-[#0b0618]">
       {/* Home Button */}
       <button
         onClick={handleBackToHome}
-        className="absolute top-6 left-6 flex items-center gap-2 text-white/80 hover:text-white z-20 transition-colors"
+        className="absolute top-6 left-6 flex items-center gap-2 text-white/80 hover:text-white z-10 transition-colors cursor-pointer"
       >
         <ArrowLeft size={20} />
         <span className="tracking-widest font-semibold">Home</span>
       </button>
 
       {/* Main Content */}
-      <div className="relative z-10 flex items-center justify-center min-h-screen px-4 py-16 md:py-20">
+      <div className="flex items-center justify-center min-h-screen px-4 py-16 md:py-20">
         <div className="relative w-full max-w-4xl">
           {/* Registration Card */}
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: show ? 1 : 0, y: show ? 0 : 30 }}
-            transition={{ duration: 0.7 }}
-            className="w-full rounded-2xl bg-gradient-to-br from-[#241f4a]/95 via-[#2b255f]/95 to-[#1b1738]/95 backdrop-blur-md border border-white/20 shadow-[0_20px_60px_rgba(0,0,0,0.8)] p-6 md:p-8"
-          >
+          <div className="w-full rounded-2xl bg-[#241f4a] bg-opacity-90 border border-white/20 shadow-lg p-6 md:p-8">
             {/* Header */}
             <div className="text-center mb-6">
               <h1 className="text-3xl md:text-4xl font-semibold text-[#e4e1ff]">
                 {title}
               </h1>
-              <p className="text-base text-[#c9c3ff] milonga mt-1">
+              <p className="text-base text-[#c9c3ff] mt-1">
                 {subtitle}
               </p>
             </div>
 
-            {/* Error/Success Messages */}
+            {/* Error Message */}
             {error && (
-              <div className="mb-4 p-3 bg-red-500/20 border border-red-500/50 rounded-lg text-red-200 text-sm flex items-center gap-2">
-                <X size={16} className="flex-shrink-0" />
-                <span>{error}</span>
-              </div>
-            )}
-
-            {success && !showSuccessModal && (
-              <div className="mb-4 p-3 bg-green-500/20 border border-green-500/50 rounded-lg text-green-200 text-sm flex items-center gap-2">
-                <CheckCircle size={16} className="flex-shrink-0" />
-                <span>{success}</span>
+              <div className="mb-4 p-3 bg-red-500/20 border border-red-500/50 rounded-lg text-red-200 text-sm">
+                {error}
               </div>
             )}
 
@@ -283,7 +199,6 @@ const RegistrationPage = ({
                   onChange={handleChange}
                   placeholder="Enter 10-digit mobile"
                   maxLength="10"
-                  pattern="[0-9]*"
                   disabled={loading}
                   required
                 />
@@ -307,14 +222,14 @@ const RegistrationPage = ({
                     name="gender"
                     value={formData.gender}
                     onChange={handleChange}
-                    className="w-full px-3 py-3 rounded-lg text-sm bg-[#3a3763]/90 border border-white/40 text-white placeholder:text-white/60 focus:outline-none focus:border-[#6c63ff]"
+                    className="w-full px-3 py-3 rounded-lg text-sm bg-[#3a3763] border border-white/40 text-white focus:outline-none focus:border-[#6c63ff]"
                     disabled={loading}
                     required
                   >
-                    <option value="" className="bg-[#2b255f] text-white">Select Gender</option>
-                    <option value="Male" className="bg-[#2b255f] text-white">Male</option>
-                    <option value="Female" className="bg-[#2b255f] text-white">Female</option>
-                    <option value="Other" className="bg-[#2b255f] text-white">Other</option>
+                    <option value="" className="bg-[#2b255f]">Select Gender</option>
+                    <option value="Male" className="bg-[#2b255f]">Male</option>
+                    <option value="Female" className="bg-[#2b255f]">Female</option>
+                    <option value="Other" className="bg-[#2b255f]">Other</option>
                   </select>
                 </div>
 
@@ -343,58 +258,28 @@ const RegistrationPage = ({
                 />
 
                 {/* Password */}
-                <div className="space-y-1">
-                  <label className="text-xs text-white/80">Password</label>
-                  <div className="relative">
-                    <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/60">
-                      <Lock size={16} />
-                    </div>
-                    <input
-                      type={showPassword ? "text" : "password"}
-                      name="password"
-                      value={formData.password}
-                      onChange={handleChange}
-                      placeholder="At least 8 characters"
-                      className="w-full px-3 py-3 rounded-lg text-sm bg-[#3a3763]/90 border border-white/40 text-white placeholder:text-white/60 focus:outline-none focus:border-[#6c63ff] pl-10"
-                      disabled={loading}
-                      required
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-white/60 hover:text-white"
-                    >
-                      {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                    </button>
-                  </div>
-                </div>
+                <PasswordInput
+                  label="Password"
+                  name="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  placeholder="At least 8 characters"
+                  showPassword={showPassword}
+                  setShowPassword={setShowPassword}
+                  disabled={loading}
+                />
 
                 {/* Confirm Password */}
-                <div className="space-y-1">
-                  <label className="text-xs text-white/80">Confirm Password</label>
-                  <div className="relative">
-                    <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/60">
-                      <Lock size={16} />
-                    </div>
-                    <input
-                      type={showConfirmPassword ? "text" : "password"}
-                      name="confirmPassword"
-                      value={formData.confirmPassword}
-                      onChange={handleChange}
-                      placeholder="Confirm password"
-                      className="w-full px-3 py-3 rounded-lg text-sm bg-[#3a3763]/90 border border-white/40 text-white placeholder:text-white/60 focus:outline-none focus:border-[#6c63ff] pl-10"
-                      disabled={loading}
-                      required
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-white/60 hover:text-white"
-                    >
-                      {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                    </button>
-                  </div>
-                </div>
+                <PasswordInput
+                  label="Confirm Password"
+                  name="confirmPassword"
+                  value={formData.confirmPassword}
+                  onChange={handleChange}
+                  placeholder="Confirm password"
+                  showPassword={showConfirmPassword}
+                  setShowPassword={setShowConfirmPassword}
+                  disabled={loading}
+                />
               </div>
 
               {/* Rules & Guidelines Checkbox */}
@@ -423,7 +308,7 @@ const RegistrationPage = ({
                 <button
                   type="submit"
                   disabled={loading}
-                  className="px-8 py-3 rounded-lg bg-[#6c63ff] text-white text-sm font-semibold hover:bg-[#5b54e6] transition disabled:opacity-60 flex items-center justify-center gap-2 mx-auto min-w-[200px]"
+                  className="px-8 py-3 rounded-lg bg-[#6c63ff] text-white text-sm font-semibold hover:bg-[#5b54e6] transition disabled:opacity-60 flex items-center justify-center gap-2 mx-auto min-w-[200px] cursor-pointer"
                 >
                   {loading ? (
                     <>
@@ -447,150 +332,59 @@ const RegistrationPage = ({
                 </span>
               </div>
             </form>
-          </motion.div>
+          </div>
         </div>
       </div>
 
-      {/* Rules & Guidelines Modal */}
-      <AnimatePresence>
-        {showGuidelines && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 px-4 py-8"
-          >
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-gradient-to-br from-[#241f4a] to-[#1b1738] rounded-2xl p-6 max-w-2xl w-full border border-white/20"
-            >
-              <h2 className="text-xl font-semibold text-[#e4e1ff] mb-4">
-                Rules & Guidelines
-              </h2>
+      {/* Guidelines Modal - Simple */}
+      {showGuidelines && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 px-4 py-8">
+          <div className="bg-[#241f4a] rounded-2xl p-6 max-w-2xl w-full border border-white/20">
+            <h2 className="text-xl font-semibold text-[#e4e1ff] mb-4">
+              Rules & Guidelines
+            </h2>
 
-              <div
-                ref={guidelinesRef}
-                onScroll={needsScroll ? handleGuidelinesScroll : undefined}
-                className="max-h-[50vh] overflow-y-auto text-sm text-white/80 space-y-4 pr-2"
+            <div className="max-h-[50vh] overflow-y-auto text-sm text-white/80 space-y-4 pr-2">
+              <p>1. The registration portal for all the events is provided on the UTKARSH-2026 website. Participants must register online for the category they wish to participate in.</p>
+              <p>2. Interested colleges or institutions are requested to confirm their participation team list through email, latest by FEBRUARY 21, 2026.</p>
+              <p>3. The participating teams must report at BBDEG Campus, Lucknow for in-person registration on FEBRUARY 22, 2026 from 12:30 PM to 06:00 PM at the Registration Help Desks set up on campus.</p>
+              <p>4. The remaining instructions will be given to the participants at the Registration Help Desk.</p>
+              <p>5. All teams are mandatorily required to carry the following documents. Failing to do so may result in denial of registration:</p>
+              <ul className="list-disc ml-6 space-y-2">
+                <li>Authority Letter issued by the Director/Principal/Dean of the respective Institute/College/Faculty with the name of all participants.</li>
+                <li>Institute/College Identity Cards & Copy of Aadhar Card and Two passport size recent colored photographs. The registration fee is Rs. 200/- for external students per participants.</li>
+                <li>Fooding & lodging charges (if opted for): Rs. 1000/- per participants for external students for entire event.</li>
+              </ul>
+            </div>
+
+            <div className="mt-4 flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={guidelinesRead}
+                onChange={() => setGuidelinesRead(!guidelinesRead)}
+                className="accent-[#6c63ff]"
+              />
+              <span className="text-sm text-white/80">I have read the guidelines</span>
+            </div>
+
+            <div className="mt-6 flex justify-end gap-3">
+              <button
+                onClick={() => setShowGuidelines(false)}
+                className="px-4 py-2 rounded-lg bg-gray-700 text-white hover:bg-gray-600 transition-colors text-sm"
               >
-                <p>
-                  1. The registration portal for all the events is provided on the
-                  UTKARSH-2026 website. Participants must register online for the
-                  category they wish to participate in.
-                </p>
-
-                <p>
-                  2. Interested colleges or institutions are requested to confirm their
-                  participation team list through email, latest by FEBRUARY 21, 2026.
-                </p>
-
-                <p>
-                  3. The participating teams must report at BBDEG Campus, Lucknow for
-                  in-person registration on FEBRUARY 22, 2026 from 12:30 PM to 06:00 PM
-                  at the Registration Help Desks set up on campus.
-                </p>
-
-                <p>
-                  4. The remaining instructions will be given to the participants at
-                  the Registration Help Desk.
-                </p>
-
-                <p>
-                  5. All teams are mandatorily required to carry the following documents.
-                  Failing to do so may result in denial of registration:
-                </p>
-
-                <ul className="list-disc ml-6 space-y-2">
-                  <li>Authority Letter issued by the Director/Principal/Dean of the respective Institute/College/Faculty with the name of all participants.</li>
-                  <li>Institute/College Identity Cards & Copy of Aadhar Card and Two passport size recent colored photographs. The registration fee is Rs. 200/- for external students per participants.</li>
-                  <li>Fooding & lodging charges (if opted for): Rs. 1000/- per participants for external students for entire event.</li>
-                </ul>
-              </div>
-
-              <div className="mt-4 flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  checked={guidelinesRead}
-                  onChange={() => setGuidelinesRead(!guidelinesRead)}
-                  className="accent-[#6c63ff]"
-                />
-                <span className="text-sm text-white/80">I have read till the end</span>
-              </div>
-
-              <div className="mt-6 flex justify-end gap-3">
-                <button
-                  onClick={() => setShowGuidelines(false)}
-                  className="px-4 py-2 rounded-lg bg-gray-700 text-white hover:bg-gray-600 transition-colors text-sm"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleGuidelineAgree}
-                  disabled={needsScroll && !guidelinesRead}
-                  className="px-4 py-2 rounded-lg bg-[#6c63ff] text-white hover:bg-[#5b54e6] disabled:opacity-50 disabled:cursor-not-allowed transition-all text-sm"
-                >
-                  I Agree
-                </button>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Success Modal */}
-      <AnimatePresence>
-        {showSuccessModal && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 px-4"
-          >
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-gradient-to-br from-[#241f4a] to-[#1b1738] rounded-2xl p-6 text-center max-w-sm w-full border border-white/20"
-            >
-              <div className="text-4xl mb-3">🎉</div>
-              <h2 className="text-xl font-semibold text-[#e4e1ff] mb-1">
-                Registration Successful!
-              </h2>
-              <p className="text-sm text-white/80 mb-4">
-                Your account has been created successfully
-              </p>
-              
-              <div className="mb-4 p-3 bg-[#3a3763]/50 rounded-lg border border-white/20">
-                <p className="text-xs text-white/80 mb-1">Your Utkarsh ID is:</p>
-                <p className="text-xl font-bold text-[#6c63ff] tracking-wider">
-                  {generatedUserId || "VSVT26001"}
-                </p>
-              </div>
-
-              <p className="text-xs text-white/60 mb-4">
-                Please save your Utkarsh ID. You'll need it to login.
-              </p>
-
-              <div className="flex flex-col gap-2">
-                <button
-                  onClick={handleLoginRedirect}
-                  className="w-full py-2 rounded-lg bg-[#6c63ff] text-white font-semibold hover:bg-[#5b54e6] transition-all text-sm"
-                >
-                  Go to Login
-                </button>
-                <button
-                  onClick={() => setShowSuccessModal(false)}
-                  className="w-full py-2 rounded-lg bg-gray-700 text-white font-semibold hover:bg-gray-600 transition-colors text-sm"
-                >
-                  Close
-                </button>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+                Cancel
+              </button>
+              <button
+                onClick={handleGuidelineAgree}
+                disabled={!guidelinesRead}
+                className="px-4 py-2 rounded-lg bg-[#6c63ff] text-white hover:bg-[#5b54e6] disabled:opacity-50 disabled:cursor-not-allowed transition-all text-sm"
+              >
+                I Agree
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
@@ -607,7 +401,6 @@ const Input = ({
   disabled,
   required,
   maxLength,
-  pattern,
 }) => (
   <div className="space-y-1">
     <label className="text-xs text-white/80">{label}</label>
@@ -625,12 +418,49 @@ const Input = ({
         required={required}
         placeholder={placeholder}
         maxLength={maxLength}
-        pattern={pattern}
         disabled={disabled}
-        className={`w-full px-3 py-3 rounded-lg text-sm bg-[#3a3763]/90 border border-white/40 text-white placeholder:text-white/60 focus:outline-none focus:border-[#6c63ff] ${
+        className={`w-full px-3 py-3 rounded-lg text-sm bg-[#3a3763] border border-white/40 text-white placeholder:text-white/60 focus:outline-none focus:border-[#6c63ff] ${
           icon ? "pl-10" : "pl-3"
         }`}
       />
+    </div>
+  </div>
+);
+
+// Password Input Component
+const PasswordInput = ({
+  label,
+  name,
+  value,
+  onChange,
+  placeholder,
+  showPassword,
+  setShowPassword,
+  disabled,
+}) => (
+  <div className="space-y-1">
+    <label className="text-xs text-white/80">{label}</label>
+    <div className="relative">
+      <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/60">
+        <Lock size={16} />
+      </div>
+      <input
+        type={showPassword ? "text" : "password"}
+        name={name}
+        value={value}
+        onChange={onChange}
+        placeholder={placeholder}
+        className="w-full px-3 py-3 rounded-lg text-sm bg-[#3a3763] border border-white/40 text-white placeholder:text-white/60 focus:outline-none focus:border-[#6c63ff] pl-10"
+        disabled={disabled}
+        required
+      />
+      <button
+        type="button"
+        onClick={() => setShowPassword(!showPassword)}
+        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-white/60 hover:text-white"
+      >
+        {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+      </button>
     </div>
   </div>
 );
