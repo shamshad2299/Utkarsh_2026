@@ -154,7 +154,8 @@ const handleNavClick = (item) => {
             ) : (
               <Link
                 to="/login"
-                className="hidden md:inline-flex bg-white text-[#050214] px-5 md:px-6 py-2 rounded-full font-bold text-sm hover:bg-gray-200 transition active:scale-95"
+                className="hidden md:inline-flex bg-[#7070DE] text-white px-5 md:px-6 py-2 rounded-2xl font-bold text-sm hover:bg-gray-200 transition active:scale-95"
+                style={{ fontFamily: "poppins" }}
               >
                 Login
               </Link>
@@ -222,7 +223,7 @@ const handleNavClick = (item) => {
             ) : (
               <Link
                 to="/login"
-                className="md:hidden inline-flex justify-center bg-white text-[#050214] px-8 py-2 rounded-full font-bold text-sm text-center active:scale-95 transition"
+                className="md:hidden inline-flex justify-center bg-[#7070DE] text-white  px-8 py-2 rounded-full font-bold text-sm text-center active:scale-95 transition"
               >
                 Login
               </Link>

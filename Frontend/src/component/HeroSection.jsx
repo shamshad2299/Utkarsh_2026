@@ -10,13 +10,12 @@ const HeroSection = ({ onRegister }) => {
 
   return (
     <section className="relative z-10 ">
-
-        {/* Background Glow */}
-        <div className="absolute inset-0 pointer-events-none z-0">
+      {/* Background Glow */}
+      <div className="absolute inset-0 pointer-events-none z-0">
           <BackgroundGlow />
-        </div>
+      </div>
 
-      <div className="px-4 sm:px-12 py-6 md:mt-[42px] lg:-mt-[0px] flex flex-col md:flex-row items-center justify-between md:gap-12 sm:gap-6 gap-6">
+      <div className="px-4 sm:px-12 py-6 md:mt-10.5 lg:mt-0 flex flex-col md:flex-row items-center justify-between md:gap-12 sm:gap-6 gap-6">
 
         {/* Left Content */}
         <div className="w-full md:w-1/2 flex justify-center md:justify-start">
@@ -45,8 +44,6 @@ const HeroSection = ({ onRegister }) => {
       <div className=" bottom-0 left-0 right-0 pointer-events-none z-20 ">
         <MonumentBottom />
       </div>
-
-
     </section>
   );
 };
