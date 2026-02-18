@@ -1,23 +1,17 @@
 import React, { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import rulebookPdf from "../assets/newrulebook.pdf";
-import schedulePdf from "../assets/sch.pdf"; // ✅ ADD THIS
+import schedulePdf from "../assets/sch.pdf";  
 import footGrid from "../assets/foot.svg";
 import mapImage from "../assets/bbd_map.webp";
-
-import m1 from "../assets/monument-1.svg";
-import m2 from "../assets/monument-2.svg";
-import m3 from "../assets/monument-3.svg";
-import m4 from "../assets/monument-4.svg";
-import m5 from "../assets/monument-5.svg";
-import m6 from "../assets/monument-6.svg";
+import MonumentBottom from "../component/MonumentBottom";
+import bbd_logo from "../assets/bbd-logo.png";
 
 const FooterSection = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [showMap, setShowMap] = useState(false);
 
-  const monuments = [m1, m5, m2, m3, m4, m5, m2, m6];
 
   const scrollOrNavigate = (sectionId) => {
     if (location.pathname === "/") {
@@ -36,9 +30,9 @@ const FooterSection = () => {
         />
         <div className="absolute inset-0 bg-[#1a0b3d]/80" />
 
-        <div className="relative z-10 w-full px-4 sm:px-8 lg:px-24 pt-24">
+        <div className="relative z-10 w-full px-4 sm:px-8 md:mb-60 lg:px-24 pt-24">
           {/* DESKTOP */}
-          <div className="hidden md:grid grid-cols-5 gap-12 md:gap-16">
+          <div className="hidden md:grid grid-cols-5   ">
             <div>
               <h4 className="text-white font-semibold text-2xl mb-6">Pages</h4>
               <ul className="space-y-3 text-base sm:text-lg">
@@ -135,13 +129,18 @@ const FooterSection = () => {
               </ul>
             </div>
 
-            <div>
-              <h3 className="text-2xl font-bold text-white mb-4">
-                BBD <span className="text-blue-400">GROUP</span>
-              </h3>
-              <p className="text-base sm:text-lg mb-1">0522 619 6222</p>
-              <p className="text-base sm:text-lg">info@bbdu.org</p>
-            </div>
+              <div className="flex flex-col items-center text-right">
+                <img
+                  src={bbd_logo}
+                  alt="BBD Logo"
+                  className="h-10 w-auto object-contain cursor-pointer"
+                  onClick={() => navigate("/")}
+                />
+
+                <p className="text-sm mt-1">0522 619 6222</p>
+                <p className="text-sm">info@bbdu.org</p>
+              </div>
+                  
 
             <div className="md:text-right">
               <p className="text-base sm:text-lg">Ayodhya Road, Lucknow,</p>
@@ -152,8 +151,6 @@ const FooterSection = () => {
                 className="mt-6 underline cursor-pointer text-base sm:text-lg hover:text-white transition"
               >
                 Event Map
-                <br />
-                View Map
               </p>
 
               <div className="mt-4 flex md:justify-end">
@@ -168,7 +165,7 @@ const FooterSection = () => {
           </div>
 
           {/* MOBILE */}
-          <div className="md:hidden flex flex-col min-h-[calc(100vh-120px)] pb-[300px]">
+          <div className="md:hidden flex flex-col min-h-[calc(100vh-120px)] pb-50">
             <div className="grid grid-cols-3 gap-5">
               <div>
                 <h4 className="text-white font-semibold text-lg mb-4">Pages</h4>
@@ -259,13 +256,22 @@ const FooterSection = () => {
               </div>
             </div>
 
-            <div className="mt-10 grid grid-cols-2 gap-6">
-              <div>
-                <h3 className="text-lg font-bold text-white mb-3">
-                  BBD <span className="text-blue-400">GROUP</span>
-                </h3>
-                <p className="text-sm mb-1">0522 619 6222</p>
-                <p className="text-sm">info@bbdu.org</p>
+            <div className="mt-10 grid grid-cols-2 ">
+              <div className="text-right flex ">
+                <div className="flex items-center justify-center h-full w-full ">
+                    <img
+                      src={bbd_logo}
+                      alt="BBD Logo"
+                      className="object-cover h-10 w-auto cursor-pointer overflow-visible"
+                      onClick={() => navigate("/")}
+                    />
+                </div>
+                <div className="flex items-center justify-center mx-3">
+                  <div className="text-center">
+                    <p className="text-sm ">0522 619 6222</p>
+                    <p className="text-sm">info@bbdu.org</p>
+                  </div>
+                </div>
               </div>
 
               <div className="text-right">
@@ -277,8 +283,6 @@ const FooterSection = () => {
                   className="mt-3 underline cursor-pointer text-sm hover:text-white transition"
                 >
                   Campus Map
-                  <br />
-                  View Map
                 </p>
               </div>
             </div>
@@ -296,23 +300,17 @@ const FooterSection = () => {
         </div>
 
         {/* MONUMENTS */}
-        <div className="absolute left-0 right-0 bottom-0 z-10 w-full pointer-events-none">
-          <div className="w-full overflow-hidden">
-            <div className="flex flex-nowrap items-end justify-between w-full opacity-90 overflow-hidden translate-y-0">
-              {monuments.map((img, idx) => (
-                <img
-                  key={idx}
-                  src={img}
-                  alt={`Monument ${idx + 1}`}
-                  className="h-28 sm:h-32 md:h-40 lg:h-48 object-contain shrink-0"
-                />
-              ))}
+         <div className="absolute left-0 right-0 bottom-0 z-10 w-full pointer-events-none md:mt-1000">
+          <div className="w-full overflow-hidden  ">
+            {/* Monument Bottom - Always bottom 0 */}
+            <div className=" bottom-0 left-0 right-0 pointer-events-none z-20 ">
+              <MonumentBottom />
             </div>
-          </div>
+          </div> 
 
-          <div className="text-center pb-10 px-4 overflow-hidden">
+          <div className="text-center px-4 overflow-hidden">
             <h1
-              className="text-[30px] sm:text-[8vw] md:text-[9vw] font-extrabold tracking-widest text-white/30 select-none whitespace-nowrap"
+              className="text-[40px] sm:text-[8vw] md:text-[9vw] font-extrabold tracking-widest text-[#C8ABFE]/70 opacity-70 select-none whitespace-nowrap"
               style={{ fontFamily: "Poppins, sans-serif" }}
             >
               # UTKARSH 2026

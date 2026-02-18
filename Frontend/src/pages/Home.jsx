@@ -8,7 +8,6 @@ import Footer from "../component/Footer";
 
 import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
-import Line from "../assets/Vector_63.png";
 
 const Home = () => {
   const location = useLocation();

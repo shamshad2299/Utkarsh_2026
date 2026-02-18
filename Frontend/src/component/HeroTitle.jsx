@@ -29,7 +29,7 @@ const HeroTitle = () => {
 
         {/* Date */}
         <p
-          className="mt-4 text-[#e7e7fb] font-medium text-[16px] sm:text-[18px] md:text-[22px]"
+          className="mt-2 text-[#e7e7fb] font-medium text-[16px] sm:text-[18px] md:text-[22px]"
           style={{ fontFamily: "Milonga" }}
         >
           26–28 February 2026
