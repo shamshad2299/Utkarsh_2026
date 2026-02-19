@@ -2,7 +2,6 @@ import monumentsAll from "../assets/mmm.svg";
 
 const MonumentBottom = () => {
 
-  console.log("MonumentBottom component rendered");
   return (
     <div className="relative w-full overflow-hidden min-h-[190px]">
       
