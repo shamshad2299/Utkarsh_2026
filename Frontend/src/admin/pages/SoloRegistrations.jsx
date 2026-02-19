@@ -53,6 +53,7 @@ const SoloRegistrations = () => {
       });
       
       setRegistrations(response.data.data);
+      console.log("Fetched solo registrations:", response.data.data);
     } catch (error) {
       console.error("Error fetching solo registrations:", error);
     } finally {

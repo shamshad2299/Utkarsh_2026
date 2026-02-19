@@ -282,7 +282,7 @@ const FooterSection = () => {
                   onClick={() => setShowMap(true)}
                   className="mt-3 underline cursor-pointer text-sm hover:text-white transition"
                 >
-                  Campus Map
+                  Event Map
                 </p>
               </div>
             </div>
@@ -310,7 +310,7 @@ const FooterSection = () => {
 
           <div className="text-center px-4 overflow-hidden">
             <h1
-              className="text-[40px] sm:text-[8vw] md:text-[9vw] font-extrabold tracking-widest text-[#C8ABFE]/70 opacity-70 select-none whitespace-nowrap"
+              className="text-[7vh] sm:text-[9vw] md:text-[9vw] lg:text-[9vw] font-extrabold tracking-wide sm:tracking-widest text-[#C8ABFE]/70 opacity-70 select-none whitespace-normal sm:whitespace-nowrap"
               style={{ fontFamily: "Poppins, sans-serif" }}
             >
               # UTKARSH 2026

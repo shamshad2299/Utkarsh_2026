@@ -14,14 +14,14 @@ const LogoutButton = () => {
   return (
     <button
       onClick={handleClick}
-      className="flex items-center justify-between 
-                 bg-white border border-red-200
-                 rounded-2xl shadow-xl 
-                 px-6 py-3 sm:px-8 sm:py-4
-                 min-w-[240px] sm:min-w-[280px] md:min-w-[320px]
-                 hover:scale-105 active:scale-95
-                 transition-all duration-300
-                 cursor-pointer mr-20"
+      className="flex  items-center justify-between bg-white rounded-2xl shadow-xl hover:scale-105 transition-transform active:scale-95 cursor-pointer"
+      style={{
+        paddingLeft: "clamp(18px, 3vw, 40px)",
+        paddingRight: "clamp(12px, 1.6vw, 16px)",
+        paddingTop: "clamp(12px, 1.8vw, 16px)",
+        paddingBottom: "clamp(12px, 1.8vw, 16px)",
+        minWidth: "clamp(200px, 28vw, 340px)",
+      }}
     >
       <span
         className="text-red-600 text-lg sm:text-xl md:text-2xl font-semibold"
