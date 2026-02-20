@@ -3,7 +3,7 @@ import edmImage from "../assets/edm.png";
 
 const EdmPage = () => {
   return (
-    <section className="relative w-full pt-6 pb-10 sm:pt-10 sm:pb-16 flex items-center justify-center overflow-hidden text-white px-6">
+    <section className="relative w-full pt-6 pb-10 sm:pt-10 sm:pb-16 flex items-center justify-center overflow-hidden text-white px-6 ">
       
       {/* BASE BG */}
       <div className="absolute inset-0 bg-[#080131]" />

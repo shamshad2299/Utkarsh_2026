@@ -81,27 +81,10 @@ const showErrorToast = (message) => {
 };
 
 // ================ CONFIRMATION MODAL - SIMPLIFIED BUT SAME STYLING ================
-const showUnenrollConfirmation = async (eventTitle) => {
+const showUnenrollConfirmation = async () => {
   const result = await Swal.fire({
     title: "Are you sure?",
-    html: `
-      <div style="text-align: center; padding: 10px;">
-        <div style="font-size: 48px; margin-bottom: 20px;">⚠️</div>
-        <p style="color: #1a1a3e; font-size: 18px; margin-bottom: 15px; font-weight: 500;">
-          You are about to unenroll from:
-        </p>
-        <div style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); 
-                    padding: 16px; border-radius: 14px; margin: 15px 0;
-                    box-shadow: 0 10px 25px -5px rgba(239, 68, 68, 0.3);">
-          <p style="color: white; font-size: 20px; font-weight: bold; margin: 0;">
-            ${eventTitle}
-          </p>
-        </div>
-        <p style="color: #4b5563; font-size: 15px; margin-top: 20px;">
-          This action cannot be undone.
-        </p>
-      </div>
-    `,
+    
     icon: "warning",
     iconColor: "#ef4444",
     showCancelButton: true,

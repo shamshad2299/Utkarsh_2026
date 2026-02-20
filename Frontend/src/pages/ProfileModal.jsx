@@ -51,7 +51,6 @@ const ProfileModal = ({ isOpen, onClose, authUser, registrations, loadingRegistr
         >
           <X className="w-5 h-5" />
         </button>
-
         <div className="p-6">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Left Column - Profile Card */}
@@ -68,7 +67,7 @@ const ProfileModal = ({ isOpen, onClose, authUser, registrations, loadingRegistr
                   <h2 className="text-3xl font-serif text-[#4b4b7a] mb-1 text-center">
                     {authUser.name || "User"}
                   </h2>
-                  <p className="text-[#babad2] text-sm mb-6 text-center">
+                  <p className="text-[#1b1bbe] font-bold text-sm mb-6 text-center">
                     {authUser.userId ||
                       `UTK26-${(authUser._id || "").slice(-5).toUpperCase()}`}
                   </p>
@@ -162,7 +161,7 @@ const ProfileModal = ({ isOpen, onClose, authUser, registrations, loadingRegistr
                   </div>
                 ) : (
                   <div className="space-y-4 max-h-[400px] overflow-y-auto  no-scrollbar pr-2">
-                    {registrations.map((registration, index) => {
+                    {registrations.map((registration) => {
                       const event = registration?.eventId;
                       if (!event) return null;
 

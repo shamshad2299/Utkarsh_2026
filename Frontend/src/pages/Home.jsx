@@ -45,17 +45,17 @@ const Home = () => {
       </section>
 
       {/* ================= GALLERY ================= */}
-      <section id="schedule" className="scroll-mt-28 pt-20">
+      <section id="schedule" className="scroll-mt-28 ">
         <EventGallerySection />
       </section>
 
       {/* ================= EDM ================= */}
-      <section className="scroll-mt-28 pb-10">
+      <section className="scroll-mt-28">
         <EDM />
       </section>
 
       {/* ================= TEAM ================= */}
-      <section id="team" className="scroll-mt-20 py-10">
+      <section id="team" className="scroll-mt-20 pb-5">
         <TeamSection />
       </section>
 

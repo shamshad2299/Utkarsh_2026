@@ -30,7 +30,7 @@ const FooterSection = () => {
         />
         <div className="absolute inset-0 bg-[#1a0b3d]/80" />
 
-        <div className="relative z-10 w-full px-4 sm:px-8 md:mb-60 lg:px-24 pt-24">
+        <div className="relative z-10 w-full px-4 sm:px-8 md:mb-60 lg:px-15 pt-15">
           {/* DESKTOP */}
           <div className="hidden md:grid grid-cols-5   ">
             <div>
@@ -136,7 +136,6 @@ const FooterSection = () => {
                   className="h-10 w-auto object-contain cursor-pointer"
                   onClick={() => navigate("/")}
                 />
-
                 <p className="text-sm mt-1">0522 619 6222</p>
                 <p className="text-sm">info@bbdu.org</p>
               </div>
@@ -257,8 +256,8 @@ const FooterSection = () => {
             </div>
 
             <div className="mt-10 grid grid-cols-2 ">
-              <div className="text-right flex ">
-                <div className="flex items-center justify-center h-full w-full ">
+              <div className="text-right  flex max-sm:flex-col ">
+                <div className=" items-center justify-center h-full w-full ">
                     <img
                       src={bbd_logo}
                       alt="BBD Logo"
@@ -310,7 +309,7 @@ const FooterSection = () => {
 
           <div className="text-center px-4 overflow-hidden">
             <h1
-              className="text-[7vh] sm:text-[9vw] md:text-[9vw] lg:text-[9vw] font-extrabold tracking-wide sm:tracking-widest text-[#C8ABFE]/70 opacity-70 select-none whitespace-normal sm:whitespace-nowrap"
+              className="text-2xl sm:text-[9vw] md:text-[9vw] lg:text-[9vw] font-extrabold tracking-wide sm:tracking-widest text-[#C8ABFE]/70 opacity-70 select-none whitespace-normal sm:whitespace-nowrap"
               style={{ fontFamily: "Poppins, sans-serif" }}
             >
               # UTKARSH 2026
@@ -330,12 +329,12 @@ const FooterSection = () => {
           <div className="relative z-10 w-full max-w-5xl rounded-3xl border border-white/15 bg-white/5 backdrop-blur-2xl shadow-2xl overflow-hidden">
             <div className="flex items-center justify-between px-5 sm:px-6 py-4 border-b border-white/10">
               <h3 className="text-white text-lg sm:text-xl font-semibold text-center">
-             Places of all events are mentioned in Map (Zoom to See )
+            All event locations are marked on the map. Pinch with two fingers to zoom.
               </h3>
 
               <button
                 onClick={() => setShowMap(false)}
-                className="text-white/80 hover:text-white transition text-2xl leading-none"
+                className="text-white/80 hover:text-white transition text-2xl leading-none bg-gray-600 rounded-full p-1 absolute top-1 left-2"
               >
                 ✕
               </button>

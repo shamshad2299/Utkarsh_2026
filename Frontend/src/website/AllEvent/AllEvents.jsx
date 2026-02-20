@@ -533,17 +533,17 @@ const AllEvents = () => {
 
   // ================ RENDER ================
   return (
-    <div className="min-h-screen bg-linear-to-b from-[#080131] to-[#0a051a] text-white">
+    <div className=" bg-linear-to-b from-[#080131] to-[#0a051a] text-white">
       {/* Header */}
       <div className="relative">
-        <div className="relative w-full mx-auto py-12">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-12">
-            <div className="flex max-sm:flex-col max-sm:gap-10 items-center">
+        <div className="relative w-full mx-auto">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
+            <div className="flex max-sm:flex-col items-center">
               <div>
                 <h1 className="text-4xl md:text-5xl font-bold mb-2 bg-linear-to-r from-purple-400 via-white to-blue-400 bg-clip-text text-transparent all-events-3d">
                   All Events
                 </h1>
-                <p className="text-gray-400 text-lg milonga mt-4">
+                <p className="text-gray-400 sm:text-lg milonga mt-4 text-[12px]">
                   Discover every upcoming event across all categories. From tech
                   fests and cultural nights to competitions and workshops. Stay
                   updated, get inspired, and never miss what's coming next.
@@ -551,7 +551,7 @@ const AllEvents = () => {
               </div>
               <button
                 onClick={() => navigate("/")}
-                className="flex w-50 px-4 py-2 rounded-2xl milonga bg-white items-center gap-2 cursor-pointer text-black mb-8 transition-colors group -mt-5"
+                className="flex w-50 px-4 py-2 rounded-2xl milonga bg-white items-center gap-2 cursor-pointer text-black mb-8 transition-colors group mt-2"
               >
                 Go Back
                 <ArrowUpRight
@@ -561,21 +561,15 @@ const AllEvents = () => {
               </button>
             </div>
           </div>
-
-          <div className="flex items-center gap-4">
-            {isAuthenticated && user && <WelcomeBadge user={user} />}
-            <EventCountBadge count={filteredEvents.length} />
-          </div>
-
           {/* Search and Type Filter */}
-          <div className="w-full bg-white text-black rounded-md mt-6">
+        <div className="w-full bg-white text-black rounded-md mt-6">
             <EventSearchBar
               searchQuery={searchQuery}
               setSearchQuery={setSearchQuery}
             />
           </div>
 
-          <div className="mt-6">
+          <div className="">
             <EventTypeFilter
               selectedTypeFilter={selectedTypeFilter}
               handleTypeFilterClick={handleTypeFilterClick}
