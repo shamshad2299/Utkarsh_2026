@@ -146,7 +146,7 @@ const handleNavClick = (item) => {
 
                 <button
                   onClick={handleLogout}
-                  className="bg-red-600 hover:bg-red-700 text-white px-5 md:px-6 py-2 rounded-full font-bold text-sm transition active:scale-95"
+                  className="bg-red-600 hover:bg-red-700 text-white px-5 md:px-6 py-2 rounded-xl font-bold text-sm transition active:scale-95"
                 >
                   Logout
                 </button>
@@ -154,7 +154,7 @@ const handleNavClick = (item) => {
             ) : (
               <Link
                 to="/login"
-                className="hidden md:inline-flex bg-[#7070DE] text-white px-5 md:px-6 py-2 rounded-2xl font-bold text-sm hover:bg-gray-200 transition active:scale-95"
+                className="hidden md:inline-flex bg-[#7070DE] text-white px-5 md:px-6 py-2 rounded-xl font-bold text-sm hover:bg-gray-200 transition active:scale-95"
                 style={{ fontFamily: "poppins" }}
               >
                 Login

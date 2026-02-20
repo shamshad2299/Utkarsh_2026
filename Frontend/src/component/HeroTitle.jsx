@@ -5,7 +5,7 @@ const HeroTitle = () => {
 
         {/* Tagline */}
         <p
-          className="text-[#e7e7fb] font-medium tracking-wide leading-none mb-2 text-[18px] sm:text-[20px] md:text-[26px]"
+          className="text-[#E7E7FB] font-regular tracking-wide leading-none mb-2 text-[18px] sm:text-[20px] md:text-[26px]"
           style={{ fontFamily: "Milonga" }}
         >
           Virasat se vikas tak
@@ -13,7 +13,7 @@ const HeroTitle = () => {
 
         {/* UTKARSH */}
         <h1
-          className="bg-clip-text text-transparent bg-gradient-to-r from-[#C8ABFE] via-[#BFA6FF] to-[#7B6BFF] font-extrabold leading-[0.95] tracking-tight text-[clamp(2.8rem,8vw,96px)]"
+          className=" text-[#E0C3F2] font-[1000] leading-[0.95] tracking-tight text-[clamp(2.8rem,8vw,96px)]"
           style={{ fontFamily: "Poppins" }}
         >
           UTKARSH
@@ -21,7 +21,7 @@ const HeroTitle = () => {
 
         {/* Fest'26 */}
         <h2
-          className="bg-clip-text text-transparent bg-gradient-to-r from-[#C8ABFE] via-[#BFA6FF] to-[#7B6BFF] font-extrabold leading-[0.95] tracking-tight text-[clamp(2.8rem,8vw,96px)]"
+          className="text-[#E0C3F2] font-[1000] leading-[0.95] tracking-tight text-[clamp(2.8rem,8vw,96px)]"
           style={{ fontFamily: "Poppins" }}
         >
           Fest&apos;26
