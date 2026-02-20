@@ -34,7 +34,7 @@ const TeamManagementModal = ({ isOpen, onClose, token, user }) => {
 
       if (response.data.success) {
         const fetchedTeams = response.data.data || [];
-        console.log('Fetched teams:', fetchedTeams);
+    
         setTeams(fetchedTeams);
       }
     } catch (error) {

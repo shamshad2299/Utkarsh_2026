@@ -226,7 +226,7 @@ export default function SummaryCard() {
         Swal.fire({
           icon: 'warning',
           title: 'Note',
-          text: 'You can enroll again in this event',
+          text: 'Dont Worry! you can enrol again',
           timer: 3000,
           showConfirmButton: false
         });
@@ -505,7 +505,7 @@ export default function SummaryCard() {
           <div className="space-y-6">
             {/* Profile Card */}
             <div className="p-1">
-              <div className="bg-[#a78bfa] border-2 p-6 border-dashed border-black rounded-3xl outline-6 outline-white relative">
+              <div className="bg-[#a78bfa] border-2 p-6 border-dashed border-black rounded-3xl outline-6 outline-white relative back2">
                 {/* View Profile Button */}
                 <button
                   onClick={openModal}
@@ -535,7 +535,7 @@ export default function SummaryCard() {
                     {authUser.name || "User"}
                   </h2>
                 )}
-                <p className="text-[#6b6b8a] text-sm mb-6">
+                <p className="text-[#202051] text-sm mb-6 font-bold">
                   {authUser.userId ||
                     `UTK26-${(authUser._id || "").slice(-5).toUpperCase()}`}
                 </p>
@@ -691,7 +691,7 @@ export default function SummaryCard() {
             </div>
 
             {/* Summary Section */}
-            <div className="bg-[#a78bfa] py-8 px-4 rounded-2xl shadow relative">
+            <div className="bg-[#a78bfa] py-8 px-4 rounded-2xl shadow relative back2">
               <div className="max-w-4xl mx-auto">
                 {/* Title */}
                 <h2 className="text-2xl md:text-3xl font-semibold text-white mb-6 text-center">
@@ -731,7 +731,7 @@ export default function SummaryCard() {
             </div>
 
             {/* Additional Content - Left Side Bottom */}
-            <div className="bg-[#6b6bf1] rounded-2xl p-6">
+            <div className="bg-[#6b6bf1] rounded-2xl p-6 back"> 
               <div className="flex items-center gap-3 mb-4">
                 <Trophy className="w-6 h-6 text-white" />
                 <h3 className="text-xl font-serif text-white">Quick Stats</h3>
@@ -777,7 +777,7 @@ export default function SummaryCard() {
                 </div>
 
                 {/* Activity Streak */}
-                <div className="bg-white/20 p-4 rounded-xl">
+                <div className="bg-white/20 p-4 rounded-xl ">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <Zap className="w-4 h-4 text-yellow-300" />
@@ -813,9 +813,9 @@ export default function SummaryCard() {
           </div>
 
           {/* Right Column - Profile Dashboards */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="lg:col-span-2 space-y-6 ">
             {/* Header */}
-            <div className="bg-[#6b6bf1] rounded-3xl sm:p-6 p-2 relative">
+            <div className="back rounded-3xl sm:p-6 p-2 relative">
               <button
                 onClick={() => navigate("/")}
                 className="absolute top-6 right-6 bg-white text-[#4b4b7a] px-6 py-2 rounded-full flex items-center gap-2 hover:bg-gray-50 transition-colors font-medium cursor-pointer max-sm:hidden"
@@ -824,7 +824,7 @@ export default function SummaryCard() {
                 <ArrowRight className="w-4 h-4" />
               </button>
 
-              <h1 className="text-4xl font-serif text-white mb-2">
+              <h1 className="sm:text-4xl text-xl font-serif text-white mb-2">
                 Profile Dashboards
               </h1>
               <p className="text-white/90">
@@ -833,18 +833,18 @@ export default function SummaryCard() {
             </div>
 
             {/* Your Registered Events Section */}
-            <div className="bg-[#7c7cf5] rounded-3xl sm:p-6 p-2">
+            <div className=" rounded-3xl sm:p-6 p-2 back">
               <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-1">
                   <Calendar className="w-6 h-6 text-white" />
-                  <h2 className="text-2xl font-serif text-white">
-                    Your Registered Events
+                  <h2 className="sm:text-2xl text-sm font-serif font-bold text-white">
+                   Registered Events
                   </h2>
                 </div>
                 {registrations.length > 0 && (
                   <button
                     onClick={handleViewAllEvents}
-                    className="px-4 py-2 bg-white text-[#4b4b7a] rounded-full flex items-center gap-2 hover:bg-gray-50 transition-colors text-sm font-medium cursor-pointer"
+                    className="sm:px-4 px-2 py-2 bg-white text-[#4b4b7a] rounded-full flex items-center gap-2 hover:bg-gray-50 transition-colors text-sm font-medium cursor-pointer"
                   >
                     View All
                     <ChevronRight className="w-4 h-4" />
@@ -1017,7 +1017,7 @@ export default function SummaryCard() {
             </div>
 
             {/* Additional Information Card */}
-            <div className="bg-linear-to-r from-[#7c7cf5] to-[#9f9ff7] rounded-3xl p-6">
+            <div className="bg-linear-to-r from-[#6161eb] to-[#1e1e60] rounded-3xl p-6 back">
               <div className="flex items-center gap-3 mb-4">
                 <AlertCircle className="w-6 h-6 text-white" />
                 <h2 className="text-2xl font-serif text-white">
@@ -1027,7 +1027,7 @@ export default function SummaryCard() {
 
               <div className="space-y-3 text-white/90">
                 <p>
-                  • You can unenroll from events up to 24 hours before the event
+                  • You can unenroll from events at any time before the event
                   starts
                 </p>
                 <p>
@@ -1116,7 +1116,7 @@ export default function SummaryCard() {
                 className="w-full bg-linear-to-r from-[#6b6bf1] to-[#9f9ff7] text-white py-3 rounded-xl font-semibold hover:scale-105 transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer"
               >
                 <Users className="w-4 h-4" />
-                {teamStats.totalTeams > 0 ? 'Manage Teams' : 'Create Team'}
+                {teamStats.totalTeams > 0 ? 'Manage Teams' : 'No Teams'}
                 <ArrowRight className="w-4 h-4" />
               </button>
             </div>

@@ -30,15 +30,14 @@ const TeamSection = () => {
       <div className="absolute -top-32 -left-32 w-96 h-96 bg-purple-600/20 blur-[120px]" />
       <div className="absolute -bottom-32 -right-32 w-96 h-96 bg-indigo-500/20 blur-[120px]" />
 
-      <div className="relative max-w-7xl mx-auto px-4">
+      <div className="relative max-w-7xl mx-auto px-4 ">
       {/* ===== Heading (Image-based) ===== */}
-      <div className="mb-14 flex justify-center">
+      <div className="md:mb-10 mb-5 flex justify-center">
         <img
           src={websiteCrewHeading}
           alt="Website Crew :he website crew: Bringing the magic"
         />
       </div>
-
 
         {/* Content */}
         {loading ? (

@@ -11,6 +11,7 @@ import {
   ArrowUpRight,
   User,
   LogIn,
+  LogInIcon,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -154,7 +155,7 @@ const EventCard = ({
         text: "Login to Enroll",
         action: () => navigate("/login"),
         disabled: false,
-        icon: <LogIn />,
+        icon: <LogInIcon />,
       };
     }
 
@@ -234,7 +235,7 @@ const EventCard = ({
   return (
     <div className="w-full max-w-[320px] sm:max-w-[350px] md:max-w-[380px] mx-auto rounded-[20px] sm:rounded-[26px] p-0.5 bg-linear-to-b from-[#C8ABFE] to-[#b18cff] shadow-lg sm:shadow-2xl hover:shadow-xl sm:hover:shadow-2xl transition-shadow duration-300 back outline-6 outline-white">
       {/* Dashed border */}
-      <div className="h-full w-full rounded-[18px] sm:rounded-3xl border-2 border-dashed border-black/60 bg-linear-to-b from-[#C8ABFE] to-[#b692ff] p-3 sm:p-4 md:p-5 font-sans">
+      <div className="h-full w-full rounded-[18px] sm:rounded-3xl border-2 border-dashed border-black/60 bg-[#b692ff] p-3 sm:p-4 md:p-5 font-sans back2">
         {/* Top white box with image */}
         <div className="bg-white rounded-[14px] sm:rounded-[18px] p-2 sm:p-3 h-[120px] sm:h-[140px] md:h-[160px] relative overflow-hidden">
           {/* Solo/Team Badge - UPDATED with new icons */}
@@ -368,7 +369,7 @@ const EventCard = ({
               </span>
             )}
             {buttonConfig.icon && buttonConfig.text !== "Enroll Now" && (
-              <span className="flex items-center justify-center w-6 h-6 sm:w-7 sm:h-7 bg-[#4b1b7a] text-white rounded-full shrink-0">
+              <span className="flex items-center justify-center w-6 h-6 sm:w-7 sm:h-7 bg-[#4b1b7a] text-white rounded-full shrink-0 p-1">
                 {buttonConfig.icon}
               </span>
             )}

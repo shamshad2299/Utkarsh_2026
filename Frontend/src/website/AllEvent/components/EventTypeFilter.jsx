@@ -20,14 +20,13 @@ const EventTypeFilter = ({ selectedTypeFilter, handleTypeFilterClick }) => {
       <div className="flex flex-wrap sm:flex-nowrap gap-4 sm:gap-6">
         {FILTERS.map((filter) => {
           const isActive = selectedTypeFilter === filter.id;
-
           return (
             <button
               key={filter.id}
               onClick={() => handleTypeFilterClick(filter.id)}
               className={`
                 relative
-                w-[90px] h-[90px]
+                w-[75px] h-[75px]
                 sm:w-[100px] sm:h-[100px]
                 md:w-[120px] md:h-[120px]
                 rounded-2xl
