@@ -249,18 +249,18 @@ export const getAllRegistrationsAdmin = async (req, res) => {
   const registrations = await Registration.find(filter)
     .populate({
       path: "eventId",
-      select: "title fee venueName eventType startTime endTime capacity currentParticipants",
+      select: "title fee venueName eventType startTime  currentParticipants",
     })
     .populate({
       path: "userId",
-      select: "name email mob_no gender college course",
+      select: "name email userId mobile_no gender city college course",
     })
     .populate({
       path: "teamId",
       populate: [
         {
           path: "teamLeader",
-          select: "name",
+          select: "name mobile_no city email college course gender",
         },
         {
           path: "teamMembers",

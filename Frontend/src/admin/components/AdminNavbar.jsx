@@ -20,7 +20,7 @@ const AdminNavbar = () => {
   return (
     <>
       {/* Main Navbar */}
-      <nav className="sticky top-0  h-16 bg-gradient-to-r from-white to-gray-50 border-b border-gray-200 shadow-sm">
+      <nav className="sticky top-0  h-16 bg-linear-to-r from-white to-gray-50 border-b border-gray-200 shadow-sm z-40">
         <div className="h-full px-4 sm:px-6 flex items-center justify-between">
           
           {/* Left Section */}
@@ -39,10 +39,10 @@ const AdminNavbar = () => {
 
             {/* Dashboard Title */}
             <div className="flex items-center space-x-2">
-              <div className="p-1.5 sm:p-2 bg-gradient-to-br from-amber-500 to-amber-600 rounded-lg">
+              <div className="p-1.5 sm:p-2 bg-linear-to-br from-amber-500 to-amber-600 rounded-lg">
                 <LayoutDashboard className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
               </div>
-              <h1 className="text-lg sm:text-xl font-bold bg-gradient-to-r from-amber-700 to-amber-800 bg-clip-text text-transparent">
+              <h1 className="text-lg sm:text-xl font-bold bg-linear-to-r from-amber-700 to-amber-800 bg-clip-text text-transparent">
                 Dashboard
               </h1>
             </div>
@@ -54,7 +54,7 @@ const AdminNavbar = () => {
             {/* Website Link - Desktop */}
             <Link
               to="/"
-              className="hidden md:flex items-center space-x-2 px-3 sm:px-4 py-2 bg-gradient-to-r from-amber-50 to-amber-100 border border-amber-200 rounded-lg hover:from-amber-100 hover:to-amber-200 transition-all duration-200 group"
+              className="hidden md:flex items-center space-x-2 px-3 sm:px-4 py-2 bg-linear-to-r from-amber-50 to-amber-100 border border-amber-200 rounded-lg hover:from-amber-100 hover:to-amber-200 transition-all duration-200 group"
             >
               <Home className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-amber-600 group-hover:text-amber-700" />
               <span className="text-xs sm:text-sm font-medium text-amber-700 group-hover:text-amber-800 hidden lg:inline">
@@ -68,7 +68,7 @@ const AdminNavbar = () => {
             {/* Logout Button - Desktop */}
             <button
               onClick={logout}
-              className="hidden md:flex items-center space-x-2 px-3 sm:px-4 py-2 bg-gradient-to-r from-red-50 to-red-100 border border-red-200 text-red-600 rounded-lg hover:from-red-100 hover:to-red-200 transition-all duration-200 group"
+              className="hidden md:flex items-center space-x-2 px-3 sm:px-4 py-2 bg-linear-to-r from-red-50 to-red-100 border border-red-200 text-red-600 rounded-lg hover:from-red-100 hover:to-red-200 transition-all duration-200 group"
             >
               <LogOut className="h-3.5 w-3.5 sm:h-4 sm:w-4 group-hover:rotate-12 transition-transform" />
               <span className="font-medium text-xs sm:text-sm">Logout</span>
