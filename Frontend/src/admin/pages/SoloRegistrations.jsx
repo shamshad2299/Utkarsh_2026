@@ -126,15 +126,12 @@ const SoloRegistrations = () => {
         // Date & Time
         'Event Start Date': formatDateOnlyForExport(reg.eventId?.startTime),
         'Event Start Time': formatTimeForExport(reg.eventId?.startTime),
-        'Event End Date': formatDateOnlyForExport(reg.eventId?.endTime),
-        'Event End Time': formatTimeForExport(reg.eventId?.endTime),
         
         // Registration Status
         'Payment Status': reg.paymentStatus || 'pending',
         'Check-in Status': reg.checkedIn ? 'Checked In' : 'Not Checked In',
         'Registration Status': reg.status || 'pending',
         'Registered On': formatDateForExport(reg.createdAt),
-        'Last Updated': formatDateForExport(reg.updatedAt),
       }));
 
       // Create worksheet
@@ -157,13 +154,11 @@ const SoloRegistrations = () => {
         { wch: 25 },  // Venue
         { wch: 15 },  // Start Date
         { wch: 10 },  // Start Time
-        { wch: 15 },  // End Date
-        { wch: 10 },  // End Time
         { wch: 15 },  // Payment Status
         { wch: 15 },  // Check-in Status
         { wch: 15 },  // Registration Status
         { wch: 20 },  // Registered On
-        { wch: 20 },  // Last Updated
+        
       ];
       ws['!cols'] = colWidths;
 
@@ -758,14 +753,7 @@ const SoloRegistrations = () => {
                       <label className="text-xs text-gray-500">Start Time</label>
                       <p>{formatTime(selectedRegistration.eventId?.startTime)}</p>
                     </div>
-                    <div>
-                      <label className="text-xs text-gray-500">End Date</label>
-                      <p>{formatDate(selectedRegistration.eventId?.endTime)}</p>
-                    </div>
-                    <div>
-                      <label className="text-xs text-gray-500">End Time</label>
-                      <p>{formatTime(selectedRegistration.eventId?.endTime)}</p>
-                    </div>
+                 
                   </div>
                 </div>
 

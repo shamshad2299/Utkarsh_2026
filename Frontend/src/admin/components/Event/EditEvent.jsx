@@ -169,19 +169,11 @@ const EditEvent = () => {
   // ✅ FIXED: Update form when event data is loaded
   useEffect(() => {
     if (event) {
-      console.log("Event data received:", event);
-      
+    
       // Format dates properly
       const formattedStartTime = formatDateForInput(event.startTime);
       const formattedEndTime = formatDateForInput(event.endTime);
       const formattedDeadline = formatDateForInput(event.registrationDeadline);
-      
-      console.log("Formatted dates:", {
-        start: formattedStartTime,
-        end: formattedEndTime,
-        deadline: formattedDeadline
-      });
-
       setFormData({
         title: event.title || "",
         description: event.description || "",
@@ -238,12 +230,6 @@ const EditEvent = () => {
   // Mutation
   const updateEventMutation = useMutation({
     mutationFn: async ({ id, formData }) => {
-      // Log the FormData contents for debugging
-      console.log("Submitting FormData:");
-      for (let pair of formData.entries()) {
-        console.log(pair[0], pair[1]);
-      }
-      
       return await api.put(`/events/${id}`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
@@ -510,7 +496,6 @@ const EditEvent = () => {
           const isoDate = formatDateForAPI(value);
           if (isoDate) {
             data.append(key, isoDate);
-            console.log(`Appending ${key}:`, isoDate);
           }
         } else {
           data.append(key, value.toString());
@@ -531,11 +516,6 @@ const EditEvent = () => {
       data.append("images", image);
     });
 
-    // Log final data for debugging
-    console.log("Submitting event update with data:");
-    for (let pair of data.entries()) {
-      console.log(pair[0], pair[1]);
-    }
 
     updateEventMutation.mutate({ id, formData: data });
   }, [formData, selectedCategory, selectedSubCategory, teamSize, existingImages, newImages, id, validateForm, formatDateForAPI]);

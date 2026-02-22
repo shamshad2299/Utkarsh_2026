@@ -18,8 +18,7 @@ const AdminRegister = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await api.post("/admin/auth/register", form);
-      console.log(res)
+     await api.post("/admin/auth/register", form);
       alert("Admin registered successfully");
       navigate("/admin")
     } catch (err) {

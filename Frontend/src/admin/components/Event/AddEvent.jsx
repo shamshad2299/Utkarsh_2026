@@ -10,7 +10,7 @@ import {
   Clock,
   Tag,
   Loader2,
-  FileText, // 👈 NEW ICON
+  FileText,
 } from "lucide-react";
 import api from "../../api/axios.js";
 import { useNavigate } from "react-router-dom";
@@ -27,10 +27,11 @@ const INITIAL_FORM_STATE = {
   capacity: "",
   fee: 0,
   eventType: "solo",
-  event_rule: "", // 👈 NEW FIELD
+  event_rule: "",
 };
 
 const INITIAL_TEAM_SIZE = { min: 1, max: 1 };
+const TEAM_EVENT_DEFAULT_SIZE = { min: 2, max: 4 };
 
 const AddEvent = () => {
   const navigate = useNavigate();
@@ -43,7 +44,7 @@ const AddEvent = () => {
   const [imagePreviews, setImagePreviews] = useState([]);
   const [teamSize, setTeamSize] = useState(INITIAL_TEAM_SIZE);
   const [formData, setFormData] = useState(INITIAL_FORM_STATE);
-  const [errors, setErrors] = useState({}); // 👈 NEW STATE FOR ERRORS
+  const [errors, setErrors] = useState({});
 
   // Queries
   const { data: categoriesData = [], isLoading: loadingCategories } = useQuery({
@@ -52,7 +53,7 @@ const AddEvent = () => {
       const response = await api.get("/category/get");
       return response.data.data || [];
     },
-    staleTime: 5 * 60 * 1000, // Cache for 5 minutes
+    staleTime: 5 * 60 * 1000,
   });
 
   const { data: subCategoriesData = [], isLoading: loadingSubCategories } = useQuery({
@@ -63,12 +64,19 @@ const AddEvent = () => {
       return response.data.data || [];
     },
     enabled: !!selectedCategory,
-    staleTime: 2 * 60 * 1000, // Cache for 2 minutes
+    staleTime: 2 * 60 * 1000,
   });
 
   // Mutation
   const createEventMutation = useMutation({
-    mutationFn: (formData) => api.post("/events", formData),
+    mutationFn: (formData) => {
+      // Log the FormData being sent
+      console.log("Sending FormData:");
+      for (let pair of formData.entries()) {
+        console.log(pair[0] + ': ' + pair[1]);
+      }
+      return api.post("/events", formData);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["events"] });
       resetForm();
@@ -99,15 +107,18 @@ const AddEvent = () => {
   const handleInputChange = useCallback((e) => {
     const { name, value } = e.target;
 
-    // Clear error for this field
     setErrors((prev) => ({ ...prev, [name]: "" }));
 
     setFormData((prev) => {
       const newFormData = { ...prev, [name]: value };
       
-      // Update team size based on event type
       if (name === "eventType") {
-        setTeamSize(value === "solo" ? INITIAL_TEAM_SIZE : { min: 2, max: 2 });
+        // Set appropriate team size based on event type
+        if (value === "solo") {
+          setTeamSize({ min: 1, max: 1 });
+        } else if (value === "team") {
+          setTeamSize(TEAM_EVENT_DEFAULT_SIZE);
+        }
       }
       
       return newFormData;
@@ -115,17 +126,28 @@ const AddEvent = () => {
   }, []);
 
   const handleTeamSizeChange = useCallback((field, value) => {
-    setTeamSize((prev) => ({
-      ...prev,
-      [field]: Math.max(1, parseInt(value) || 1),
-    }));
+    // Parse the value to integer, default to 1 if invalid
+    const parsedValue = parseInt(value);
+    const newValue = isNaN(parsedValue) ? 1 : Math.max(1, parsedValue);
+    
+    setTeamSize((prev) => {
+      const newTeamSize = {
+        ...prev,
+        [field]: newValue
+      };
+      
+      // Log the new team size
+      console.log("Team size updated:", newTeamSize);
+      
+      return newTeamSize;
+    });
+    
     setErrors((prev) => ({ ...prev, teamSize: "" }));
   }, []);
 
   const handleImageUpload = useCallback((e) => {
     const files = Array.from(e.target.files);
     
-    // Limit number of images
     const MAX_IMAGES = 5;
     if (images.length + files.length > MAX_IMAGES) {
       setErrors((prev) => ({
@@ -135,9 +157,8 @@ const AddEvent = () => {
       return;
     }
 
-    // Validate file types
     const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"];
-    const MAX_SIZE = 10 * 1024 * 1024; // 10MB
+    const MAX_SIZE = 10 * 1024 * 1024;
 
     const validFiles = files.filter((file) => {
       if (!ALLOWED_TYPES.includes(file.type)) {
@@ -159,7 +180,6 @@ const AddEvent = () => {
 
     if (validFiles.length === 0) return;
 
-    // Create previews
     const newPreviews = validFiles.map((file) => ({
       file,
       preview: URL.createObjectURL(file),
@@ -169,7 +189,6 @@ const AddEvent = () => {
     setImagePreviews((prev) => [...prev, ...newPreviews]);
     setErrors((prev) => ({ ...prev, images: "" }));
     
-    // Reset input
     e.target.value = '';
   }, [images.length]);
 
@@ -188,7 +207,6 @@ const AddEvent = () => {
     setTeamSize(INITIAL_TEAM_SIZE);
     setErrors({});
     
-    // Clean up image previews
     imagePreviews.forEach((preview) => {
       URL.revokeObjectURL(preview.preview);
     });
@@ -207,7 +225,7 @@ const AddEvent = () => {
     if (!formData.startTime) newErrors.startTime = "Start time is required";
     if (!formData.endTime) newErrors.endTime = "End time is required";
     if (!formData.registrationDeadline) newErrors.registrationDeadline = "Registration deadline is required";
-    if (!formData.event_rule?.trim()) newErrors.event_rule = "Event rules are required"; // 👈 NEW VALIDATION
+    if (!formData.event_rule?.trim()) newErrors.event_rule = "Event rules are required";
 
     const capacity = parseInt(formData.capacity);
     if (!capacity || capacity < 1) {
@@ -226,8 +244,21 @@ const AddEvent = () => {
       }
     }
 
-    if (teamSize.min > teamSize.max) {
-      newErrors.teamSize = "Minimum team size cannot be greater than maximum";
+    // Validate team size based on event type
+    if (formData.eventType === "solo") {
+      if (teamSize.min !== 1 || teamSize.max !== 1) {
+        newErrors.teamSize = "Solo events must have team size of 1";
+      }
+    } else if (formData.eventType === "team") {
+      if (teamSize.min < 2) {
+        newErrors.teamSize = "Team events must have minimum team size of at least 2";
+      }
+      if (teamSize.max < teamSize.min) {
+        newErrors.teamSize = "Maximum team size cannot be less than minimum";
+      }
+      if (teamSize.min > teamSize.max) {
+        newErrors.teamSize = "Minimum team size cannot be greater than maximum";
+      }
     }
 
     setErrors(newErrors);
@@ -238,32 +269,50 @@ const AddEvent = () => {
     e.preventDefault();
 
     if (!validateForm()) {
-      // Scroll to first error
       const firstError = document.querySelector('[class*="border-red-300"]');
       firstError?.scrollIntoView({ behavior: "smooth", block: "center" });
       return;
     }
 
+    // Ensure values are strings and not arrays
+    const categoryValue = String(selectedCategory).trim();
+    const subCategoryValue = String(selectedSubCategory).trim();
+
+    console.log("Final values being sent:", {
+      category: categoryValue,
+      subCategory: subCategoryValue,
+      teamSize: teamSize
+    });
+
     const data = new FormData();
     
-    // Append form data
+    // Only append fields that are NOT category or subCategory
     Object.entries(formData).forEach(([key, value]) => {
-      if (value !== undefined && value !== null) {
+      if (key !== 'category' && key !== 'subCategory' && value !== undefined && value !== null && value !== "") {
         data.append(key, value.toString());
       }
     });
     
-    data.append("category", selectedCategory);
-    data.append("subCategory", selectedSubCategory);
-    data.append("teamSize", JSON.stringify(teamSize));
+    // Append category and subCategory only once
+    data.set("category", categoryValue);
+    data.set("subCategory", subCategoryValue);
     
-    // Append images
+    // Properly stringify teamSize object
+    data.set("teamSize", JSON.stringify(teamSize));
+    
+    // Append images (these can be multiple)
     images.forEach((image) => {
       data.append("images", image);
     });
 
+    // Log final FormData to verify
+    console.log("Final FormData being sent:");
+    for (let pair of data.entries()) {
+      console.log(pair[0] + ': ' + pair[1]);
+    }
+
     createEventMutation.mutate(data);
-  }, [formData, selectedCategory, selectedSubCategory, teamSize, images, validateForm]);
+  }, [formData, selectedCategory, selectedSubCategory, teamSize, images, validateForm, createEventMutation]);
 
   // Memoized values
   const isTeamEvent = useMemo(() => formData.eventType === "team", [formData.eventType]);
@@ -295,10 +344,15 @@ const AddEvent = () => {
                 error={errors.title}
               />
 
+              {/* Category Select */}
               <SelectField
                 label="Category *"
+                name="category"
                 value={selectedCategory}
-                onChange={setSelectedCategory}
+                onChange={(value) => {
+                  console.log("Category selected:", value);
+                  setSelectedCategory(value);
+                }}
                 options={categoriesData}
                 optionLabel="name"
                 optionValue="_id"
@@ -307,10 +361,15 @@ const AddEvent = () => {
                 error={errors.category}
               />
 
+              {/* Sub-category Select */}
               <SelectField
                 label="Sub-category *"
+                name="subCategory"
                 value={selectedSubCategory}
-                onChange={setSelectedSubCategory}
+                onChange={(value) => {
+                  console.log("SubCategory selected:", value);
+                  setSelectedSubCategory(value);
+                }}
                 options={subCategoriesData}
                 optionLabel="title"
                 optionValue="_id"
@@ -320,11 +379,20 @@ const AddEvent = () => {
                 error={errors.subCategory}
               />
 
+              {/* Event Type Select */}
               <SelectField
                 label="Event Type *"
                 name="eventType"
                 value={formData.eventType}
-                onChange={handleInputChange}
+                onChange={(value) => {
+                  const syntheticEvent = {
+                    target: {
+                      name: "eventType",
+                      value: value
+                    }
+                  };
+                  handleInputChange(syntheticEvent);
+                }}
                 options={[
                   { value: "solo", label: "Solo" },
                   { value: "team", label: "Team" },
@@ -333,14 +401,17 @@ const AddEvent = () => {
                 optionValue="value"
               />
 
+              {/* Team Size Section - Only for team events */}
               {isTeamEvent && (
                 <>
                   <InputField
                     label="Min Team Size"
                     type="number"
-                    min="1"
+                    min="2"
                     value={teamSize.min}
                     onChange={(e) => handleTeamSizeChange("min", e.target.value)}
+                    error={errors.teamSizeMin}
+                    helperText="Minimum 2 members for team events"
                   />
                   <InputField
                     label="Max Team Size"
@@ -348,13 +419,25 @@ const AddEvent = () => {
                     min={teamSize.min}
                     value={teamSize.max}
                     onChange={(e) => handleTeamSizeChange("max", e.target.value)}
+                    error={errors.teamSizeMax}
+                    helperText="Maximum members allowed"
                   />
-                  {errors.teamSize && (
-                    <div className="col-span-2">
-                      <ErrorMessage message={errors.teamSize} />
-                    </div>
-                  )}
                 </>
+              )}
+
+              {/* Team size info for solo events */}
+              {formData.eventType === "solo" && (
+                <div className="col-span-2 text-sm text-gray-600 bg-gray-50 p-3 rounded-lg">
+                  <Users className="w-4 h-4 inline mr-2" />
+                  Solo event - Team size fixed at 1
+                </div>
+              )}
+
+              {/* Team size error display */}
+              {errors.teamSize && (
+                <div className="col-span-2">
+                  <ErrorMessage message={errors.teamSize} />
+                </div>
               )}
             </div>
 
@@ -371,7 +454,7 @@ const AddEvent = () => {
             </div>
           </Card>
 
-          {/* Event Rules Card - NEW */}
+          {/* Event Rules Card */}
           <Card icon={FileText} bgColor="bg-orange-600" title="Event Rules">
             <div className="space-y-4">
               <TextAreaField
@@ -589,8 +672,14 @@ const SelectField = ({
     <div className="relative">
       <select
         name={name}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
+        value={value || ""}
+        onChange={(e) => {
+          const selectedValue = e.target.value;
+          console.log(`Select onChange for ${name}:`, selectedValue);
+          if (onChange) {
+            onChange(selectedValue);
+          }
+        }}
         className={`w-full px-4 py-3 border rounded-xl text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent appearance-none transition ${
           error
             ? "border-red-300 bg-red-50"
@@ -605,8 +694,14 @@ const SelectField = ({
           </option>
         ))}
       </select>
-      <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-        {loading && <Loader2 className="w-4 h-4 text-purple-600 animate-spin" />}
+      <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
+        {loading ? (
+          <Loader2 className="w-4 h-4 text-purple-600 animate-spin" />
+        ) : (
+          <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          </svg>
+        )}
       </div>
     </div>
     {error && <ErrorMessage message={error} />}

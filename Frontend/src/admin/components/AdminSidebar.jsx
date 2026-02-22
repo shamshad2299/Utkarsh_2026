@@ -33,7 +33,7 @@ const Item = ({ label, to, addTo }) => {
             e.stopPropagation();
             navigate(addTo);
           }}
-          className="hover:text-green-800 cursor-pointer bg-teal-700 z-10 text-white rounded-full p-1"
+          className="hover:text-green-800 cursor-pointer bg-teal-700 z-0 text-white rounded-full p-1"
           title={`Add ${label}`}
         >
           <Plus size={16} />
@@ -73,7 +73,7 @@ const AdminSidebar = () => {
   return (
     <>
       {/* Mobile Header with Menu Button */}
-      <div className="md:hidden flex items-center justify-between bg-gradient-to-r from-teal-700 to-teal-800 text-white px-4 py-3 fixed top-0 left-0 right-0  shadow-lg z-50">
+      <div className="md:hidden flex items-center justify-between bg-linear-to-r from-teal-700 to-teal-800 text-white px-4 py-3 fixed top-0 left-0 right-0  shadow-lg z-50">
         <div className="flex items-center gap-3">
           <button 
             onClick={() => setOpen(true)}
@@ -100,7 +100,7 @@ const AdminSidebar = () => {
       {/* Sidebar */}
       <aside
         className={`
-          fixed z-50 top-0 left-0 h-screen w-80 bg-gradient-to-b from-gray-50 to-white shadow-2xl
+          fixed z-50 top-0 left-0 h-screen w-80 bg-linear-to-b from-gray-50 to-white shadow-2xl
           transform transition-transform duration-300 ease-in-out
           overflow-y-auto overflow-x-hidden
           ${open ? "translate-x-0" : "-translate-x-full"}
@@ -108,7 +108,7 @@ const AdminSidebar = () => {
         `}
       >
         {/* Sidebar Header */}
-        <div className="sticky top-0 z-10 bg-gradient-to-r from-teal-700 to-teal-800 text-white px-4 py-4 flex items-center justify-between shadow-md">
+        <div className="sticky top-0 z-10 bg-linear-to-r from-teal-700 to-teal-800 text-white px-4 py-4 flex items-center justify-between shadow-md">
           <div className="flex items-center gap-2">
             <div className="bg-white/20 p-1 rounded-lg">
               <ChevronRight className="w-5 h-5" />

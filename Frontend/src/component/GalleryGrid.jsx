@@ -1,11 +1,11 @@
-import { useEffect, useState } from "react";
+import { useState, useMemo, memo } from "react";
 import GalleryItem from "./GalleryItem";
 
-const GalleryGrid = ({ images = [] }) => {
+const GalleryGrid = ({ images = [], loading = "lazy" }) => {
   const [selectedImage, setSelectedImage] = useState(null);
 
-  // Define column configurations with 4 images per column (height dominant)
-  const columnConfigs = [
+  // Use useMemo to prevent unnecessary recalculations
+  const columnConfigs = useMemo(() => [
     { 
       items: [
         { height: "h-64 sm:h-72 md:h-80 lg:h-96", style: "rounded-tl-[40px]" },
@@ -51,14 +51,18 @@ const GalleryGrid = ({ images = [] }) => {
       ],
       marginTop: "lg:mt-16"
     }
-  ];
+  ], []); // Empty dependency array since config is static
 
-  const getImg = (index) => {
-    if (images.length === 0) return null;
-    return images[index % images.length];
-  };
+  // Memoize getImg function
+  const getImg = useMemo(() => {
+    return (index) => {
+      if (images.length === 0) return null;
+      return images[index % images.length];
+    };
+  }, [images]);
 
-  useEffect(() => {
+  // Keyboard event for modal close
+  useState(() => {
     const handleKey = (e) => {
       if (e.key === "Escape") setSelectedImage(null);
     };
@@ -94,16 +98,26 @@ const GalleryGrid = ({ images = [] }) => {
               >
                 {column.items.map((item, itemIndex) => {
                   const imageIndex = (colIndex * 4 + itemIndex) + (loop * 20);
+                  const imageSrc = getImg(imageIndex);
+                  
+                  // Don't render if image source is null
+                  if (!imageSrc) return null;
+                  
                   return (
                     <div 
                       key={itemIndex} 
-                      onClick={() => setSelectedImage(getImg(imageIndex))}
-                      className="cursor-pointer transition-transform  duration-300"
+                      onClick={() => setSelectedImage(imageSrc)}
+                      className="cursor-pointer transition-transform duration-300 hover:scale-105"
                     >
                       <div className={`${item.height} w-full relative`}>
                         <GalleryItem 
-                          src={getImg(imageIndex)} 
-                          className={`w-full h-full object-cover ${item.style}  border-[#6760DF] shadow-2xs`}
+                          src={imageSrc} 
+                          className={`w-full h-full object-cover ${item.style} border-[#6760DF] shadow-2xs`}
+                          loading={loading}
+                          // Add width and height attributes for better CLS
+                          width="400"
+                          height="400"
+                          decoding="async"
                         />
                       </div>
                     </div>
@@ -122,7 +136,7 @@ const GalleryGrid = ({ images = [] }) => {
         }
       `}</style>
 
-      {/* Image Preview Modal */}
+      {/* Image Preview Modal - Optimized */}
       {selectedImage && (
         <div
           className="fixed inset-0 z-[999999] bg-black/95 flex items-center justify-center p-4"
@@ -134,12 +148,17 @@ const GalleryGrid = ({ images = [] }) => {
               alt="Preview"
               className="max-h-[90vh] max-w-[90vw] object-contain rounded-xl shadow-2xl"
               loading="lazy"
+              // Add fetchpriority for modal images
+              fetchPriority="high"
             />
             
             {/* Close button */}
             <button
-              onClick={() => setSelectedImage(null)}
-              className="absolute top-2 right-2 bg-black/50 hover:bg-black/70 text-white rounded-full p-1.5 transition-colors duration-200"
+              onClick={(e) => {
+                e.stopPropagation();
+                setSelectedImage(null);
+              }}
+              className="absolute top-2 right-2 bg-black/50 hover:bg-black/70 text-white rounded-full p-1.5 transition-colors duration-200 z-[1000000]"
               aria-label="Close"
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -158,4 +177,5 @@ const GalleryGrid = ({ images = [] }) => {
   );
 };
 
-export default GalleryGrid;
+// Export as memoized component to prevent unnecessary re-renders
+export default memo(GalleryGrid);

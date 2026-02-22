@@ -1,32 +1,34 @@
-import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import GalleryGrid from "../component/GalleryGrid";
 import { api } from "../api/axios";
 
 const EventGallerySection = () => {
-  const [images, setImages] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  // React Query hook with caching
+  const { 
+    data: images = [], 
+    isLoading, 
+    error,
+    refetch 
+  } = useQuery({
+    queryKey: ['throwbackImages'],
+    queryFn: async () => {
+      const response = await api.get('/throwbacks');
+      return response.data.data.map(item => item.imageUrl);
+    },
+    staleTime: 24 * 60 * 60 * 1000, // 24 hours
+    gcTime: 48 * 60 * 60 * 1000, // 48 hours
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    refetchOnReconnect: false,
+  });
 
-  useEffect(() => {
-    const fetchThrowbackImages = async () => {
-      try {
-        setLoading(true);
-        const response = await api.get('/throwbacks'); 
-      
-        const imageUrls = response.data.data.map(item => item.imageUrl);
-        setImages(imageUrls);
-      } catch (err) {
-        setError(err.message);
-        console.error('Error fetching throwback images:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
+  // Agar images hain to GalleryGrid show karo
+  if (images.length > 0) {
+    console.log("Images from cache:", images); // Debug ke liye
+  }
 
-    fetchThrowbackImages();
-  }, []);
-
-  if (loading) {
+  // Loading state
+  if (isLoading) {
     return (
       <section className="relative bg-[#080131] text-white px-6 md:px-16 pt-2 pb-24 overflow-hidden min-h-[400px] flex items-center justify-center">
         <div className="text-center">
@@ -37,13 +39,14 @@ const EventGallerySection = () => {
     );
   }
 
+  // Error state
   if (error) {
     return (
       <section className="relative bg-[#080131] text-white px-6 md:px-16 pt-2 pb-24 overflow-hidden min-h-[400px] flex items-center justify-center">
         <div className="text-center">
-          <p className="text-red-400 mb-2">Error: {error}</p>
+          <p className="text-red-400 mb-2">Error: {error.message}</p>
           <button 
-            onClick={() => window.location.reload()} 
+            onClick={() => refetch()} 
             className="px-4 py-2 bg-[#7070DE] text-white rounded-lg hover:bg-[#5a5ab0] transition-colors"
           >
             Try Again

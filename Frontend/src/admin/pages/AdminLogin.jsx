@@ -23,9 +23,6 @@ const handleSubmit = async (e) => {
         "Content-Type": "application/json",
       },
     });
-    console.log("LOGIN RESPONSE:", res.data);
-
-
     const { accessToken, admin } = res.data;
 
     if (!accessToken || !admin) {
