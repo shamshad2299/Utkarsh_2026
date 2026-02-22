@@ -6,9 +6,9 @@ import { Counter } from "../models/counter.model.js";
 import jwt from "jsonwebtoken";
 import { ApiError } from "../utils/ApiError.js";
 import { getNextSequence } from "../utils/getNextSequence.js";
-import { verifyJWT } from "../middlewares/authMiddleWare.js";
-
-
+import crypto from "crypto";
+import { sendEmailBrevo } from "../utils/sendEmail.js";
+import { emailVerificationTemplate } from "../services/emailVerificationTemplate.js";
 
 /* ================= REGISTER USER ================= */
 export const registerUser = async (req, res) => {
@@ -16,16 +16,8 @@ export const registerUser = async (req, res) => {
   session.startTransaction();
 
   try {
-    const {
-      name,
-      email,
-      password,
-      mobile_no,
-      city,
-      gender,
-      college,
-      course,
-    } = req.body;
+    const { name, email, password, mobile_no, city, gender, college, course } =
+      req.body;
 
     if (
       !name ||
@@ -52,6 +44,9 @@ export const registerUser = async (req, res) => {
     const paddedSeq = seq.toString().padStart(4, "0");
     const userId = `VSVT26${paddedSeq}`;
 
+    // Generate email verification OTP (6-digit)
+    const emailVerificationCode = crypto.randomInt(100000, 999999).toString();
+    const emailVerificationExpire = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
 
     const user = await User.create(
       [
@@ -65,15 +60,29 @@ export const registerUser = async (req, res) => {
           college,
           course,
           userId,
+          emailVerificationCode,
+          emailVerificationExpire,
+          isVerified: false,
         },
       ],
-      { session }
+      { session },
     );
 
     await session.commitTransaction();
 
+    // Send verification email
+    await sendEmailBrevo({
+      to: email,
+      subject: "Verify Your Email - BBD UTKARSH 2026",
+      html: emailVerificationTemplate({
+        name: name, // or user's name from your data
+        otp: emailVerificationCode, // your OTP variable
+        expiryMinutes: 10,
+      }),
+    });
+
     const safeUser = await User.findById(user[0]._id).select(
-      "-password -refreshToken -__v"
+      "-password -refreshToken -__v -emailVerificationCode -emailVerificationExpire",
     );
 
     res.status(201).json({
@@ -83,12 +92,11 @@ export const registerUser = async (req, res) => {
     });
   } catch (error) {
     await session.abortTransaction();
-    throw error; 
+    throw error;
   } finally {
     session.endSession();
   }
 };
-
 /* ================= GENERATE ACCESS TOKEN USER ================= */
 export const generateAccessToken = (user) => {
   return jwt.sign(
@@ -144,13 +152,18 @@ export const loginUser = async (req, res) => {
   if (user.isBlocked) {
     throw new ApiError(
       403,
-      "Your account has been blocked, please contact Admin"
+      "Your account has been blocked, please contact Admin",
     );
   }
 
   const isMatch = await bcrypt.compare(password, user.password);
   if (!isMatch) {
     throw new ApiError(401, "Invalid credentials");
+  }
+
+  // ✅ EMAIL VERIFICATION CHECK
+  if (!user.isVerified) {
+    throw new ApiError(403, "Please verify your email before logging in");
   }
 
   const accessToken = generateAccessToken(user);
@@ -165,17 +178,17 @@ export const loginUser = async (req, res) => {
     sameSite: "strict",
     maxAge: 7 * 24 * 60 * 60 * 1000,
   });
+
   user.password = undefined;
-  user.refreshToken=undefined;
+  user.refreshToken = undefined;
 
   res.status(200).json({
     success: true,
     message: "Login successful",
     accessToken,
-    user
+    user,
   });
 };
-
 /* ================= LOGOUT USER ================= */
 export const logoutUser = async (req, res) => {
   req.user.refreshToken = null;
@@ -185,7 +198,7 @@ export const logoutUser = async (req, res) => {
 
   return res.json({
     success: true,
-    message: "Logged out"
+    message: "Logged out",
   });
 };
 
@@ -257,16 +270,8 @@ export const updateUser = async (req, res) => {
 
   try {
     const { id } = req.params;
-    const {
-      name,
-      email,
-      password,
-      mobile_no,
-      city,
-      gender,
-      college,
-      course,
-    } = req.body;
+    const { name, email, password, mobile_no, city, gender, college, course } =
+      req.body;
 
     // check user exists
     const user = await User.findById(id).session(session);
@@ -338,7 +343,6 @@ export const updateUser = async (req, res) => {
   }
 };
 
-
 export const updateMyProfile = async (req, res) => {
   const allowedFields = [
     "name",
@@ -368,7 +372,7 @@ export const updateMyProfile = async (req, res) => {
     {
       new: true,
       runValidators: true,
-    }
+    },
   ).select("-password -refreshToken -__v");
 
   if (!user) {
@@ -381,10 +385,3 @@ export const updateMyProfile = async (req, res) => {
     user,
   });
 };
-
-
-
-
-
-
-

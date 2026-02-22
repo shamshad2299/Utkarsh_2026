@@ -19,6 +19,7 @@ import {
   getUserById,
 } from "../controllers/adminUser.controller.js";
 import { asyncHandler } from "../middlewares/asyncErrorHandlerMiddleWare.js";
+import { resendVerificationOTP, verifyEmail } from "../controllers/emailVerifaction.js";
 
 const router = express.Router();
 
@@ -60,5 +61,7 @@ router.delete(
   adminAuth,
   asyncHandler(deleteUser)
 );
+router.post("/verify-email", verifyEmail);
+router.post("/resend-otp", resendVerificationOTP);
 
 export default router;

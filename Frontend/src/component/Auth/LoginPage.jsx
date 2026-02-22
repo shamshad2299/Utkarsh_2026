@@ -38,14 +38,41 @@ const LoginPage = () => {
 
     try {
       setLoading(true);
-      await login({
+      const response = await login({
         identifier: formData.identifier,
         password: formData.password,
       });
+      
       setSuccess("Login successful! Redirecting...");
       setTimeout(() => navigate("/profile"), 1000);
+      
     } catch (err) {
-      setError(err.response?.data?.message || "Login failed. Please check your credentials.");
+      console.error("Login error:", err.response?.data);
+      
+      // Check if error is due to unverified email
+      if (err.response?.data?.message?.toLowerCase().includes("verify") || 
+          err.response?.data?.message?.toLowerCase().includes("verified")) {
+        
+        // Extract email from identifier if it's an email
+        const email = formData.identifier.includes('@') 
+          ? formData.identifier 
+          : null;
+        
+        // Show specific message and redirect to verify page
+        setError("Please verify your email before logging in. Redirecting to verification page...");
+        
+        // Auto-redirect to verify page after 2 seconds
+        setTimeout(() => {
+          navigate("/verify", { 
+            state: { 
+              email: email,
+              fromLogin: true 
+            } 
+          });
+        }, 2000);
+      } else {
+        setError(err.response?.data?.message || "Login failed. Please check your credentials.");
+      }
     } finally {
       setLoading(false);
     }
@@ -70,7 +97,27 @@ const LoginPage = () => {
         setStep("otp");
       }
     } catch (err) {
-      setError(err.response?.data?.message || "Failed to send OTP. Please try again.");
+      // Check if error is due to unverified email
+      if (err.response?.data?.message?.toLowerCase().includes("verify") || 
+          err.response?.data?.message?.toLowerCase().includes("verified")) {
+        
+        const email = formData.identifier.includes('@') 
+          ? formData.identifier 
+          : null;
+        
+        setError("Please verify your email first. Redirecting to verification page...");
+        
+        setTimeout(() => {
+          navigate("/verify", { 
+            state: { 
+              email: email,
+              fromLogin: true 
+            } 
+          });
+        }, 2000);
+      } else {
+        setError(err.response?.data?.message || "Failed to send OTP. Please try again.");
+      }
     } finally {
       setLoading(false);
     }
@@ -114,10 +161,51 @@ const LoginPage = () => {
       setSuccess("Password reset successful! Please login with your new password.");
       setStep("login");
     } catch (err) {
-      setError(err.response?.data?.message || "Failed to reset password. Please check OTP and try again.");
+      // Check if error is due to unverified email
+      if (err.response?.data?.message?.toLowerCase().includes("verify") || 
+          err.response?.data?.message?.toLowerCase().includes("verified")) {
+        
+        const email = formData.identifier.includes('@') 
+          ? formData.identifier 
+          : null;
+        
+        setError("Please verify your email first. Redirecting to verification page...");
+        
+        setTimeout(() => {
+          navigate("/verify", { 
+            state: { 
+              email: email,
+              fromLogin: true 
+            } 
+          });
+        }, 2000);
+      } else {
+        setError(err.response?.data?.message || "Failed to reset password. Please check OTP and try again.");
+      }
     } finally {
       setLoading(false);
     }
+  };
+
+  // Handle redirect to verify page with email from localStorage if available
+  const handleResendVerification = () => {
+    // Try to get email from various sources
+    let email = formData.identifier;
+    
+    if (!email || !email.includes('@')) {
+      // You might want to store last registered email in localStorage
+      const lastRegisteredEmail = localStorage.getItem("lastRegisteredEmail");
+      if (lastRegisteredEmail) {
+        email = lastRegisteredEmail;
+      }
+    }
+    
+    navigate("/verify", { 
+      state: { 
+        email: email,
+        fromLogin: true 
+      } 
+    });
   };
 
   const handleBackToHome = () => {
@@ -189,6 +277,22 @@ const LoginPage = () => {
                     placeholder="Enter your password..."
                     disabled={loading}
                   />
+
+                  {/* Verification Prompt for Unverified Users */}
+                  {error && error.includes("verify") && (
+                    <div className="mt-2 p-3 bg-yellow-500/20 border border-yellow-500/50 rounded-md">
+                      <p className="text-yellow-200 text-sm mb-2">
+                        Haven't verified your email yet?
+                      </p>
+                      <button
+                        type="button"
+                        onClick={handleResendVerification}
+                        className="text-sm text-[#6c63ff] hover:text-[#8b7eff] underline transition-colors"
+                      >
+                        Go to Verification Page →
+                      </button>
+                    </div>
+                  )}
 
                   <div className="flex justify-between items-center pt-2">
                     <button
@@ -289,9 +393,21 @@ const LoginPage = () => {
               )}
 
               {/* Error Message */}
-              {error && (
+              {error && !error.includes("verify") && (
                 <div className="p-3 bg-red-500/20 border border-red-500/50 rounded-md text-red-200 text-sm">
                   {error}
+                </div>
+              )}
+
+              {/* Verification Redirect Error - Special Styling */}
+              {error && error.includes("verify") && (
+                <div className="p-3 bg-yellow-500/20 border border-yellow-500/50 rounded-md text-yellow-200 text-sm">
+                  <div className="flex items-center gap-2">
+                    <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                    <span>{error}</span>
+                  </div>
                 </div>
               )}
 
@@ -305,7 +421,7 @@ const LoginPage = () => {
               {/* Submit Button */}
               <button
                 type="submit"
-                disabled={loading}
+                disabled={loading || (error && error.includes("verify"))}
                 className="w-full mt-4 py-2.5 rounded-md bg-[#6c63ff] text-white text-sm font-semibold hover:bg-[#5b54e6] transition disabled:opacity-60 cursor-pointer"
               >
                 {loading ? (
@@ -317,6 +433,19 @@ const LoginPage = () => {
                   step === "login" ? "SIGN IN" : step === "forgot" ? "SEND OTP" : "RESET PASSWORD"
                 )}
               </button>
+
+              {/* Resend Verification Link */}
+              {step === "login" && error && error.includes("verify") && (
+                <div className="mt-2 text-center">
+                  <button
+                    type="button"
+                    onClick={handleResendVerification}
+                    className="text-sm text-[#6c63ff] hover:text-[#8b7eff] underline transition-colors"
+                  >
+                    Click here to verify your email
+                  </button>
+                </div>
+              )}
 
               {/* Back Buttons */}
               {(step === "forgot" || step === "otp" || step === "reset") && (

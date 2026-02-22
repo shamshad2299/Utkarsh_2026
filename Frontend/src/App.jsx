@@ -5,6 +5,7 @@ import "./App.css";
 import Layout from "./component/Layout/Layout";
 import Loader from "./component/Loader/Loader";
 import FooterSection from "./component/Footer";
+import VerifyEmail from "./pages/VerifyEmail";
 
 // Lazy load components for better performance
 const Home = lazy(() => import("./pages/Home"));
@@ -71,6 +72,7 @@ function App() {
 
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegistrationPage />} />
+           <Route path="/verify" element={<VerifyEmail />} />
           <Route path="/admin" element={<AdminLogin />} />
           <Route path="/admin/register" element={<AdminRegister />} />
           {/* admin routes */}
