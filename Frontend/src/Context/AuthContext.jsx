@@ -1,3 +1,4 @@
+// src/Context/AuthContext.jsx
 import { createContext, useContext, useEffect, useState } from "react";
 import { api } from "../api/axios";
 
@@ -33,6 +34,17 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // Email verification methods
+  const verifyEmail = async (payload) => {
+    const { data } = await api.post("/v1/auth/verify-email", payload);
+    return data;
+  };
+
+  const resendVerificationOTP = async (payload) => {
+    const { data } = await api.post("/v1/auth/resend-otp", payload);
+    return data;
+  };
+
   const requestPassword = async (payload) => {
     const { data } = await api.post("/v1/auth/request-pass-reset-otp", payload);
     return data;
@@ -48,27 +60,27 @@ export const AuthProvider = ({ children }) => {
   };
 
   // ===== VERIFY USER ON APP LOAD =====
-useEffect(() => {
-  const token = localStorage.getItem("accessToken");
+  useEffect(() => {
+    const token = localStorage.getItem("accessToken");
 
-  if (!token) {
-    setInitialLoading(false);
-    return;
-  }
-
-  const verifyUser = async () => {
-    try {
-      const { data } = await api.get("/v1/auth/me");
-      setUser(data.user);
-    } catch {
-      console.log("verify failed");
-    } finally {
+    if (!token) {
       setInitialLoading(false);
+      return;
     }
-  };
 
-  verifyUser();
-}, []);
+    const verifyUser = async () => {
+      try {
+        const { data } = await api.get("/v1/auth/me");
+        setUser(data.user);
+      } catch {
+        console.log("verify failed");
+      } finally {
+        setInitialLoading(false);
+      }
+    };
+
+    verifyUser();
+  }, []);
 
   // ===== ADMIN AUTH =====
   const adminRegister = (payload) =>
@@ -97,6 +109,8 @@ useEffect(() => {
         register,
         login,
         logout,
+        verifyEmail,
+        resendVerificationOTP,
         requestPassword,
         resetPassword,
         adminRegister,

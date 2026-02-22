@@ -41,108 +41,82 @@ const RegistrationPage = ({
     setError("");
   };
 
-  const generateUtkarshId = () => {
-    return `UTK${Math.random().toString(36).substring(2, 10).toUpperCase()}`;
-  };
+const handleRegister = async (e) => {
+  e.preventDefault();
+  setError("");
 
-  const getCurrentDate = () => {
-    return new Date().toLocaleDateString('en-IN', {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric'
-    });
-  };
+  const {
+    name,
+    email,
+    mobile_no,
+    city,
+    gender,
+    college,
+    course,
+    password,
+    confirmPassword,
+    agreed,
+  } = formData;
 
-  const handleRegister = async (e) => {
-    e.preventDefault();
-    setError("");
+  if (!name || !email || !mobile_no || !city || !gender || !college || !course || !password || !confirmPassword) {
+    setError("All required fields must be provided");
+    return;
+  }
 
-    const {
+  if (!agreed) {
+    setError("Please accept Rules & Guidelines");
+    return;
+  }
+
+  if (password.length < 8) {
+    setError("Password must be at least 8 characters long");
+    return;
+  }
+
+  if (password !== confirmPassword) {
+    setError("Passwords do not match");
+    return;
+  }
+
+  try {
+    setLoading(true);
+    
+    // Make API call to register
+    const response = await register({
       name,
-      email,
+      email: email.toLowerCase(),
       mobile_no,
       city,
-      gender,
+      gender: gender.toLowerCase(),
       college,
       course,
       password,
-      confirmPassword,
-      agreed,
-    } = formData;
-
-    if (!name || !email || !mobile_no || !city || !gender || !college || !course || !password || !confirmPassword) {
-      setError("All required fields must be provided");
-      return;
-    }
-
-    if (!agreed) {
-      setError("Please accept Rules & Guidelines");
-      return;
-    }
-
-    if (password.length < 8) {
-      setError("Password must be at least 8 characters long");
-      return;
-    }
-
-    if (password !== confirmPassword) {
-      setError("Passwords do not match");
-      return;
-    }
-
-    try {
-      setLoading(true);
-      const response = await register({
-        name,
+    });
+    // Navigate to verify email page with complete user data
+    navigate("/verify", {
+      state: {
         email: email.toLowerCase(),
-        mobile_no,
-        city,
-        gender: gender.toLowerCase(),
-        college,
-        course,
-        password,
-      });
+        userData: {
+          name: name,
+          college: college,
+          course: course,
+          email: email.toLowerCase(),
+          userId :response?.data?.userId,
+        }
+      }
+    });
 
-      console.log("Registration response:", response); // Debug log
-
-      // Prepare user data for popup
-      setUserData({
-        name: name,
-        email: email.toLowerCase(),
-        utkarshId: response?.data?.userId || response?.userId || generateUtkarshId(),
-        college: college,
-        course: course,
-        registrationDate: getCurrentDate()
-      });
-
-      // Show success popup
-      setShowSuccessPopup(true);
-
-      // Reset form
-      setFormData({
-        name: "",
-        email: "",
-        mobile_no: "",
-        city: "",
-        gender: "",
-        college: "",
-        course: "",
-        password: "",
-        confirmPassword: "",
-        agreed: false,
-      });
-
-    } catch (err) {
-      console.error("Registration error:", err);
-      setError(
-        err.response?.data?.message ||
-          err.response?.data?.error ||
-          "Registration failed. Please try again."
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
+  } catch (err) {
+    console.error("Registration error:", err);
+    setError(
+      err.response?.data?.message ||
+        err.response?.data?.error ||
+        "Registration failed. Please try again."
+    );
+  } finally {
+    setLoading(false);
+  }
+};
 
   const handleBackToHome = () => {
     navigate("/");
