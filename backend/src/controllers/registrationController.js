@@ -239,34 +239,29 @@ export const getAllRegistrationsAdmin = async (req, res) => {
   }
 
   if (type === "solo") {
-    filter.teamId = { $exists: false };
+    filter.$and = [
+      {
+        $or: [
+          { teamId: null },
+          { teamId: { $exists: false } }
+        ]
+      }
+    ];
   }
 
   if (type === "team") {
-    filter.teamId = { $exists: true, $ne: null };
+    filter.teamId = { $ne: null };
   }
 
   const registrations = await Registration.find(filter)
-    .populate({
-      path: "eventId",
-      select: "title fee venueName eventType startTime  currentParticipants",
-    })
-    .populate({
-      path: "userId",
-      select: "name email userId mobile_no gender city college course",
-    })
+    .populate("eventId", "title fee venueName eventType startTime currentParticipants")
+    .populate("userId", "name email userId mobile_no gender city college course isBlocked")
     .populate({
       path: "teamId",
       populate: [
-        {
-          path: "teamLeader",
-          select: "name mobile_no city email college course gender",
-        },
-        {
-          path: "teamMembers",
-          select: "name",
-        },
-      ],
+        { path: "teamLeader", select: "name mobile_no city email college course gender" },
+        { path: "teamMembers", select: "name" }
+      ]
     })
     .sort({ createdAt: -1 });
 

@@ -78,107 +78,93 @@ const SoloRegistrations = () => {
     });
   };
 
-  // Format time only for Excel
-  const formatTimeForExport = (dateString) => {
-    if (!dateString) return "N/A";
-    return new Date(dateString).toLocaleTimeString("en-IN", {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  };
-
-  // Format date only for Excel
-  const formatDateOnlyForExport = (dateString) => {
-    if (!dateString) return "N/A";
-    return new Date(dateString).toLocaleDateString("en-IN", {
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
-    });
-  };
-
   // ✅ NEW: Client-side export function with ALL fields
-  const handleExportSolo = useCallback(async () => {
-    try {
-      setExportLoading(true);
+// ✅ NEW: Client-side export function with ALL fields (excluding blocked users and event date/time)
+const handleExportSolo = useCallback(async () => {
+  try {
+    setExportLoading(true);
 
-      // Prepare data for export
-      const exportData = registrations.map((reg, index) => ({
-        'S.No': index + 1,
-        // User Details
-        'User ID': reg.userId?.userId || 'N/A',
-        'Full Name': reg.userId?.name || 'N/A',
-        'Email': reg.userId?.email || 'N/A',
-        'Mobile Number': reg.userId?.mobile_no || 'N/A',
-        'Gender': reg.userId?.gender || 'N/A',
-        'City': reg.userId?.city || 'N/A',
-        
-        // Education
-        'College': reg.userId?.college || 'N/A',
-        'Course/Branch': reg.userId?.course || 'N/A',
-        
-        // Event Details
-        'Event Name': reg.eventId?.title || 'N/A',
-        'Event Type': reg.eventId?.eventType || 'solo',
-        'Registration Fee': reg.eventId?.fee || 0,
-        'Venue': reg.eventId?.venueName || 'TBA',
-        
-        // Date & Time
-        'Event Start Date': formatDateOnlyForExport(reg.eventId?.startTime),
-        'Event Start Time': formatTimeForExport(reg.eventId?.startTime),
-        
-        // Registration Status
-        'Payment Status': reg.paymentStatus || 'pending',
-        'Check-in Status': reg.checkedIn ? 'Checked In' : 'Not Checked In',
-        'Registration Status': reg.status || 'pending',
-        'Registered On': formatDateForExport(reg.createdAt),
-      }));
-
-      // Create worksheet
-      const ws = XLSX.utils.json_to_sheet(exportData);
+    // Filter out blocked users from export
+    const activeRegistrations = registrations.filter(reg => !reg.userId?.isBlocked);
+    
+    // Prepare data for export
+    const exportData = activeRegistrations.map((reg, index) => ({
+      'S.No': index + 1,
+      // User Details
+      'User ID': reg.userId?.userId || 'N/A',
+      'Full Name': reg.userId?.name || 'N/A',
+      'Email': reg.userId?.email || 'N/A',
+      'Mobile Number': reg.userId?.mobile_no || 'N/A',
+      'Gender': reg.userId?.gender || 'N/A',
+      'City': reg.userId?.city || 'N/A',
+      'Is Blocked': reg.userId?.isBlocked ? 'Yes' : 'No', // Optional: Add blocked status column
       
-      // Set column widths
-      const colWidths = [
-        { wch: 5 },   // S.No
-        { wch: 15 },  // User ID
-        { wch: 20 },  // Full Name
-        { wch: 25 },  // Email
-        { wch: 15 },  // Mobile
-        { wch: 10 },  // Gender
-        { wch: 15 },  // City
-        { wch: 25 },  // College
-        { wch: 20 },  // Course
-        { wch: 30 },  // Event Name
-        { wch: 10 },  // Event Type
-        { wch: 15 },  // Fee
-        { wch: 25 },  // Venue
-        { wch: 15 },  // Start Date
-        { wch: 10 },  // Start Time
-        { wch: 15 },  // Payment Status
-        { wch: 15 },  // Check-in Status
-        { wch: 15 },  // Registration Status
-        { wch: 20 },  // Registered On
-        
-      ];
-      ws['!cols'] = colWidths;
+      // Education
+      'College': reg.userId?.college || 'N/A',
+      'Course/Branch': reg.userId?.course || 'N/A',
+      
+      // Event Details
+      'Event Name': reg.eventId?.title || 'N/A',
+      'Event Type': reg.eventId?.eventType || 'solo',
+      'Registration Fee': reg.eventId?.fee || 0,
+      'Venue': reg.eventId?.venueName || 'TBA',
+      
+      // Registration Status
+      'Payment Status': reg.paymentStatus || 'pending',
+      'Check-in Status': reg.checkedIn ? 'Checked In' : 'Not Checked In',
+      'Registration Status': reg.status || 'pending',
+      'Registered On': formatDateForExport(reg.createdAt),
+    }));
 
-      // Create workbook
-      const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, 'Solo Registrations');
+    // Create worksheet
+    const ws = XLSX.utils.json_to_sheet(exportData);
+    
+    // Set column widths (updated - removed event date/time columns)
+    const colWidths = [
+      { wch: 5 },   // S.No
+      { wch: 15 },  // User ID
+      { wch: 20 },  // Full Name
+      { wch: 25 },  // Email
+      { wch: 15 },  // Mobile
+      { wch: 10 },  // Gender
+      { wch: 15 },  // City
+      { wch: 10 },  // Is Blocked
+      { wch: 25 },  // College
+      { wch: 20 },  // Course
+      { wch: 30 },  // Event Name
+      { wch: 10 },  // Event Type
+      { wch: 15 },  // Fee
+      { wch: 25 },  // Venue
+      { wch: 15 },  // Payment Status
+      { wch: 15 },  // Check-in Status
+      { wch: 15 },  // Registration Status
+      { wch: 20 },  // Registered On
+    ];
+    ws['!cols'] = colWidths;
 
-      // Generate filename with date
-      const fileName = `solo-registrations-${new Date().toISOString().split('T')[0]}.xlsx`;
+    // Create workbook
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Solo Registrations');
 
-      // Save file
-      XLSX.writeFile(wb, fileName);
+    // Generate filename with date
+    const fileName = `solo-registrations-${new Date().toISOString().split('T')[0]}.xlsx`;
 
-    } catch (error) {
-      console.error("Error exporting solo registrations:", error);
-      alert('Failed to export data. Please try again.');
-    } finally {
-      setExportLoading(false);
+    // Save file
+    XLSX.writeFile(wb, fileName);
+
+    // Optional: Show notification about filtered users
+    const blockedCount = registrations.filter(reg => reg.userId?.isBlocked).length;
+    if (blockedCount > 0) {
+      alert(`${blockedCount} blocked user(s) were excluded from the export.`);
     }
-  }, [registrations]);
+
+  } catch (error) {
+    console.error("Error exporting solo registrations:", error);
+    alert('Failed to export data. Please try again.');
+  } finally {
+    setExportLoading(false);
+  }
+}, [registrations]);
 
   // Filtered registrations with all searchable fields
   const filteredRegistrations = useMemo(() => {
