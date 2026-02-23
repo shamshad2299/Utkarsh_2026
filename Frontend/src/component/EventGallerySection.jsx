@@ -22,11 +22,6 @@ const EventGallerySection = () => {
     refetchOnReconnect: false,
   });
 
-  // Agar images hain to GalleryGrid show karo
-  if (images.length > 0) {
-    console.log("Images from cache:", images); // Debug ke liye
-  }
-
   // Loading state
   if (isLoading) {
     return (
