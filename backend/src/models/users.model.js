@@ -108,7 +108,10 @@ const userSchema = new Schema(
       default: false,
       index: true
     },
-
+    autoVerified :{
+      type: Boolean,
+      default: false,
+    },
     refreshToken: { 
       type: String, 
       select: false 

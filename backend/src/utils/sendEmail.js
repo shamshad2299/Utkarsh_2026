@@ -42,15 +42,22 @@ export const sendEmailBrevo = async ({ to, subject, html }) => {
 
     return response.data;
   } catch (error) {
-    console.error("❌ [Brevo] Email failed");
+  console.error("❌ [Brevo] Email failed");
 
-    if (error.response) {
-      console.error("Status:", error.response.status);
-      console.error("Brevo message:", error.response.data);
-    } else {
-      console.error("Error:", error.message);
+  if (error.response) {
+    console.error("Status:", error.response.status);
+    console.error("Brevo message:", error.response.data);
+
+    // Detect rate limit (429)
+    if (error.response.status === 429) {
+      const rateLimitError = new Error("BREVO_RATE_LIMIT");
+      rateLimitError.isRateLimit = true;
+      throw rateLimitError;
     }
-
-    throw error;
+  } else {
+    console.error("Error:", error.message);
   }
+
+  throw error;
+}
 };

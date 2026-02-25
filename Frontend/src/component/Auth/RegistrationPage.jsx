@@ -31,6 +31,7 @@ const RegistrationPage = ({
   const [guidelinesRead, setGuidelinesRead] = useState(false);
   const [showSuccessPopup, setShowSuccessPopup] = useState(false);
   const [userData, setUserData] = useState(null);
+  const [registrationResponse, setRegistrationResponse] = useState(null);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -92,19 +93,41 @@ const handleRegister = async (e) => {
       course,
       password,
     });
-    // Navigate to verify email page with complete user data
-    navigate("/verify", {
-      state: {
+
+    // Store the full response
+    setRegistrationResponse(response);
+
+    // Check if user is already verified (auto-verified due to rate limit)
+    if (response?.data?.isVerified === true) {
+      // User is auto-verified, show success popup with Utkarsh ID
+      setUserData({
+        name: name,
+        college: college,
+        course: course,
         email: email.toLowerCase(),
-        userData: {
-          name: name,
-          college: college,
-          course: course,
+        utkarshId: response?.data?.userId,
+        registrationDate: new Date().toLocaleDateString('en-IN', {
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric'
+        }).replace(/\//g, '/')
+      });
+      setShowSuccessPopup(true);
+    } else {
+      // User needs to verify email, navigate to verify page
+      navigate("/verify", {
+        state: {
           email: email.toLowerCase(),
-          userId :response?.data?.userId,
+          userData: {
+            name: name,
+            college: college,
+            course: course,
+            email: email.toLowerCase(),
+            userId: response?.data?.userId,
+          }
         }
-      }
-    });
+      });
+    }
 
   } catch (err) {
     console.error("Registration error:", err);
@@ -344,7 +367,7 @@ const handleRegister = async (e) => {
         />
       )}
 
-      {/* Success Popup */}
+      {/* Success Popup - Shown when auto-verified */}
       {showSuccessPopup && userData && (
         <SuccessPopup
           userData={userData}
@@ -378,7 +401,7 @@ const SuccessPopup = ({ userData, onClose }) => {
 
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-4 bg-black/70 backdrop-blur-sm">
-      <div className="relative w-full max-w-[95%] sm:max-w-md bg-gradient-to-br from-[#6c63ff] to-[#4a42b0] rounded-2xl shadow-2xl p-[2px] animate-slideUp">
+      <div className="relative w-full max-w-[95%] sm:max-w-md bg-linear-to-br from-[#6c63ff] to-[#4a42b0] rounded-2xl shadow-2xl p-[2px] animate-slideUp">
         <div className="bg-[#241f4a] rounded-2xl p-4 sm:p-6 max-h-[90vh] overflow-y-auto">
           {/* Close Button */}
           <button
@@ -402,6 +425,16 @@ const SuccessPopup = ({ userData, onClose }) => {
           <p className="text-center text-[#c9c3ff] text-xs sm:text-sm mb-4 sm:mb-6 px-2">
             Your Utkarsh ID has been generated
           </p>
+
+          {/* Auto-verified badge */}
+          <div className="text-center mb-4">
+            <span className="inline-flex items-center gap-1 px-3 py-1 bg-green-500/20 text-green-300 rounded-full text-xs border border-green-500/30">
+              <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+              </svg>
+              Auto-verified
+            </span>
+          </div>
 
           {/* Utkarsh ID Card */}
           <div className="bg-gradient-to-br from-[#3a3763] to-[#2b255f] rounded-xl p-3 sm:p-5 mb-4 sm:mb-6 border border-[#6c63ff]">
@@ -440,6 +473,13 @@ const SuccessPopup = ({ userData, onClose }) => {
                 </div>
               </div>
             </div>
+          </div>
+
+          {/* Info Message */}
+          <div className="mb-4 p-3 bg-blue-500/10 border border-blue-500/30 rounded-lg">
+            <p className="text-xs text-blue-300 text-center">
+              ⚡ Your account has been automatically verified. You can now login directly.
+            </p>
           </div>
 
           {/* Action Buttons */}
