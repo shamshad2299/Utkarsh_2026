@@ -70,16 +70,30 @@ export const registerUser = async (req, res) => {
 
     await session.commitTransaction();
 
-    // Send verification email
-    await sendEmailBrevo({
-      to: email,
-      subject: "Verify Your Email - BBD UTKARSH 2026",
-      html: emailVerificationTemplate({
-        name: name, // or user's name from your data
-        otp: emailVerificationCode, // your OTP variable
-        expiryMinutes: 10,
-      }),
+try {
+  await sendEmailBrevo({
+    to: email,
+    subject: "Verify Your Email - BBD UTKARSH 2026",
+    html: emailVerificationTemplate({
+      name,
+      otp: emailVerificationCode,
+      expiryMinutes: 10,
+    }),
+  });
+} catch (err) {
+  if (err.isRateLimit) {
+    console.warn("⚠️ Brevo daily limit reached. Auto-verifying user:", email);
+
+    await User.findByIdAndUpdate(user[0]._id, {
+      isVerified: true,
+      autoVerified : true,
+      emailVerificationCode: null,
+      emailVerificationExpire: null,
     });
+  } else {
+    throw err;
+  }
+}
 
     const safeUser = await User.findById(user[0]._id).select(
       "-password -refreshToken -__v -emailVerificationCode -emailVerificationExpire",

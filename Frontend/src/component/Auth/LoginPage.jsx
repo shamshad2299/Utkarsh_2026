@@ -1,15 +1,17 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../Context/AuthContext";
 
 const LoginPage = () => {
   const { login, requestPassword, resetPassword } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [step, setStep] = useState("login");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [notification, setNotification] = useState(null);
 
   const [formData, setFormData] = useState({
     identifier: "",
@@ -19,17 +21,37 @@ const LoginPage = () => {
     confirmPassword: "",
   });
 
+  // Check for messages from registration (auto-verified users)
+  useEffect(() => {
+    if (location.state?.message) {
+      setNotification({
+        type: "success",
+        message: location.state.message
+      });
+      
+      // Pre-fill email if provided
+      if (location.state?.email) {
+        setFormData(prev => ({ ...prev, identifier: location.state.email }));
+      }
+      
+      // Clear the location state
+      window.history.replaceState({}, document.title);
+    }
+  }, [location]);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((p) => ({ ...p, [name]: value }));
     setError("");
     setSuccess("");
+    setNotification(null);
   };
 
   const handleLoginSubmit = async (e) => {
     e.preventDefault();
     setError("");
     setSuccess("");
+    setNotification(null);
 
     if (!formData.identifier.trim() || !formData.password.trim()) {
       setError("Please fill in all fields");
@@ -58,18 +80,9 @@ const LoginPage = () => {
           ? formData.identifier 
           : null;
         
-        // Show specific message and redirect to verify page
-        setError("Please verify your email before logging in. Redirecting to verification page...");
+        setError("Please verify your email before logging in.");
         
-        // Auto-redirect to verify page after 2 seconds
-        setTimeout(() => {
-          navigate("/verify", { 
-            state: { 
-              email: email,
-              fromLogin: true 
-            } 
-          });
-        }, 2000);
+        // Don't auto-redirect, let user click the link
       } else {
         setError(err.response?.data?.message || "Login failed. Please check your credentials.");
       }
@@ -82,6 +95,7 @@ const LoginPage = () => {
     e.preventDefault();
     setError("");
     setSuccess("");
+    setNotification(null);
 
     if (!formData.identifier.trim()) {
       setError("Please enter your Email or UK ID");
@@ -105,16 +119,7 @@ const LoginPage = () => {
           ? formData.identifier 
           : null;
         
-        setError("Please verify your email first. Redirecting to verification page...");
-        
-        setTimeout(() => {
-          navigate("/verify", { 
-            state: { 
-              email: email,
-              fromLogin: true 
-            } 
-          });
-        }, 2000);
+        setError("Please verify your email first.");
       } else {
         setError(err.response?.data?.message || "Failed to send OTP. Please try again.");
       }
@@ -127,6 +132,7 @@ const LoginPage = () => {
     e.preventDefault();
     setError("");
     setSuccess("");
+    setNotification(null);
 
     if (!formData.code.trim()) {
       setError("Please enter OTP");
@@ -169,16 +175,7 @@ const LoginPage = () => {
           ? formData.identifier 
           : null;
         
-        setError("Please verify your email first. Redirecting to verification page...");
-        
-        setTimeout(() => {
-          navigate("/verify", { 
-            state: { 
-              email: email,
-              fromLogin: true 
-            } 
-          });
-        }, 2000);
+        setError("Please verify your email first.");
       } else {
         setError(err.response?.data?.message || "Failed to reset password. Please check OTP and try again.");
       }
@@ -187,13 +184,10 @@ const LoginPage = () => {
     }
   };
 
-  // Handle redirect to verify page with email from localStorage if available
   const handleResendVerification = () => {
-    // Try to get email from various sources
     let email = formData.identifier;
     
     if (!email || !email.includes('@')) {
-      // You might want to store last registered email in localStorage
       const lastRegisteredEmail = localStorage.getItem("lastRegisteredEmail");
       if (lastRegisteredEmail) {
         email = lastRegisteredEmail;
@@ -255,6 +249,23 @@ const LoginPage = () => {
               </p>
             </div>
 
+            {/* Auto-verified Success Notification */}
+            {notification && notification.type === "success" && (
+              <div className="mb-4 p-4 bg-green-500/20 border border-green-500/50 rounded-lg">
+                <div className="flex items-start gap-3">
+                  <div className="flex-shrink-0">
+                    <svg className="w-5 h-5 text-green-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm text-green-200 font-medium">Registration Successful!</p>
+                    <p className="text-xs text-green-300 mt-1">{notification.message}</p>
+                  </div>
+                </div>
+              </div>
+            )}
+
             <form onSubmit={handleFormSubmit} className="space-y-4">
               {/* LOGIN STEP */}
               {step === "login" && (
@@ -280,17 +291,25 @@ const LoginPage = () => {
 
                   {/* Verification Prompt for Unverified Users */}
                   {error && error.includes("verify") && (
-                    <div className="mt-2 p-3 bg-yellow-500/20 border border-yellow-500/50 rounded-md">
-                      <p className="text-yellow-200 text-sm mb-2">
-                        Haven't verified your email yet?
-                      </p>
-                      <button
-                        type="button"
-                        onClick={handleResendVerification}
-                        className="text-sm text-[#6c63ff] hover:text-[#8b7eff] underline transition-colors"
-                      >
-                        Go to Verification Page →
-                      </button>
+                    <div className="mt-2 p-4 bg-yellow-500/20 border border-yellow-500/50 rounded-lg">
+                      <div className="flex items-start gap-3">
+                        <div className="flex-shrink-0">
+                          <svg className="w-5 h-5 text-yellow-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                          </svg>
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-sm text-yellow-200 font-medium">Email Not Verified</p>
+                          <p className="text-xs text-yellow-300 mt-1">{error}</p>
+                          <button
+                            type="button"
+                            onClick={handleResendVerification}
+                            className="mt-3 text-sm text-[#6c63ff] hover:text-[#8b7eff] underline transition-colors"
+                          >
+                            Verify Email Address →
+                          </button>
+                        </div>
+                      </div>
                     </div>
                   )}
 
@@ -301,6 +320,7 @@ const LoginPage = () => {
                         setStep("forgot");
                         setError("");
                         setSuccess("");
+                        setNotification(null);
                       }}
                       className="text-sm text-[#c9c3ff] hover:text-white hover:underline transition-colors cursor-pointer"
                     >
@@ -313,6 +333,7 @@ const LoginPage = () => {
                         navigate("/register");
                         setError("");
                         setSuccess("");
+                        setNotification(null);
                       }}
                       className="text-sm text-[#c9c3ff] hover:text-white hover:underline transition-colors cursor-pointer"
                     >
@@ -355,6 +376,7 @@ const LoginPage = () => {
                       setStep("reset");
                       setError("");
                       setSuccess("");
+                      setNotification(null);
                     }}
                     className="text-sm text-[#c9c3ff] text-right w-full hover:text-white hover:underline transition-colors"
                   >
@@ -392,22 +414,10 @@ const LoginPage = () => {
                 </div>
               )}
 
-              {/* Error Message */}
+              {/* Regular Error Message */}
               {error && !error.includes("verify") && (
                 <div className="p-3 bg-red-500/20 border border-red-500/50 rounded-md text-red-200 text-sm">
                   {error}
-                </div>
-              )}
-
-              {/* Verification Redirect Error - Special Styling */}
-              {error && error.includes("verify") && (
-                <div className="p-3 bg-yellow-500/20 border border-yellow-500/50 rounded-md text-yellow-200 text-sm">
-                  <div className="flex items-center gap-2">
-                    <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                    </svg>
-                    <span>{error}</span>
-                  </div>
                 </div>
               )}
 
@@ -434,19 +444,6 @@ const LoginPage = () => {
                 )}
               </button>
 
-              {/* Resend Verification Link */}
-              {step === "login" && error && error.includes("verify") && (
-                <div className="mt-2 text-center">
-                  <button
-                    type="button"
-                    onClick={handleResendVerification}
-                    className="text-sm text-[#6c63ff] hover:text-[#8b7eff] underline transition-colors"
-                  >
-                    Click here to verify your email
-                  </button>
-                </div>
-              )}
-
               {/* Back Buttons */}
               {(step === "forgot" || step === "otp" || step === "reset") && (
                 <div className="mt-4">
@@ -458,6 +455,7 @@ const LoginPage = () => {
                       if (step === "reset") setStep("otp");
                       setError("");
                       setSuccess("");
+                      setNotification(null);
                     }}
                     className="text-sm text-center w-full text-[#c9c3ff] hover:text-white hover:underline transition-colors"
                   >
